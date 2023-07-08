@@ -33,7 +33,7 @@ const BarChart = () => {
       labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho'],
       datasets: [
           {
-              label: 'Valor arrecadado $',
+              label: 'Valor arrecadado R$',
               data: [18127, 22201, 19490, 17938, 24182, 17842, 22475],
               borderColor: 'rgb(53, 162, 235)',
               backgroundColor: 'rgb(53, 162, 235, 0.4',
@@ -47,7 +47,7 @@ const BarChart = () => {
           },
           title: {
               display: true,
-              text: 'Daily Revenue'
+              text: 'Valor arrecadado/mês'
           }
       },
       maintainAspectRatio: false,
