@@ -16,17 +16,17 @@ const Sidebar = ({children}) => {
                         </div>
                     </Link>
                     <span className="border-b-[1px] border-gray-200 w-full p-2"></span>
-                    <Link href='/costumers'>
+                    <Link href='/'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <RxDashboard size={25} />
                         </div>
                     </Link>
-                    <Link href='/person'>
+                    <Link href='/costumers'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <RxPerson size={25} />
                         </div>
                     </Link>
-                    <Link href='/items'>
+                    <Link href='/orders'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <BsBoxSeam size={25} />
                         </div>

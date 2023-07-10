@@ -10,8 +10,8 @@ export default function Home() {
     <Header />
     <TopCards />
     <div className='p-4 grid md:grid-cols-3 grid-cols-1 gap-4'>
-      <BarChart />
-      <RecentOrders />
+    <RecentOrders />
+    <BarChart />
     </div>
     </main>
   )
