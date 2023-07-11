@@ -30,7 +30,7 @@ const TopCards = () => {
         </div>
         
         
-        <div className='bg-white flex justify-between w-full border p-4 rounded-lg'>
+        <div className='lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg'>
             <div className='bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center'>
                 <BiLogoMastercard size={30}/>
             </div>
@@ -45,7 +45,7 @@ const TopCards = () => {
         </div>
         </div>
         
-        <div className='lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg'>
+        <div className=' bg-white flex justify-between w-full border p-4 rounded-lg'>
             <div className='bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center'>
                 <BsBusFrontFill size={30}/>
             </div>

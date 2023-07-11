@@ -35,10 +35,16 @@ const AddIncomeModalConta = () => {
       var categoria = document.getElementById('categoria')
       var valor = document.getElementById('valor')
       var data = document.getElementById('data')
+      var descricao = document.getElementById('descricao')
 
       const form = new FormData()
+      form.append("tipo","Receita")
+      form.append("categoria","Categoria")
       form.append("valor",valor.value)
       form.append("data",data.value)
+      form.append("descricao",descricao.value)
+      form.append("conta","Conta Nubank")
+
       for(let i of form.entries()){
         console.log(i)
       }
@@ -54,7 +60,7 @@ const AddIncomeModalConta = () => {
       if(!dataInput.value) dataInput.value = dataAtual
     }
 
-    const [selected, setSelected] = useState(new Set(["text"]));
+    const [selected, setSelected] = useState(new Set(["Categoria"]));
 
     const selectedValue = useMemo(
       () => Array.from(selected).join(", ").replaceAll("_", " "),
@@ -83,13 +89,12 @@ const AddIncomeModalConta = () => {
         </Modal.Header>
         <Modal.Body>
         <Dropdown>
-      <Dropdown.Button flat color="success" className='text-left' css={{ tt: "capitalize" }}>
+      <Dropdown.Button flat color="success" css={{ tt: "capitalize" }}>
         {selectedValue}
       </Dropdown.Button>
       <Dropdown.Menu
         aria-label="Single selection actions"
         color="success"
-        disallowEmptySelection
         selectionMode="single"
         selectedKeys={selected}
         onSelectionChange={setSelected}
