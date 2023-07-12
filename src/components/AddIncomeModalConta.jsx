@@ -40,7 +40,7 @@ const AddIncomeModalConta = () => {
 
       const form = new FormData()
       form.append("tipo","Receita")
-      form.append("categoria",categoria)
+      form.append("categoria","categoria")
       form.append("valor",valor.value)
       form.append("data",data.value)
       form.append("descricao",descricao.value)
