@@ -99,9 +99,9 @@ const SeeCreditCards = () => {
         <div className='flex items-center justify-around -ml-0.5'>
 			<div className='rounded-full p-3 bg-blue-200'><BsCreditCardFill className='text-blue-900'/></div>
 			<Text >Neon Julia</Text>
-			<div className='w-28'><Progress value={75}/></div>
+			<div className='w-28'><Progress value={70}/></div>
 		</div>
-		<p className='text-right mr-4 text-xs text-gray-400'>R$ 750,00/R$ 1000,00</p>
+		<p className='text-right mr-4 text-xs text-gray-400'>R$ 700,00/R$ 1000,00</p>
 		</div>
 		
       </Card.Body>
