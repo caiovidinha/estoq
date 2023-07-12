@@ -33,6 +33,7 @@ const AddIncomeModalCrédito = () => {
 
     const getForm =() => {
       let categoria = selectedValue
+      let cartao = selectedValueCard
       let valor = document.getElementById('valor')
       let data = document.getElementById('data')
       let descricao = document.getElementById('descricao')
@@ -45,7 +46,8 @@ const AddIncomeModalCrédito = () => {
       form.append("data",data.value)
       form.append("descricao",descricao.value)
       form.append("status",status)
-      form.append("conta","Crédito Nubank")
+      form.append("conta","Cartão de Crédito")
+      form.append("cartao",cartao)
 
       for(let i of form.entries()){
         console.log(i)
@@ -69,12 +71,20 @@ const AddIncomeModalCrédito = () => {
       [selected]
     )
 
+    const [selectedCard, setSelectedCard] = useState(new Set(["Cartão"]));
+
+    const selectedValueCard = useMemo(
+      () => Array.from(selectedCard).join(", ").replaceAll("_", " "),
+      [selectedCard]
+    )
+
+
     
 
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
 
-      <Button  className='bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10' auto rounded shadow color='green' onPress={handler} icon={<GiReceiveMoney className='text-green-800' size={20}/>}>
+      <Button  className='bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5' auto rounded shadow color='green' onPress={handler} icon={<GiReceiveMoney className='text-green-800' size={20}/>}>
       
       </Button>
       <Modal
@@ -143,6 +153,22 @@ const AddIncomeModalCrédito = () => {
             id="descricao"
             placeholder="Descrição"
           />
+          <Dropdown>
+      <Dropdown.Button flat css={{ tt: "capitalize" }}>
+        {selectedValueCard}
+      </Dropdown.Button>
+      <Dropdown.Menu
+        aria-label="Single selection actions"
+        selectionMode="single"
+        selectedKeys={selectedCard}
+        onSelectionChange={setSelectedCard}
+        id="cartao"
+      >
+        <Dropdown.Item key="Nubank Caio">Nubank Caio</Dropdown.Item>
+        <Dropdown.Item key="Nubank Julia">Nubank Julia</Dropdown.Item>
+        <Dropdown.Item key="Neon Julia">Neon Julia</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
           <div className='w-full flex justify-center'>
           <div className='bg-gray-300 rounded-full w-48 h- flex items-center justify-left'>
           <Switch 

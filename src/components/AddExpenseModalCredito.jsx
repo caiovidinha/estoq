@@ -36,6 +36,7 @@ const AddExpenseModalCrédito = () => {
       let data = document.getElementById('data')
       let descricao = document.getElementById('descricao')
       let status = document.getElementById('status').getAttribute('data-state') === 'checked' ? 'Pago' : 'A pagar'
+      let cartao = selectedValueCard
 
       const form = new FormData()
       form.append("tipo","Despesa")
@@ -44,7 +45,8 @@ const AddExpenseModalCrédito = () => {
       form.append("data",data.value)
       form.append("descricao",descricao.value)
       form.append("status",status)
-      form.append("conta","Crédito Nubank")
+      form.append("conta","Cartão de Crédito")
+      form.append("cartao",cartao)
 
       for(let i of form.entries()){
         console.log(i)
@@ -66,7 +68,15 @@ const AddExpenseModalCrédito = () => {
     const selectedValue = useMemo(
       () => Array.from(selected).join(", ").replaceAll("_", " "),
       [selected]
-    );
+    )
+
+    const [selectedCard, setSelectedCard] = useState(new Set(["Cartão"]));
+
+    const selectedValueCard = useMemo(
+      () => Array.from(selectedCard).join(", ").replaceAll("_", " "),
+      [selectedCard]
+    )
+
   return (
     <div>
       <Button className='bg-red-200 mt-2' rounded shadow auto color='' onPress={handler} icon={<GiTakeMyMoney className='text-red-800' size={20}/>}>
@@ -148,6 +158,22 @@ const AddExpenseModalCrédito = () => {
             id="descricao"
             placeholder="Descrição"
           />
+                    <Dropdown>
+      <Dropdown.Button flat css={{ tt: "capitalize" }}>
+        {selectedValueCard}
+      </Dropdown.Button>
+      <Dropdown.Menu
+        aria-label="Single selection actions"
+        selectionMode="single"
+        selectedKeys={selectedCard}
+        onSelectionChange={setSelectedCard}
+        id="cartao"
+      >
+        <Dropdown.Item key="Nubank Caio">Nubank Caio</Dropdown.Item>
+        <Dropdown.Item key="Nubank Julia">Nubank Julia</Dropdown.Item>
+        <Dropdown.Item key="Neon Julia">Neon Julia</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
           <div className='w-full flex justify-center'>
           <div className='bg-gray-300 rounded-full w-48 h- flex items-center justify-left'>
           <Switch 

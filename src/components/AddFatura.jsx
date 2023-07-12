@@ -1,5 +1,5 @@
-import { React,useState } from 'react'
-import { Modal, Button, Text, Input } from "@nextui-org/react";
+import { React,useState,useMemo } from 'react'
+import { Modal, Button, Text, Input, Dropdown } from "@nextui-org/react";
 
 const AddFatura = () => {
 
@@ -31,10 +31,13 @@ const AddFatura = () => {
   }
 
     const getForm =() => {
-      var valor = document.getElementById('valor')
+      let valor = document.getElementById('valor')
+      let cartao = selectedValueCard
       const form = new FormData()
       form.append("valor",valor.value)
       form.append("data",data.value)
+      form.append("conta", "Cartão de Crédito")
+      form.append("cartao",cartao)
       for(let i of form.entries()){
         console.log(i)
       }
@@ -50,6 +53,12 @@ const AddFatura = () => {
       if(!dataInput.value) dataInput.value = dataAtual
     }
 
+    const [selectedCard, setSelectedCard] = useState(new Set(["Cartão"]));
+
+    const selectedValueCard = useMemo(
+      () => Array.from(selectedCard).join(", ").replaceAll("_", " "),
+      [selectedCard]
+    )
 
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
@@ -99,6 +108,22 @@ const AddFatura = () => {
             placeholder="Data"
             onFocus={fillDate}
           />
+          <Dropdown>
+      <Dropdown.Button flat css={{ tt: "capitalize" }}>
+        {selectedValueCard}
+      </Dropdown.Button>
+      <Dropdown.Menu
+        aria-label="Single selection actions"
+        selectionMode="single"
+        selectedKeys={selectedCard}
+        onSelectionChange={setSelectedCard}
+        id="cartao"
+      >
+        <Dropdown.Item key="Nubank Caio">Nubank Caio</Dropdown.Item>
+        <Dropdown.Item key="Nubank Julia">Nubank Julia</Dropdown.Item>
+        <Dropdown.Item key="Neon Julia">Neon Julia</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
         
         </Modal.Body>
         <Modal.Footer>

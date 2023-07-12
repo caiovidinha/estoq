@@ -1,6 +1,6 @@
 import React from 'react'
 import { BiLogoMastercard } from 'react-icons/bi'
-import { BsBusFrontFill } from 'react-icons/bs'
+import { BsBusFrontFill, } from 'react-icons/bs'
 import { SiNubank } from 'react-icons/si'
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
@@ -10,6 +10,7 @@ import AddIncomeModalBus from './AddIncomeModalBus'
 import AddExpenseModalBus from './AddExpenseModalBus'
 import AddInvestimento from './AddInvestimento'
 import AddFatura from './AddFatura'
+import SeeCreditCards from './SeeCreditCards'
 
 const TopCards = () => {
   return (
@@ -36,12 +37,13 @@ const TopCards = () => {
             </div>
             <div className='flex flex-col w-full pb-4 mt-2'>
                 <p className='sm:text-2xl text-sm font-bold'>R$ 7.829,00</p>
-                <p className='text-gray-600 sm:text-md text-xs'>Crédito Nubank</p>
+                <p className='text-gray-600 sm:text-md text-xs'>Cartão de Crédito</p>
                 <AddFatura />
             </div>
             <div className='flex w-[130px] justify-between'>
             <AddIncomeModalCredito />
             <AddExpenseModalCredito />
+            <SeeCreditCards />
         </div>
         </div>
         
