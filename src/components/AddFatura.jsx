@@ -33,6 +33,8 @@ const AddFatura = () => {
     const getForm =() => {
       let valor = document.getElementById('valor')
       let cartao = selectedValueCard
+      let data = document.getElementById('data')
+
       const form = new FormData()
       form.append("valor",valor.value)
       form.append("data",data.value)

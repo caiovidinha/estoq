@@ -32,6 +32,8 @@ const AddIncomeModalBus = () => {
 
     const getForm =() => {
       var valor = document.getElementById('valor')
+      const data = document.getElementById('data')
+      
       const form = new FormData()
       form.append("tipo","Receita")
       form.append("categoria","Locomoção")

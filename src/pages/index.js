@@ -1,3 +1,4 @@
+import React from 'react'
 import TopCards from '../components/TopCards'
 import Header from '../components/Header'
 import BarChart from '../components/BarChart'

@@ -11,48 +11,7 @@ const SeeCreditCards = () => {
       setVisible(false)
       console.log("closed")
     }
-    const formatarMoeda = () => {
-      var elemento = document.getElementById('valor')
-      var valor = elemento.value
-      
 
-      valor = valor + ''
-      valor = parseInt(valor.replace(/[\D]+/g, ''))
-      valor = valor + ''
-      valor = valor.replace(/([0-9]{2})$/g, ",$1")
-
-      if (valor.length > 6) {
-          valor = valor.replace(/([0-9]{3}),([0-9]{2}$)/g, ".$1,$2")
-      }
-
-      elemento.value = valor;
-      if(valor == 'NaN') elemento.value = ''
-      
-  }
-
-    const getForm =() => {
-      var valor = document.getElementById('valor')
-      const form = new FormData()
-      form.append("tipo","Receita")
-      form.append("categoria","Locomoção")
-      form.append("valor",valor.value)
-      form.append("data",data.value)
-      form.append("status","Recebido")
-      form.append("conta","Bilhete Único")
-      for(let i of form.entries()){
-        console.log(i)
-      }
-    }
-
-    const fillDate = () => {
-      const dataInput = document.querySelector('#data')
-      var data = new Date()
-      var dia = String(data.getDate()).padStart(2, '0')
-      var mes = String(data.getMonth() + 1).padStart(2, '0')
-      var ano = data.getFullYear()
-      const dataAtual = ano + '-' + mes + '-' + dia
-      if(!dataInput.value) dataInput.value = dataAtual
-    }
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
 

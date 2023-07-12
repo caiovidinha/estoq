@@ -32,6 +32,8 @@ const AddInvestimento = () => {
 
     const getForm =() => {
       var valor = document.getElementById('valor')
+      const data = document.getElementById('data')
+
       const form = new FormData()
       form.append("valor",valor.value)
       form.append("data",data.value)
