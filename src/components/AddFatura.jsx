@@ -64,16 +64,19 @@ const AddFatura = () => {
         onClose={closeHandler}
       >
         <Modal.Header>
-          <Text id="modal-title" size={18}>
+          <Text id="modal-title" size={16}>
             Pagar fatura&nbsp;
             <Text b size={18}>
-              do Nubank
+              do Nubank 
             </Text>
+            <br /> Fatura atual:&nbsp;
+            <Text b size={18} color='error'>
+              R$ <span id='fatura'>400,00</span>
+            </Text> 
           </Text>
         </Modal.Header>
         <Modal.Body>
           <Input
-            clearable
             bordered
             maxLength={9}
             onKeyUp={formatarMoeda}
@@ -102,7 +105,7 @@ const AddFatura = () => {
           <Button auto flat color="error" onPress={closeHandler}>
             Fechar
           </Button>
-          <Button auto onPress={getForm}>
+          <Button auto color="success" onPress={getForm}>
             Enviar
           </Button>
           

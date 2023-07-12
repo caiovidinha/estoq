@@ -69,11 +69,14 @@ const AddInvestimento = () => {
             <Text b size={18}>
               no Nubank
             </Text>
+            <br /> Valor guardado:&nbsp;
+            <Text b size={18} color='success'>
+              R$ <span id='fatura'>400,00</span>
+            </Text> 
           </Text>
         </Modal.Header>
         <Modal.Body>
           <Input
-            clearable
             bordered
             maxLength={9}
             onKeyUp={formatarMoeda}
@@ -102,7 +105,10 @@ const AddInvestimento = () => {
           <Button auto flat color="error" onPress={closeHandler}>
             Fechar
           </Button>
-          <Button auto onPress={getForm}>
+          <Button auto color="error" onPress={getForm}>
+            Sacar
+          </Button>
+          <Button auto color="success" onPress={getForm}>
             Enviar
           </Button>
           

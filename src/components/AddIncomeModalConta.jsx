@@ -1,9 +1,9 @@
 import { React,useState,useMemo } from 'react'
-import { Modal, Button, Text, Input, Dropdown } from "@nextui-org/react";
+import { Modal, Button, Text, Input, Dropdown,Switch } from "@nextui-org/react";
 import { GiReceiveMoney } from 'react-icons/gi'
+import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
 
 const AddIncomeModalConta = () => {
-
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -32,17 +32,19 @@ const AddIncomeModalConta = () => {
   }
 
     const getForm =() => {
-      var categoria = document.getElementById('categoria')
-      var valor = document.getElementById('valor')
-      var data = document.getElementById('data')
-      var descricao = document.getElementById('descricao')
+      let categoria = selectedValue
+      let valor = document.getElementById('valor')
+      let data = document.getElementById('data')
+      let descricao = document.getElementById('descricao')
+      let status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
 
       const form = new FormData()
       form.append("tipo","Receita")
-      form.append("categoria","Categoria")
+      form.append("categoria",categoria)
       form.append("valor",valor.value)
       form.append("data",data.value)
       form.append("descricao",descricao.value)
+      form.append("status",status)
       form.append("conta","Conta Nubank")
 
       for(let i of form.entries()){
@@ -65,7 +67,9 @@ const AddIncomeModalConta = () => {
     const selectedValue = useMemo(
       () => Array.from(selected).join(", ").replaceAll("_", " "),
       [selected]
-    );
+    )
+
+    
 
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
@@ -108,7 +112,6 @@ const AddIncomeModalConta = () => {
       </Dropdown.Menu>
     </Dropdown>
           <Input
-            clearable
             bordered
             maxLength={9}
             onKeyUp={formatarMoeda}
@@ -140,12 +143,26 @@ const AddIncomeModalConta = () => {
             id="descricao"
             placeholder="Descrição"
           />
+          <div className='w-full flex justify-center'>
+          <div className='bg-gray-300 rounded-full w-48 h- flex items-center justify-left'>
+          <Switch 
+          checked={true}
+          size="xl"
+          color="success"
+          iconOn={<MdAttachMoney className='ml-0.5'/>}
+          iconOff={<MdMoneyOffCsred />} 
+          className='mb-1 ml-0.5'
+          id="status"
+          /> 
+          <p className='ml-6 text-gray-500 font-bold'>Recebido</p>
+          </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button auto flat color="error" onPress={closeHandler}>
             Fechar
           </Button>
-          <Button auto onPress={getForm}>
+          <Button auto color="success" onPress={getForm}>
             Enviar
           </Button>
           
