@@ -36,7 +36,7 @@ const AddIncomeModalBus = () => {
       
       const form = new FormData()
       form.append("tipo","Receita")
-      form.append("categoria","Locomoção")
+      form.append("categoria","Limite Cartão")
       form.append("valor",valor.value)
       form.append("data",data.value)
       form.append("status","Recebido")
