@@ -1,7 +1,9 @@
-import { React,useState } from 'react'
+import { React,useState,useEffect } from 'react'
 import { Modal, Button, Text, Input } from "@nextui-org/react";
 
 const AddInvestimento = () => {
+
+    const [saldo,setSaldo] = useState([])
 
 
     const [visible, setVisible] = useState(false)
@@ -53,12 +55,35 @@ const AddInvestimento = () => {
       if(!dataInput.value) dataInput.value = dataAtual
     }
 
+    async function getSaldo(){
+      const postData = {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+			const res = await fetch('http://localhost:3000/api/saldo', 
+			postData
+			)
+			const response = await res.json()
+            setSaldo(response.saldo)
+            
+    }
+
+    useEffect(() => {
+			getSaldo()
+		})
 
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
 
       <Button  className='text-green-800 bg-green-200 mt-2 -ml-3 -mb-5' size="xs" rounded-sm shadow color='' onPress={handler}>
-      Guardado: R$ 400,00
+      Guardado: 
+      {saldo.map((conta,index) => {
+        return (
+          conta.id === 6 ? " R$ " + conta.valor.toFixed(2) : ''
+        )
+      })}
       </Button>
       <Modal
         closeButton

@@ -1,8 +1,10 @@
-import { React,useState,useMemo } from 'react'
+import { React,useState,useMemo,useEffect } from 'react'
 import { Modal, Button, Text, Input, Dropdown } from "@nextui-org/react";
 
 const AddFatura = () => {
 
+    let valores = 0
+    const [fatura,setFatura] = useState([])
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -62,11 +64,36 @@ const AddFatura = () => {
       [selectedCard]
     )
 
+    async function getFatura(){
+      const postData = {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+			const res = await fetch('http://localhost:3000/api/fatura', 
+			postData
+			)
+			const response = await res.json()
+            setFatura(response.fatura)
+            
+    }
+
+    useEffect(() => {
+			getFatura()
+		})
+
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
 
       <Button  className='text-red-800 bg-red-200 mt-2 -ml-3 -mb-5' size="xs" rounded-sm shadow color='' onPress={handler}>
-      Fatura: R$ 400,00
+      Fatura: 
+      {fatura.map((cartao,index) => {
+        valores += cartao.valor
+        return (
+          cartao.id === 3 ?  " R$ " + parseFloat(valores).toFixed(2) : ''
+        )
+      })}
       </Button>
       <Modal
         closeButton

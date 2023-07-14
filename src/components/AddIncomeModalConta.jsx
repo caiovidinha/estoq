@@ -5,37 +5,8 @@
 
 	const AddIncomeModalConta = () => {
 
-	//API logic v
-
-		const tipoRef = useRef()
-		const categoriaRef = useRef()
-		const valorRef = useRef()
-		const dataRef = useRef()
-		const descricaoRef = useRef()
-		const statusRef = useRef()
-		const categoraRef = useRef()
-		const contaRef = useRef()
-
-		const [mov,setMov] = useState([])
-
-		const [updated,setUpdated] = useState(false)
-		const [created,setCreated] = useState(false)
-		const [deleted,setDeleted] = useState(false)
-
-		const [updatedError,setUpdatedError] = useState(false)
-		const [deletedError,setDeletedError] = useState(false)
-
-		async function addMov() {}
-
-		async function getMov() {}
-
-		async function updateMov() {}
-
-		async function deleteMov() {}
-
-		useEffect(() => {}, [])
-
-	//API Login ^
+	//API logic (start)
+	//API logic (end)
 
 	const [visible, setVisible] = useState(false)
 	const handler = () => setVisible(true)
