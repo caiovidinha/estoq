@@ -14,6 +14,5 @@ export default async function connect({ query,values = [] }) {
  
     } catch (error) {
         throw new Error(error.message)
-        return { error }
     }
 }
