@@ -62,7 +62,7 @@ const AddInvestimento = () => {
 					"Content-Type": "application/json",
 				},
 			}
-			const res = await fetch('https://cashflow-git-master-caiovidinha.vercel.app/api/saldo', 
+			const res = await fetch('http://localhost:3000/api/saldo', 
 			postData
 			)
 			const response = await res.json()
