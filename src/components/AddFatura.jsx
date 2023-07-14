@@ -71,7 +71,7 @@ const AddFatura = () => {
 					"Content-Type": "application/json",
 				},
 			}
-			const res = await fetch('http://localhost:3000/api/fatura', 
+			const res = await fetch('https://cashflow-git-master-caiovidinha.vercel.app/api/fatura', 
 			postData
 			)
 			const response = await res.json()
