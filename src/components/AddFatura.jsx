@@ -86,7 +86,7 @@ const AddFatura = () => {
   return (
     <div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
 
-      <Button  className='text-red-800 bg-red-200 mt-2 -ml-3 -mb-5' size="xs" rounded-sm shadow color='' onPress={handler}>
+      <Button  className='text-red-800 bg-red-200 mt-2 -ml-3 -mb-5' size="xs" shadow color='' onPress={handler}>
       Fatura: 
       {fatura.map((cartao,index) => {
         valores += cartao.valor
