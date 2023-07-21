@@ -1,6 +1,7 @@
-	import { React,useState,useMemo,useEffect,useRef } from 'react'
+	import { React,useState,useMemo} from 'react'
 	import { Modal, Button, Text, Input, Dropdown, Switch, Loading } from "@nextui-org/react";
 	import { GiReceiveMoney } from 'react-icons/gi'
+	import { AiFillCheckCircle } from 'react-icons/ai'
 	import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
 
 	const AddIncomeModalConta = () => {
@@ -68,7 +69,7 @@
 		}
 		setTimeout(()=>{
 			setCreated(false)
-		},2000)
+		},1300)
 	}
 
 	const fillDate = () => {
@@ -182,7 +183,7 @@
 			Fechar
 			</Button>
 			<Button auto color="success" onPress={getForm}>
-			{created ? 'Enviado!' : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
+			{created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
 			</Button>
 			
 		</Modal.Footer>
