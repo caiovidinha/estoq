@@ -1,9 +1,15 @@
-import { React,useState,useMemo } from 'react'
-import { Switch, Modal, Button, Text, Input, Dropdown } from "@nextui-org/react";
+import { React, useState, useMemo } from 'react'
+import { Switch, Modal, Button, Text, Input, Dropdown, Loading } from "@nextui-org/react";
 import { GiTakeMyMoney } from 'react-icons/gi'
-import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
+import { AiFillCheckCircle } from 'react-icons/ai'
+import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 
 const AddExpenseModalConta = () => {
+
+  
+    const [created,setCreated] = useState(false)
+    const [loading,setLoading] = useState(false)
+
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
   
@@ -11,45 +17,62 @@ const AddExpenseModalConta = () => {
       setVisible(false)
     }
 
-    const formatarMoeda = () => {
-      var elemento = document.getElementById('valor')
-      var valor = elemento.value
-      
+	const formatarMoeda = () => {
+		var elemento = document.getElementById('valor')
+		var valor = elemento.value
+		
 
-      valor = valor + ''
-      valor = parseInt(valor.replace(/[\D]+/g, ''))
-      valor = valor + ''
-      valor = valor.replace(/([0-9]{2})$/g, ",$1")
+		valor = valor + ''
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
+		valor = valor + ''
+		valor = valor.replace(/([0-9]{2})$/g, ".$1")
 
-      if (valor.length > 6) {
-          valor = valor.replace(/([0-9]{3}),([0-9]{2}$)/g, ".$1,$2")
-      }
 
-      elemento.value = valor;
-      if(valor == 'NaN') elemento.value = ''
-      
-  }
 
-    const getForm =() => {
-      let categoria = selectedValue
-      let valor = document.getElementById('valor')
-      let data = document.getElementById('data')
-      let descricao = document.getElementById('descricao')
-      let status = document.getElementById('status').getAttribute('data-state') === 'checked' ? 'Pago' : 'A pagar'
+		elemento.value = valor;
+		if(valor == 'NaN') elemento.value = ''
+		
+	}
 
-      const form = new FormData()
-      form.append("tipo","Despesa")
-      form.append("categoria",categoria)
-      form.append("valor",valor.value)
-      form.append("data",data.value)
-      form.append("descricao",descricao.value)
-      form.append("status",status)
-      form.append("conta","Conta Nubank")
+  const getForm = async () => {
 
-      for(let i of form.entries()){
-        console.log(i)
-      }
-    }
+		const categoria = selectedValue
+		const valor = parseFloat(document.getElementById('valor').value)
+		const data = document.getElementById('data').value
+		const descricao = document.getElementById('descricao').value
+		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Pago" : "A pagar"
+
+
+		const postData = {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				tipo: "Despesa",
+				categoria: categoria,
+				valor: valor,
+				data: data,
+				descricao: descricao,
+				status: status,
+				conta: "Conta Nubank"
+						})
+		}
+		setLoading(true)
+		const res = await fetch('http://localhost:3000/api/mov',postData)
+		if(res.status == 200){
+			setLoading(false)
+			setCreated(true)
+			setSelected(['Categoria'])
+			document.getElementById('valor').value = ''
+			document.getElementById('data').value = ''
+			document.getElementById('descricao').value = ''
+		}
+		setTimeout(()=>{
+			setCreated(false)
+		},1300)
+	}
+
 
     const fillDate = () => {
       const dataInput = document.querySelector('#data')
@@ -168,7 +191,7 @@ const AddExpenseModalConta = () => {
             Fechar
           </Button>
           <Button auto color="success" onPress={getForm}>
-            Enviar
+          {created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
           </Button>
           
         </Modal.Footer>
