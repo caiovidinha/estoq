@@ -26,7 +26,6 @@ const TopCards = () => {
 		const [saldo,setSaldo] = useState([])
 
 		const [updated,setUpdated] = useState(false)
-		const [created,setCreated] = useState(false)
 		const [deleted,setDeleted] = useState(false)
 
 		const [updatedError,setUpdatedError] = useState(false)

@@ -1,12 +1,12 @@
 	import { React,useState,useMemo,useEffect,useRef } from 'react'
-	import { Modal, Button, Text, Input, Dropdown,Switch } from "@nextui-org/react";
+	import { Modal, Button, Text, Input, Dropdown, Switch, Loading } from "@nextui-org/react";
 	import { GiReceiveMoney } from 'react-icons/gi'
 	import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
 
 	const AddIncomeModalConta = () => {
 
-	//API logic (start)
-	//API logic (end)
+	const [created,setCreated] = useState(false)
+	const [loading,setLoading] = useState(false)
 
 	const [visible, setVisible] = useState(false)
 	const handler = () => setVisible(true)
@@ -21,38 +21,54 @@
 		
 
 		valor = valor + ''
-		valor = parseInt(valor.replace(/[\D]+/g, ''))
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
 		valor = valor + ''
-		valor = valor.replace(/([0-9]{2})$/g, ",$1")
+		valor = valor.replace(/([0-9]{2})$/g, ".$1")
 
-		if (valor.length > 6) {
-			valor = valor.replace(/([0-9]{3}),([0-9]{2}$)/g, ".$1,$2")
-		}
+
 
 		elemento.value = valor;
 		if(valor == 'NaN') elemento.value = ''
 		
 	}
 
-	const getForm =() => {
-		let categoria = selectedValue
-		let valor = document.getElementById('valor')
-		let data = document.getElementById('data')
-		let descricao = document.getElementById('descricao')
-		let status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
+	const getForm = async () => {
 
-		const form = new FormData()
-		form.append("tipo","Receita")
-		form.append("categoria",categoria)
-		form.append("valor",valor.value)
-		form.append("data",data.value)
-		form.append("descricao",descricao.value)
-		form.append("status",status)
-		form.append("conta","Conta Nubank")
+		const categoria = selectedValue
+		const valor = parseFloat(document.getElementById('valor').value)
+		const data = document.getElementById('data').value
+		const descricao = document.getElementById('descricao').value
+		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
 
-		for(let i of form.entries()){
-		console.log(i)
+
+		const postData = {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				tipo: "Receita",
+				categoria: categoria,
+				valor: valor,
+				data: data,
+				descricao: descricao,
+				status: status,
+				conta: "Conta Nubank"
+						})
 		}
+		setLoading(true)
+		const res = await fetch('http://localhost:3000/api/mov',postData)
+		if(res.status == 200){
+			setLoading(false)
+			setCreated(true)
+			setSelected(['Categoria'])
+			document.getElementById('valor').value = ''
+			document.getElementById('data').value = ''
+			document.getElementById('descricao').value = ''
+		}
+		setTimeout(()=>{
+			setCreated(false)
+		},2000)
 	}
 
 	const fillDate = () => {
@@ -166,7 +182,7 @@
 			Fechar
 			</Button>
 			<Button auto color="success" onPress={getForm}>
-			Enviar
+			{created ? 'Enviado!' : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
 			</Button>
 			
 		</Modal.Footer>

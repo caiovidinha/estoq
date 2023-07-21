@@ -13,6 +13,6 @@ export default async function connect({ query,values = [] }) {
         return data
  
     } catch (error) {
-        throw new Error(error.message)
+        throw Error(error.message)
     }
 }
