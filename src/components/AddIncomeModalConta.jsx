@@ -62,13 +62,13 @@
 		if(res.status == 200){
 			setLoading(false)
 			setCreated(true)
+		}
+		setTimeout(()=>{
+			setCreated(false)
 			setSelected(['Categoria'])
 			document.getElementById('valor').value = ''
 			document.getElementById('data').value = ''
 			document.getElementById('descricao').value = ''
-		}
-		setTimeout(()=>{
-			setCreated(false)
 		},1300)
 	}
 
@@ -132,6 +132,7 @@
 		</Dropdown.Menu>
 	</Dropdown>
 			<Input
+			disabled = {loading || created ? true : false}
 			bordered
 			maxLength={9}
 			onKeyUp={formatarMoeda}
@@ -145,6 +146,7 @@
 			className="mb-2"
 			/>
 			<Input
+			disabled = {loading || created ? true : false}
 			bordered
 			fullWidth
 			color="primary"
@@ -155,6 +157,7 @@
 			onFocus={fillDate}
 			/>
 			<Input
+			disabled = {loading || created ? true : false}
 			bordered
 			fullWidth
 			color="primary"
