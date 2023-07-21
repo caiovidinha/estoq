@@ -66,9 +66,11 @@
 		setTimeout(()=>{
 			setCreated(false)
 			setSelected(['Categoria'])
+			if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
 			document.getElementById('valor').value = ''
 			document.getElementById('data').value = ''
 			document.getElementById('descricao').value = ''
+			}
 		},1300)
 	}
 

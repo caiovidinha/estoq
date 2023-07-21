@@ -67,9 +67,11 @@ const AddExpenseModalConta = () => {
 		setTimeout(()=>{
 			setCreated(false)
       setSelected(['Categoria'])
-			document.getElementById('valor').value = ''
-			document.getElementById('data').value = ''
-			document.getElementById('descricao').value = ''
+			if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
+        document.getElementById('valor').value = ''
+        document.getElementById('data').value = ''
+        document.getElementById('descricao').value = ''
+        }
 		},1300)
 	}
 
@@ -165,7 +167,7 @@ const AddExpenseModalConta = () => {
             onFocus={fillDate}
           />
             <Input
-      			disabled = {loading || created ? true : false}
+      			disabled = {loading || created ? true : false}  
             bordered
             fullWidth
             color="primary"
