@@ -14,14 +14,6 @@ import SeeCreditCards from './SeeCreditCards'
 
 const TopCards = () => {
         let cartoes = 0
-        const tipoRef = useRef()
-		const categoriaRef = useRef()
-		const valorRef = useRef()
-		const dataRef = useRef()
-		const descricaoRef = useRef()
-		const statusRef = useRef()
-		const categoraRef = useRef()
-		const contaRef = useRef()
 
 		const [saldo,setSaldo] = useState([])
 
@@ -30,8 +22,6 @@ const TopCards = () => {
 
 		const [updatedError,setUpdatedError] = useState(false)
 		const [deletedError,setDeletedError] = useState(false)
-
-		async function addMov() {}
 
 		async function getSaldo() {
 			const postData = {
