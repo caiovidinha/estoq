@@ -28,7 +28,7 @@ const RecentOrders = () => {
     <div className="w-full col-span-1 relative lg:h-[70vh] h-[50vh] m-auto p-4 border rounded-lg bg-white overflow-scroll">
       <h1>Últimas movimentações</h1>
       <ul>
-        {movimentacao.map((mov,id) => (
+        {movimentacao.slice(0).reverse().map((mov,id) => (
           <li key={id} className='bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 flex items-center cursor-pointer'>
             <div className='bg-purple-100 rounded-lg p-3' >
             <BsBoxSeam className='text-purple-800'/>

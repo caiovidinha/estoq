@@ -1,11 +1,12 @@
 	import { React,useState,useMemo} from 'react'
 	import { Modal, Button, Text, Input, Dropdown, Switch, Loading } from "@nextui-org/react";
 	import { GiReceiveMoney } from 'react-icons/gi'
-	import { AiFillCheckCircle } from 'react-icons/ai'
+	import { AiFillCheckCircle,AiFillExclamationCircle,AiFillCloseCircle } from 'react-icons/ai'
 	import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
 
 	const AddIncomeModalConta = () => {
-
+	
+	const [invalid,setInvalid] = useState(false)
 	const [created,setCreated] = useState(false)
 	const [loading,setLoading] = useState(false)
 
@@ -35,12 +36,19 @@
 
 	const getForm = async () => {
 
-		const categoria = selectedValue
-		const valor = parseFloat(document.getElementById('valor').value)
-		const data = document.getElementById('data').value
-		const descricao = document.getElementById('descricao').value
+		const categoria = selectedValue // == 'Categoria'
+		const valor = parseFloat(document.getElementById('valor').value) // isNaN(valor)
+		const data = document.getElementById('data').value // ''
+		const descricao = document.getElementById('descricao').value // ''
 		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
 
+		if(categoria === 'Categoria' || isNaN(valor) || data === '' || descricao === ''){
+			setInvalid(true)
+			setTimeout(()=>{
+				setInvalid(false)
+			},1300)
+			return
+		}
 
 		const postData = {
 			method: "POST",
@@ -66,11 +74,9 @@
 		setTimeout(()=>{
 			setCreated(false)
 			setSelected(['Categoria'])
-			if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
 			document.getElementById('valor').value = ''
-			document.getElementById('data').value = ''
+			document.getElementById('data').value = '' 
 			document.getElementById('descricao').value = ''
-			}
 		},1300)
 	}
 
@@ -134,7 +140,7 @@
 		</Dropdown.Menu>
 	</Dropdown>
 			<Input
-			disabled = {loading || created ? true : false}
+			disabled = {loading || created || invalid ? true : false}
 			bordered
 			maxLength={9}
 			onKeyUp={formatarMoeda}
@@ -148,7 +154,7 @@
 			className="mb-2"
 			/>
 			<Input
-			disabled = {loading || created ? true : false}
+			disabled = {loading || created || invalid ? true : false}
 			bordered
 			fullWidth
 			color="primary"
@@ -159,7 +165,7 @@
 			onFocus={fillDate}
 			/>
 			<Input
-			disabled = {loading || created ? true : false}
+			disabled = {loading || created || invalid ? true : false}
 			bordered
 			fullWidth
 			color="primary"
@@ -187,10 +193,10 @@
 			<Button auto flat color="error" onPress={closeHandler}>
 			Fechar
 			</Button>
-			<Button auto color="success" onPress={getForm}>
-			{created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
+			<Button auto color={invalid ? "warning" : "success"} onPress={getForm}>
+			{created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : invalid ?  <AiFillExclamationCircle size={20} />:'Enviar'}
 			</Button>
-			
+			<p className={invalid ? 'flex text-red-800 items-center' : 'hidden'}><AiFillCloseCircle className='mr-1'/>Preencha todos os campos corretamente</p>
 		</Modal.Footer>
 		</Modal>
 	</div>
