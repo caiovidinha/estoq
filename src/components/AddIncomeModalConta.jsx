@@ -132,7 +132,7 @@
 		onSelectionChange={setSelected}
 		id="categoria"
 		>
-		<Dropdown.Item key="Salário - V4">Salário - V4</Dropdown.Item>
+		<Dropdown.Item key="Salário">Salário</Dropdown.Item>
 		<Dropdown.Item key="Freelance">Freelance</Dropdown.Item>
 		<Dropdown.Item key="Investimento">Investimento</Dropdown.Item>
 		<Dropdown.Item key="Limite Cartão">Limite Cartão</Dropdown.Item>
