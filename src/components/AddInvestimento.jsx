@@ -77,7 +77,7 @@ const AddInvestimento = () => {
 
       <Button  className='text-green-800 bg-green-200 mt-2 -ml-3 -mb-5' size="xs" shadow color='' onPress={handler}>
       Guardado: 
-      {saldo.map((conta,index) => {
+      {saldo.map((conta) => {
         return (
           conta.id === 6 ? " R$ " + conta.valor.toFixed(2) : ''
         )
@@ -97,7 +97,13 @@ const AddInvestimento = () => {
             </Text>
             <br /> Valor guardado:&nbsp;
             <Text b size={18} color='success'>
-              R$ <span id='fatura'>400,00</span>
+              R$ <span id='fatura'>
+              {saldo.map((conta) => {
+                return (
+                  conta.id === 6 ? conta.valor.toFixed(2) : ''
+                )
+              })}
+              </span>
             </Text> 
           </Text>
         </Modal.Header>

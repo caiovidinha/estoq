@@ -58,7 +58,7 @@ const RecentOrders = () => {
           }
             </div>
             <div className='pl-4'>
-              <p className='text-gray-800 font-extrabold'>R$ {parseFloat(mov.valor).toFixed(2)}</p>
+              <p className='text-gray-800 font-extrabold'>R$ {parseFloat(mov.valor).toFixed(2).replace(".", ",")}</p>
               <p className='text-gray-400 text-sm'>{mov.descricao}</p>
             </div>
             <p className='lg:flex md:hidden absolute right-6 text-sm'>

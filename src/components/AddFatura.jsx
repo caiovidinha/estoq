@@ -86,7 +86,7 @@ const AddFatura = () => {
 
       <Button  className='text-red-800 bg-red-200 mt-2 -ml-3 -mb-5' size="xs" shadow color='' onPress={handler}>
       Fatura: 
-      {fatura.map((cartao,index) => {
+      {fatura.map((cartao) => {
         valores += cartao.valor
         return (
           cartao.id === 3 ?  " R$ " + parseFloat(valores).toFixed(2) : ''
@@ -107,7 +107,13 @@ const AddFatura = () => {
             </Text>
             <br /> Fatura atual:&nbsp;
             <Text b size={18} color='error'>
-              R$ <span id='fatura'>400,00</span>
+              R$ <span id='fatura'>
+              {fatura.map((cartao,index) => {
+                return (
+                  cartao.id === 3 ? parseFloat(valores).toFixed(2) : ''
+                )
+              })}
+              </span>
             </Text> 
           </Text>
         </Modal.Header>
