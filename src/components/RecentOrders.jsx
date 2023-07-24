@@ -21,7 +21,6 @@ const RecentOrders = () => {
   
   useEffect(() => {
     getMovimentacao()
-          
   })
   
   return (
