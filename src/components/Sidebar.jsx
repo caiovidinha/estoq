@@ -1,7 +1,7 @@
 import React from "react"
 import Link from "next/link"
 import { RxHamburgerMenu, RxDashboard, RxPerson } from 'react-icons/rx'
-import { BsBoxSeam } from 'react-icons/bs'
+import { BiTransferAlt } from 'react-icons/bi'
 import { FiSettings } from 'react-icons/fi'
 
 
@@ -28,7 +28,7 @@ const Sidebar = ({children}) => {
                     </Link>
                     <Link href='/orders'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
-                            <BsBoxSeam size={25} />
+                            <BiTransferAlt size={25} />
                         </div>
                     </Link>
                     <Link href='/config'>
