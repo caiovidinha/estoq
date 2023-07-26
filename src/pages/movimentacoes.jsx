@@ -72,15 +72,24 @@ const orders = () => {
 								</div>
 							</div>
 							<p className='text-gray-600 sm:text-left text-right'>
-								<span className={
+								<select key={index} className={
 									mov.status == 'Recebido' 
-									? 'bg-green-200 p-2 rounded-lg' 
+									? 'bg-green-200 p-2 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer' 
 									: mov.status == 'Pago' 
-									? 'bg-red-200 p-2 rounded-lg' 
-									: 'bg-yellow-200 p-2 rounded-lg'
+									? 'bg-red-200 p-2 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer' 
+									: 'bg-yellow-200 p-2 rounded-lg hover:bg-yellow-400 text-yellow-800 font-semibold hover:cursor-pointer'
 										}>
-										{mov.status}
-								</span>
+										<option value={mov.status}>{mov.status}</option>
+										<option value={mov.status == 'Recebido' 
+										? 'A receber' : mov.status == 'A receber' ? 'Recebido' 
+										: mov.status == 'Pago' ? 'A pagar' 
+										: 'Pago'}>
+										{mov.status == 'Recebido' 
+										? 'A receber' : mov.status == 'A receber' ? 'Recebido' 
+										: mov.status == 'Pago' ? 'A pagar' 
+										: 'Pago'}
+										</option>
+								</select>
 							</p>
 							<p className='hidden md:flex'>
 							{mov.data ? mov.data.toString().slice(5,7)+'/'+mov.data.toString().slice(8,10)+'/'+mov.data.toString().slice(0,4): ''}
