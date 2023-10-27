@@ -2,9 +2,28 @@ import { React,useState,useMemo,useEffect } from 'react'
 import { Modal, Button, Text, Input, Dropdown } from "@nextui-org/react";
 
 const AddFatura = () => {
+    let SHEET_ID = "1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE";
+    let SHEET_TITLE = "API";
+    let SHEET_RANGE = "A1:H2";
+    
+    
+    let FULL_URL = ("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=" + SHEET_TITLE + "&range=" + SHEET_RANGE);
+
+    fetch(FULL_URL)
+        .then(res => res.text())
+        .then(rep => {
+            let data = JSON.parse(rep.substr(47).slice(0,-2))
+            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
+            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
+            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
+        });
 
     let valores = 0
     const [fatura,setFatura] = useState([])
+    const [faturaNuCaio,setFaturaNuCaio] = useState([])
+    const [faturaNuJulia,setFaturaNuJulia] = useState([])
+    const [faturaNeonJulia,setFaturaNeonJulia] = useState([])
+
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -86,12 +105,7 @@ const AddFatura = () => {
 
       <Button  className='text-red-800 bg-red-200 mt-2 -ml-3 -mb-5' size="xs" shadow color='' onPress={handler}>
       Fatura: 
-      {fatura.map((cartao) => {
-        valores += cartao.valor
-        return (
-          cartao.id === 3 ?  " R$ " + parseFloat(valores).toFixed(2) : ''
-        )
-      })}
+      {' R$ '}{parseFloat(faturaNeonJulia) + parseFloat(faturaNuJulia) + parseFloat(faturaNuCaio)}
       </Button>
       <Modal
         closeButton
@@ -107,12 +121,7 @@ const AddFatura = () => {
             </Text>
             <br /> Fatura atual:&nbsp;
             <Text b size={18} color='error'>
-              R$ <span id='fatura'>
-              {fatura.map((cartao,index) => {
-                return (
-                  cartao.id === 3 ? parseFloat(valores).toFixed(2) : ''
-                )
-              })}
+              R$ <span id='fatura'>{parseFloat(faturaNeonJulia) + parseFloat(faturaNuJulia) + parseFloat(faturaNuCaio)}
               </span>
             </Text> 
           </Text>

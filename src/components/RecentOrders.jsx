@@ -9,30 +9,28 @@ import { RiFundsBoxLine,RiBillLine } from 'react-icons/ri'
 
 const RecentOrders = () => {
   const [movimentacao,setMovimentacao] = useState([])
+  const [mov,setMov] = useState([])
 
-  async function getMovimentacao() {
-    const postData = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-    const res = await fetch('http://localhost:3000/api/mov', 
-    postData
-    )
-    const response = await res.json()
-    setMovimentacao(response.movimentacoes)
-  }
-  
-  useEffect(() => {
-    getMovimentacao()
-  })
+  let SHEET_ID = "1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE";
+  let SHEET_TITLE_MOV = "Extrato";
+  let SHEET_RANGE_MOV = "A:H";
+  let FULL_URL_MOV = ("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=" + SHEET_TITLE_MOV + "&range=" + SHEET_RANGE_MOV);
+
+  fetch(FULL_URL_MOV)
+  .then(res => res.text())
+  .then(rep => {
+      let data = JSON.parse(rep.substr(47).slice(0,-2))
+      setMov(data.table)
+  });
+
   
   return (
     <div className="w-full col-span-1 relative lg:h-[70vh] h-[50vh] m-auto p-4 border rounded-lg bg-white overflow-scroll">
       <h1>Últimas movimentações</h1>
-      <ul>
-        {movimentacao.slice(0).reverse().map((mov,id) => (
+      {/* <ul>
+        {}
+
+        {mov.slice(0).reverse().map((mov,id) => (
 
           <li key={id} className='bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 flex items-center cursor-pointer'>
             <div className={mov.tipo==='Receita' ? 'bg-green-200 rounded-lg p-3' :'bg-red-200 rounded-lg p-3'} >
@@ -66,7 +64,7 @@ const RecentOrders = () => {
             </p>
           </li>
         ))}
-      </ul>
+      </ul> */}
 
     </div>
   )

@@ -9,7 +9,6 @@ const AddIncomeModalBus = () => {
   
     const closeHandler = () => {
       setVisible(false)
-      console.log("closed")
     }
 	const formatarMoeda = () => {
 		var elemento = document.getElementById('valor')

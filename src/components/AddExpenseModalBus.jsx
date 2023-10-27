@@ -9,7 +9,6 @@ const AddExpenseModalBus = () => {
   
     const closeHandler = () => {
       setVisible(false)
-      console.log("closed")
     }
 	const formatarMoeda = () => {
 		var elemento = document.getElementById('valor')
@@ -39,9 +38,6 @@ const AddExpenseModalBus = () => {
       form.append("data",data.value)
       form.append("status","Pago")
       form.append("conta","Bilhete Único")
-      for(let i of form.entries()){
-        console.log(i)
-      }
     }
 
     const fillDate = () => {

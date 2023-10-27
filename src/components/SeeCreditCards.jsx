@@ -8,25 +8,29 @@ const SeeCreditCards = () => {
 
     //API
 
-    const [limite,setLimite] = useState([])
-
-    async function getLimite() {
-			const postData = {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}
-			const res = await fetch('http://localhost:3000/api/fatura', 
-			postData
-			)
-			const response = await res.json()
-            setLimite(response.fatura)
-		}
-
-    useEffect(() => {
-      getLimite()
-    })
+    let SHEET_ID = "1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE";
+    let SHEET_TITLE = "API";
+    let SHEET_RANGE = "A1:H2";
+    const [faturaNuCaio,setFaturaNuCaio] = useState([])
+    const [faturaNuJulia,setFaturaNuJulia] = useState([])
+    const [faturaNeonJulia,setFaturaNeonJulia] = useState([])
+    const [limiteNuCaio,setLimiteNuCaio] = useState([])
+    const [limiteNuJulia,setLimiteNuJulia] = useState([])
+    const [limiteNeonJulia,setLimiteNeonJulia] = useState([])
+    
+    
+    let FULL_URL = ("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=" + SHEET_TITLE + "&range=" + SHEET_RANGE);
+    fetch(FULL_URL)
+        .then(res => res.text())
+        .then(rep => {
+            let data = JSON.parse(rep.substr(47).slice(0,-2))
+            setLimiteNuCaio(data.table.rows[0].c[1].v.toFixed(2))
+            setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
+            setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
+            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
+            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
+            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
+        });
     
 
     //API
@@ -36,7 +40,6 @@ const SeeCreditCards = () => {
   
     const closeHandler = () => {
       setVisible(false)
-      console.log("closed")
     }
 
   return (
@@ -63,18 +66,32 @@ const SeeCreditCards = () => {
           
 		<Card>
       <Card.Body>
-
-        {limite.map((cartao,index)=>{
-          return(
           	<div>
               <div className='flex items-center justify-between'>
-            <div className='rounded-full p-3 bg-blue-200'><BsCreditCardFill className='text-blue-900'/></div>
-            <Text>{cartao.cartao}</Text>
-            <div className='w-28'><Progress value={((cartao.valor*100/cartao.limite)).toFixed(1)}/></div>
+            <div className='rounded-full p-3 bg-purple-200'><BsCreditCardFill className='text-purple-900'/></div>
+            <Text>Nubank Caio</Text>
+            <div className='w-28'><Progress color='secondary' value={((faturaNuCaio*100/400)).toFixed(1)}/></div>
           </div>
-          <p className='text-right mr-4 text-xs text-gray-400'>R$ {cartao.valor.toFixed(2)} / R$ {cartao.limite.toFixed(2)}</p>
-          </div>)
-        })}
+          <p className='text-right mr-1 text-xs text-gray-400'>R$ {faturaNuCaio} / R$ 400.00</p>
+          </div>
+
+          <div>
+              <div className='flex items-center justify-between'>
+            <div className='rounded-full p-3 bg-purple-200'><BsCreditCardFill className='text-purple-900'/></div>
+            <Text>Nubank Julia</Text>
+            <div className='w-28'><Progress color='secondary' value={((faturaNuJulia*100/2243.11)).toFixed(1)}/></div>
+          </div>
+          <p className='text-right mr-1 text-xs text-gray-400'>R$ {faturaNuJulia} / R$ 2243.11</p>
+          </div>
+
+          <div>
+              <div className='flex items-center justify-between'>
+            <div className='rounded-full p-3 bg-blue-200'><BsCreditCardFill className='text-blue-900'/></div>
+            <Text>Neon Julia</Text>
+            <div className='w-28'><Progress value={((faturaNeonJulia*100/590)).toFixed(1)}/></div>
+          </div>
+          <p className='text-right mr-1 text-xs text-gray-400'>R$ {faturaNeonJulia} / R$ 590.00</p>
+          </div>
 
       </Card.Body>
     </Card>
