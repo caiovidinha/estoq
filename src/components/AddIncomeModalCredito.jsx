@@ -1,9 +1,14 @@
 import { React,useState,useMemo } from 'react'
-import { Modal, Button, Text, Input, Dropdown,Switch } from "@nextui-org/react";
+import { Modal, Button, Text, Input, Dropdown,Switch,Loading } from "@nextui-org/react";
 import { GiReceiveMoney } from 'react-icons/gi'
 import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
+import { AiFillCheckCircle } from 'react-icons/ai'
 
 const AddIncomeModalCrédito = () => {
+
+	const [invalid,setInvalid] = useState(false)
+	const [created,setCreated] = useState(false)
+	const [loading,setLoading] = useState(false)
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -29,28 +34,61 @@ const AddIncomeModalCrédito = () => {
 		
 	}
 
-    const getForm =() => {
-      let categoria = selectedValue
-      let cartao = selectedValueCard
-      let valor = document.getElementById('valor')
-      let data = document.getElementById('data')
-      let descricao = document.getElementById('descricao')
-      let status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
+	const getForm = async () => {
 
-      const form = new FormData()
-      form.append("tipo","Receita")
-      form.append("categoria",categoria)
-      form.append("valor",valor.value)
-      form.append("data",data.value)
-      form.append("descricao",descricao.value)
-      form.append("status",status)
-      form.append("conta","Cartão de Crédito")
-      form.append("cartao",cartao)
+		const categoria = selectedValue
+		const mes = selectedValueMes
+		const cartao = selectedValueCard
 
-      for(let i of form.entries()){
-        console.log(i)
-      }
-    }
+		let valor = document.getElementById('valor').value
+		valor = valor + ''
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
+		valor = valor + ''
+		valor = valor.replace(/([0-9]{2})$/g, ",$1")
+
+		const data = document.getElementById('data').value
+		const descricao = document.getElementById('descricao').value
+		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
+
+
+		const post = {
+				tipo: "RECEITA",
+				categoria: categoria,
+				valor: valor,
+				data: data,
+				mes: mes,
+				descricao: descricao,
+				status: status,
+				conta: cartao
+		}
+
+ 
+		setLoading(true)
+		const res = await fetch('https://hooks.zapier.com/hooks/catch/11052334/380w6ti/', {
+		method: 'POST',
+		mode: 'no-cors',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(post)
+  })
+
+		setTimeout(()=>{
+			setLoading(false)
+			setCreated(true)
+		},700)
+
+		setTimeout(()=>{
+		setCreated(false)
+		setSelected(['Categoria'])
+		setSelectedMes(['Mês'])
+		if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
+        document.getElementById('valor').value = ''
+        document.getElementById('data').value = ''
+        document.getElementById('descricao').value = ''
+        }
+		},1300)
+	}
 
     const fillDate = () => {
       const dataInput = document.querySelector('#data')
@@ -75,6 +113,14 @@ const AddIncomeModalCrédito = () => {
       () => Array.from(selectedCard).join(", ").replaceAll("_", " "),
       [selectedCard]
     )
+
+	const [selectedMes, setSelectedMes] = useState(new Set(["Mês"]));
+
+	const selectedValueMes = useMemo(
+		() => Array.from(selectedMes).join(", ").replaceAll("_", " "),
+		[selectedMes]
+	  );
+  
 
 
     
@@ -142,6 +188,32 @@ const AddIncomeModalCrédito = () => {
             placeholder="Data"
             onFocus={fillDate}
           />
+			<Dropdown>
+				<Dropdown.Button bordered color="success" css={{ tt: "capitalize" }}>
+					{selectedValueMes}
+				</Dropdown.Button>
+				<Dropdown.Menu
+					aria-label="Single selection actions"
+					color="success"
+					selectionMode="single"
+					selectedKeys={selectedMes}
+					onSelectionChange={setSelectedMes}
+					id="mes"
+				>
+					<Dropdown.Item key="01 - JANEIRO">01 - JANEIRO</Dropdown.Item>
+					<Dropdown.Item key="02 - FEVEREIRO">02 - FEVEREIRO</Dropdown.Item>
+					<Dropdown.Item key="03 - MARÇO">03 - MARÇO</Dropdown.Item>
+					<Dropdown.Item key="04 - ABRIL">04 - ABRIL</Dropdown.Item>
+					<Dropdown.Item key="05 - MAIO">05 - MAIO</Dropdown.Item>
+					<Dropdown.Item key="06 - JUNHO">06 - JUNHO</Dropdown.Item>
+					<Dropdown.Item key="07 - JULHO">07 - JULHO</Dropdown.Item>
+					<Dropdown.Item key="08 - AGOSTO">08 - AGOSTO</Dropdown.Item>
+					<Dropdown.Item key="09 - SETEMBRO">09 - SETEMBRO</Dropdown.Item>
+					<Dropdown.Item key="10 - OUTUBRO">10 - OUTUBRO</Dropdown.Item>
+					<Dropdown.Item key="11 - NOVEMBRO">11 - NOVEMBRO</Dropdown.Item>
+					<Dropdown.Item key="12 - DEZEMBRO">12 - DEZEMBRO</Dropdown.Item>
+				</Dropdown.Menu>
+			</Dropdown>
             <Input
             bordered
             fullWidth
@@ -186,9 +258,9 @@ const AddIncomeModalCrédito = () => {
           <Button auto flat color="error" onPress={closeHandler}>
             Fechar
           </Button>
-          <Button auto color="success" onPress={getForm}>
-            Enviar
-          </Button>
+			<Button auto color={"success"} onPress={getForm}>
+			{created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : invalid ?  <AiFillExclamationCircle size={20} />:'Enviar'}
+			</Button>
           
         </Modal.Footer>
       </Modal>

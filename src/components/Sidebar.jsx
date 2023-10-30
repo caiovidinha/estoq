@@ -21,21 +21,21 @@ const Sidebar = ({children}) => {
                             <RxDashboard size={25} />
                         </div>
                     </Link>
-                    <Link href='/costumers'>
+                    {/* <Link href='/costumers'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <RxPerson size={25} />
                         </div>
-                    </Link>
+                    </Link> */}
                     <Link href='/movimentacoes'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <BiTransferAlt size={25} />
                         </div>
                     </Link>
-                    <Link href='/config'>
+                    {/* <Link href='/config'>
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <FiSettings size={25} />
                         </div>
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
             <main className="ml-20 w-full">{children}</main>
