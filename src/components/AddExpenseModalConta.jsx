@@ -7,12 +7,6 @@ import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 const AddExpenseModalConta = () => {
 
 
-  
-    let SHEET_ID = "1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE";
-    let SHEET_TITLE_MOV = "Extrato";
-    let myAPIkey = "AIzaSyC1ro5ya1psdSEfzdNsdafa9vM4mkmA0bE"
-    let SHEET_RANGE = "A:H";
-    const FULL_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A%3AH:append?includeValuesInResponse=true&insertDataOption=INSERT_ROWS&valueInputOption=RAW&key=${myAPIkey}`
     const [created,setCreated] = useState(false)
     const [loading,setLoading] = useState(false)
 
@@ -69,7 +63,6 @@ const AddExpenseModalConta = () => {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-        "Authorization": "Bearer 117008714325-n9hprhqoqegnd3fvr878jaegn1ogpv3g.apps.googleusercontent.com"
 			},
 			body: {
         "values": [
