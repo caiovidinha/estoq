@@ -79,9 +79,9 @@ const SeeCreditCards = () => {
               <div className='flex items-center justify-between'>
             <div className='rounded-full p-3 bg-purple-200'><BsCreditCardFill className='text-purple-900'/></div>
             <Text>Nubank Julia</Text>
-            <div className='w-28'><Progress color='secondary' value={((faturaNuJulia*100/2243.11)).toFixed(1)}/></div>
+            <div className='w-28'><Progress color='secondary' value={((faturaNuJulia*100/2628.11)).toFixed(1)}/></div>
           </div>
-          <p className='text-right mr-1 text-xs text-gray-400'>R$ {faturaNuJulia} / R$ 2243.11</p>
+          <p className='text-right mr-1 text-xs text-gray-400'>R$ {faturaNuJulia} / R$ 2.628,11</p>
           </div>
 
           <div>

@@ -6,7 +6,13 @@ import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 
 const AddExpenseModalConta = () => {
 
+
   
+    let SHEET_ID = "1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE";
+    let SHEET_TITLE_MOV = "Extrato";
+    let myAPIkey = "AIzaSyC1ro5ya1psdSEfzdNsdafa9vM4mkmA0bE"
+    let SHEET_RANGE = "A:H";
+    const FULL_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A%3AH:append?includeValuesInResponse=true&insertDataOption=INSERT_ROWS&valueInputOption=RAW&key=${myAPIkey}`
     const [created,setCreated] = useState(false)
     const [loading,setLoading] = useState(false)
 
@@ -37,29 +43,51 @@ const AddExpenseModalConta = () => {
   const getForm = async () => {
 
 		const categoria = selectedValue
+    const mes = selectedValueMes
 		const valor = parseFloat(document.getElementById('valor').value)
 		const data = document.getElementById('data').value
 		const descricao = document.getElementById('descricao').value
 		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Pago" : "A pagar"
 
 
-		const postData = {
+		// const postData = {
+		// 	method: "POST",
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify({
+		// 		tipo: "Despesa",
+		// 		categoria: categoria,
+		// 		valor: valor,
+		// 		data: data,
+		// 		descricao: descricao,
+		// 		status: status,
+		// 		conta: "Conta Nubank"
+		// 				})
+		// }
+    const postData = {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+        "Authorization": "Bearer 117008714325-n9hprhqoqegnd3fvr878jaegn1ogpv3g.apps.googleusercontent.com"
 			},
-			body: JSON.stringify({
-				tipo: "Despesa",
-				categoria: categoria,
-				valor: valor,
-				data: data,
-				descricao: descricao,
-				status: status,
-				conta: "Conta Nubank"
-						})
+			body: {
+        "values": [
+          [
+            "Despesa",
+            categoria,
+            valor,
+            data,
+            mes,
+            descricao,
+            status,
+            "Conta Nubank"
+          ]
+        ]
+      }
 		}
 		setLoading(true)
-		const res = await fetch('http://localhost:3000/api/mov',postData)
+		const res = await fetch(FULL_URL,postData)
 		if(res.status == 200){
 			setLoading(false)
 			setCreated(true)
@@ -67,6 +95,7 @@ const AddExpenseModalConta = () => {
 		setTimeout(()=>{
 			setCreated(false)
       setSelected(['Categoria'])
+      setSelectedMes(['Mês'])
 			if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
         document.getElementById('valor').value = ''
         document.getElementById('data').value = ''
@@ -88,9 +117,15 @@ const AddExpenseModalConta = () => {
 
     const [selected, setSelected] = useState(new Set(["Categoria"]));
 
+    const [selectedMes, setSelectedMes] = useState(new Set(["Mês"]));
+
     const selectedValue = useMemo(
       () => Array.from(selected).join(", ").replaceAll("_", " "),
       [selected]
+    );
+    const selectedValueMes = useMemo(
+      () => Array.from(selectedMes).join(", ").replaceAll("_", " "),
+      [selectedMes]
     );
   return (
     <div>
@@ -166,6 +201,32 @@ const AddExpenseModalConta = () => {
             placeholder="Data"
             onFocus={fillDate}
           />
+          <Dropdown>
+      <Dropdown.Button bordered color="error" css={{ tt: "capitalize" }}>
+        {selectedValueMes}
+      </Dropdown.Button>
+      <Dropdown.Menu
+        aria-label="Single selection actions"
+        color="error"
+        selectionMode="single"
+        selectedKeys={selectedMes}
+        onSelectionChange={setSelectedMes}
+        id="mes"
+      >
+		<Dropdown.Item key="01 - JANEIRO">01 - JANEIRO</Dropdown.Item>
+		<Dropdown.Item key="02 - FEVEREIRO">02 - FEVEREIRO</Dropdown.Item>
+		<Dropdown.Item key="03 - MARÇO">03 - MARÇO</Dropdown.Item>
+		<Dropdown.Item key="04 - ABRIL">04 - ABRIL</Dropdown.Item>
+		<Dropdown.Item key="05 - MAIO">05 - MAIO</Dropdown.Item>
+		<Dropdown.Item key="06 - JUNHO">06 - JUNHO</Dropdown.Item>
+		<Dropdown.Item key="07 - JULHO">07 - JULHO</Dropdown.Item>
+		<Dropdown.Item key="08 - AGOSTO">08 - AGOSTO</Dropdown.Item>
+		<Dropdown.Item key="09 - SETEMBRO">09 - SETEMBRO</Dropdown.Item>
+		<Dropdown.Item key="10 - OUTUBRO">10 - OUTUBRO</Dropdown.Item>
+		<Dropdown.Item key="11 - NOVEMBRO">11 - NOVEMBRO</Dropdown.Item>
+		<Dropdown.Item key="12 - DEZEMBRO">12 - DEZEMBRO</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
             <Input
       			disabled = {loading || created ? true : false}  
             bordered
@@ -176,6 +237,7 @@ const AddExpenseModalConta = () => {
             id="descricao"
             placeholder="Descrição"
           />
+    
           <div className='w-full flex justify-center'>
           <div className='bg-gray-300 rounded-full w-48 h- flex items-center justify-left'>
           <Switch 
