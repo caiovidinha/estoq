@@ -43,7 +43,7 @@
 		valor = valor + ''
 		valor = parseFloat(valor.replace(/[\D]+/g, ''))
 		valor = valor + ''
-    	valor = valor.replace(/([0-9]{2})$/g, ",$1")
+		valor = valor.replace(/([0-9]{2})$/g, ",$1")
 
 		const data = document.getElementById('data').value
 		const descricao = document.getElementById('descricao').value
@@ -55,7 +55,7 @@
 				categoria: categoria,
 				valor: valor,
 				data: data,
-        		mes: mes,
+				mes: mes,
 				descricao: descricao,
 				status: status,
 				conta: "Conta Nubank"

@@ -12,21 +12,21 @@ const orders = () => {
 	const [movimentacao,setMovimentacao] = useState([])
 
 	async function getMovimentacao() {
-	  const postData = {
+		const postData = {
 		method: "GET",
 		headers: {
-		  "Content-Type": "application/json",
+		"Content-Type": "application/json",
 		},
-	  }
-	  const res = await fetch('http://localhost:3000/api/mov', 
-	  postData
-	  )
-	  const response = await res.json()
-	  setMovimentacao(response.movimentacoes)
+		}
+		const res = await fetch('http://localhost:3000/api/mov', 
+		postData
+		)
+		const response = await res.json()
+		setMovimentacao(response.movimentacoes)
 	}
 	
 	useEffect(() => {
-	  getMovimentacao()
+		getMovimentacao()
 	})
 
   return (

@@ -66,7 +66,7 @@ const SeeCreditCards = () => {
           
 		<Card>
       <Card.Body>
-          	<div>
+			<div>
               <div className='flex items-center justify-between'>
             <div className='rounded-full p-3 bg-purple-200'><BsCreditCardFill className='text-purple-900'/></div>
             <Text>Nubank Caio</Text>
