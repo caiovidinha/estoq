@@ -38,53 +38,45 @@ const AddExpenseModalConta = () => {
 
 		const categoria = selectedValue
     const mes = selectedValueMes
-		const valor = parseFloat(document.getElementById('valor').value)
+
+		let valor = document.getElementById('valor').value
+		valor = valor + ''
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
+		valor = valor + ''
+    valor = valor.replace(/([0-9]{2})$/g, ",$1")
+
 		const data = document.getElementById('data').value
 		const descricao = document.getElementById('descricao').value
 		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Pago" : "A pagar"
 
 
-		// const postData = {
-		// 	method: "POST",
-		// 	headers: {
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify({
-		// 		tipo: "Despesa",
-		// 		categoria: categoria,
-		// 		valor: valor,
-		// 		data: data,
-		// 		descricao: descricao,
-		// 		status: status,
-		// 		conta: "Conta Nubank"
-		// 				})
-		// }
-    const postData = {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: {
-        "values": [
-          [
-            "Despesa",
-            categoria,
-            valor,
-            data,
-            mes,
-            descricao,
-            status,
-            "Conta Nubank"
-          ]
-        ]
-      }
+		const post = {
+				tipo: "DESPESA",
+				categoria: categoria,
+				valor: `-${valor}`,
+				data: data,
+        mes: mes,
+				descricao: descricao,
+				status: status,
+				conta: "Conta Nubank"
 		}
+
+ 
 		setLoading(true)
-		const res = await fetch(FULL_URL,postData)
-		if(res.status == 200){
-			setLoading(false)
-			setCreated(true)
-		}
+		const res = await fetch('https://hooks.zapier.com/hooks/catch/11052334/380w6ti/', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(post)
+  })
+
+  setTimeout(()=>{
+    setLoading(false)
+    setCreated(true)
+  },700)
+
 		setTimeout(()=>{
 			setCreated(false)
       setSelected(['Categoria'])
