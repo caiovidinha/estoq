@@ -119,7 +119,7 @@ const AddExpenseModalCrédito = () => {
 	const selectedValueMes = useMemo(
 		() => Array.from(selectedMes).join(", ").replaceAll("_", " "),
 		[selectedMes]
-	  );
+    );
   
   
 
@@ -195,7 +195,7 @@ const AddExpenseModalCrédito = () => {
             placeholder="Data"
             onFocus={fillDate}
           />
-        			<Dropdown>
+      <Dropdown>
 				<Dropdown.Button bordered color="error" css={{ tt: "capitalize" }}>
 					{selectedValueMes}
 				</Dropdown.Button>
@@ -266,7 +266,7 @@ const AddExpenseModalCrédito = () => {
             Fechar
           </Button>
         <Button auto color={"success"} onPress={getForm}>
-          {created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : invalid ?  <AiFillExclamationCircle size={20} />:'Enviar'}
+          {created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : invalid ?  <AiFillCheckCircle size={20} />:'Enviar'}
         </Button>
           
         </Modal.Footer>
