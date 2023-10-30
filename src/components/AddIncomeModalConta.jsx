@@ -36,50 +36,58 @@
 
 	const getForm = async () => {
 
-		const categoria = selectedValue // == 'Categoria'
-		const valor = parseFloat(document.getElementById('valor').value) // isNaN(valor)
-		const data = document.getElementById('data').value // ''
-		const descricao = document.getElementById('descricao').value // ''
+		const categoria = selectedValue
+    const mes = selectedValueMes
+
+		let valor = document.getElementById('valor').value
+		valor = valor + ''
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
+		valor = valor + ''
+    	valor = valor.replace(/([0-9]{2})$/g, ",$1")
+
+		const data = document.getElementById('data').value
+		const descricao = document.getElementById('descricao').value
 		const status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
 
-		if(categoria === 'Categoria' || isNaN(valor) || data === '' || descricao === ''){
-			setInvalid(true)
-			setTimeout(()=>{
-				setInvalid(false)
-			},1300)
-			return
-		}
 
-		const postData = {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				tipo: "Receita",
+		const post = {
+				tipo: "RECEITA",
 				categoria: categoria,
 				valor: valor,
 				data: data,
+        		mes: mes,
 				descricao: descricao,
 				status: status,
 				conta: "Conta Nubank"
-						})
 		}
+
+ 
 		setLoading(true)
-		const res = await fetch('http://localhost:3000/api/mov',postData)
-		if(res.status == 200){
-			setLoading(false)
-			setCreated(true)
-		}
+		const res = await fetch('https://hooks.zapier.com/hooks/catch/11052334/380w6ti/', {
+		method: 'POST',
+		mode: 'no-cors',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(post)
+  })
+
+  setTimeout(()=>{
+    setLoading(false)
+    setCreated(true)
+  },700)
+
 		setTimeout(()=>{
 			setCreated(false)
-			setSelected(['Categoria'])
-			document.getElementById('valor').value = ''
-			document.getElementById('data').value = '' 
-			document.getElementById('descricao').value = ''
+      setSelected(['Categoria'])
+      setSelectedMes(['Mês'])
+			if(document.getElementById('valor').value !== null && document.getElementById('data').value !== null && document.getElementById('descricao').value !== null){
+        document.getElementById('valor').value = ''
+        document.getElementById('data').value = ''
+        document.getElementById('descricao').value = ''
+        }
 		},1300)
 	}
-
 	const fillDate = () => {
 		const dataInput = document.querySelector('#data')
 		var data = new Date()
@@ -90,13 +98,18 @@
 		if(!dataInput.value) dataInput.value = dataAtual
 	}
 
-	const [selected, setSelected] = useState(new Set(["Categoria"]));
+    const [selected, setSelected] = useState(new Set(["Categoria"]));
 
-	const selectedValue = useMemo(
-		() => Array.from(selected).join(", ").replaceAll("_", " "),
-		[selected]
-	)
+    const [selectedMes, setSelectedMes] = useState(new Set(["Mês"]));
 
+    const selectedValue = useMemo(
+      () => Array.from(selected).join(", ").replaceAll("_", " "),
+      [selected]
+    );
+    const selectedValueMes = useMemo(
+      () => Array.from(selectedMes).join(", ").replaceAll("_", " "),
+      [selectedMes]
+    );
 
 
 	return (
@@ -164,6 +177,32 @@
 			placeholder="Data"
 			onFocus={fillDate}
 			/>
+			<Dropdown>
+				<Dropdown.Button bordered color="success" css={{ tt: "capitalize" }}>
+					{selectedValueMes}
+				</Dropdown.Button>
+				<Dropdown.Menu
+					aria-label="Single selection actions"
+					color="success"
+					selectionMode="single"
+					selectedKeys={selectedMes}
+					onSelectionChange={setSelectedMes}
+					id="mes"
+				>
+					<Dropdown.Item key="01 - JANEIRO">01 - JANEIRO</Dropdown.Item>
+					<Dropdown.Item key="02 - FEVEREIRO">02 - FEVEREIRO</Dropdown.Item>
+					<Dropdown.Item key="03 - MARÇO">03 - MARÇO</Dropdown.Item>
+					<Dropdown.Item key="04 - ABRIL">04 - ABRIL</Dropdown.Item>
+					<Dropdown.Item key="05 - MAIO">05 - MAIO</Dropdown.Item>
+					<Dropdown.Item key="06 - JUNHO">06 - JUNHO</Dropdown.Item>
+					<Dropdown.Item key="07 - JULHO">07 - JULHO</Dropdown.Item>
+					<Dropdown.Item key="08 - AGOSTO">08 - AGOSTO</Dropdown.Item>
+					<Dropdown.Item key="09 - SETEMBRO">09 - SETEMBRO</Dropdown.Item>
+					<Dropdown.Item key="10 - OUTUBRO">10 - OUTUBRO</Dropdown.Item>
+					<Dropdown.Item key="11 - NOVEMBRO">11 - NOVEMBRO</Dropdown.Item>
+					<Dropdown.Item key="12 - DEZEMBRO">12 - DEZEMBRO</Dropdown.Item>
+				</Dropdown.Menu>
+			</Dropdown>
 			<Input
 			disabled = {loading || created || invalid ? true : false}
 			bordered

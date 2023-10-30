@@ -1,11 +1,14 @@
-import { React,useState } from 'react'
-import { Modal, Button, Text, Input } from "@nextui-org/react";
+import { React,useState,useMemo } from 'react'
+import { Modal, Button, Text, Input,Dropdown,Loading  } from "@nextui-org/react";
 import { GiTakeMyMoney } from 'react-icons/gi'
+import { AiFillCheckCircle } from 'react-icons/ai'
 
 
 const AddExpenseModalBus = () => {
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
+    const [loading,setLoading] = useState(false)
+    const [created,setCreated] = useState(false)
   
     const closeHandler = () => {
       setVisible(false)
@@ -27,18 +30,54 @@ const AddExpenseModalBus = () => {
 		
 	}
 
-    const getForm =() => {
-      var valor = document.getElementById('valor')
-      const data = document.getElementById('data')
+  const getForm = async () => {
 
-      const form = new FormData()
-      form.append("tipo","Despesa")
-      form.append("categoria","Locomoção")
-      form.append("valor",valor.value)
-      form.append("data",data.value)
-      form.append("status","Pago")
-      form.append("conta","Bilhete Único")
-    }
+    const mes = selectedValueMes
+
+		let valor = document.getElementById('valor').value
+		valor = valor + ''
+		valor = parseFloat(valor.replace(/[\D]+/g, ''))
+		valor = valor + ''
+    valor = valor.replace(/([0-9]{2})$/g, ",$1")
+
+		const data = document.getElementById('data').value
+
+
+		const post = {
+				tipo: "DESPESA",
+				categoria: "Locomoção",
+				valor: `-${valor}`,
+				data: data,
+        mes: mes,
+				descricao: "Ônibus",
+				status: "Pago",
+				conta: "Bilhete Único"
+		}
+
+ 
+		setLoading(true)
+		const res = await fetch('https://hooks.zapier.com/hooks/catch/11052334/380w6ti/', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(post)
+  })
+
+  setTimeout(()=>{
+    setLoading(false)
+    setCreated(true)
+  },700)
+
+		setTimeout(()=>{
+			setCreated(false)
+      setSelectedMes(['Mês'])
+        document.getElementById('valor').value = ''
+        document.getElementById('data').value = ''
+        
+		},1300)
+	}
 
     const fillDate = () => {
       const dataInput = document.querySelector('#data')
@@ -49,6 +88,14 @@ const AddExpenseModalBus = () => {
       const dataAtual = ano + '-' + mes + '-' + dia
       if(!dataInput.value) dataInput.value = dataAtual
     }
+
+    const [selectedMes, setSelectedMes] = useState(new Set(["Mês"]));
+
+    const selectedValueMes = useMemo(
+      () => Array.from(selectedMes).join(", ").replaceAll("_", " "),
+      [selectedMes]
+    );
+
   return (
     <div>
       <Button className='bg-red-200 mt-2' rounded shadow auto color='' onPress={handler} icon={<GiTakeMyMoney className='text-red-800' size={20}/>}>
@@ -92,13 +139,39 @@ const AddExpenseModalBus = () => {
             placeholder="Data"
             onFocus={fillDate}
           />
+          <Dropdown>
+            <Dropdown.Button bordered color="error" css={{ tt: "capitalize" }}>
+              {selectedValueMes}
+            </Dropdown.Button>
+            <Dropdown.Menu
+              aria-label="Single selection actions"
+              color="error"
+              selectionMode="single"
+              selectedKeys={selectedMes}
+              onSelectionChange={setSelectedMes}
+              id="mes"
+            >
+          <Dropdown.Item key="01 - JANEIRO">01 - JANEIRO</Dropdown.Item>
+          <Dropdown.Item key="02 - FEVEREIRO">02 - FEVEREIRO</Dropdown.Item>
+          <Dropdown.Item key="03 - MARÇO">03 - MARÇO</Dropdown.Item>
+          <Dropdown.Item key="04 - ABRIL">04 - ABRIL</Dropdown.Item>
+          <Dropdown.Item key="05 - MAIO">05 - MAIO</Dropdown.Item>
+          <Dropdown.Item key="06 - JUNHO">06 - JUNHO</Dropdown.Item>
+          <Dropdown.Item key="07 - JULHO">07 - JULHO</Dropdown.Item>
+          <Dropdown.Item key="08 - AGOSTO">08 - AGOSTO</Dropdown.Item>
+          <Dropdown.Item key="09 - SETEMBRO">09 - SETEMBRO</Dropdown.Item>
+          <Dropdown.Item key="10 - OUTUBRO">10 - OUTUBRO</Dropdown.Item>
+          <Dropdown.Item key="11 - NOVEMBRO">11 - NOVEMBRO</Dropdown.Item>
+          <Dropdown.Item key="12 - DEZEMBRO">12 - DEZEMBRO</Dropdown.Item>
+          </Dropdown.Menu>
+    </Dropdown>
         </Modal.Body>
         <Modal.Footer>
           <Button auto flat color="error" onPress={closeHandler}>
             Fechar
           </Button>
           <Button auto color="success" onPress={getForm}>
-            Enviar
+          {created ? <AiFillCheckCircle size={20} />  : loading ? <Loading type="spinner" color ="white" size="sm" /> : 'Enviar'}
           </Button>
         </Modal.Footer>
       </Modal>
