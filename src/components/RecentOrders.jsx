@@ -28,8 +28,9 @@ const RecentOrders = () => {
     });
 
   return (
-    <div className="w-full col-span-1 relative lg:h-[70vh] h-[50vh] m-auto p-4 border rounded-lg bg-white overflow-scroll">
-      <h1>Últimas Movimentações</h1>
+
+    <div className="w-full col-span-3 relative lg:h-[70vh] h-[50vh] m-auto p-4 border rounded-lg bg-white overflow-scroll">
+
       <ul>
 
         {mov.slice(0).reverse().map((mov,id) => (
@@ -50,7 +51,7 @@ const RecentOrders = () => {
             : mov.descritivo === 'Serviços' ? <AiOutlineTool size={20} className='text-red-800'/>
             : mov.descritivo === 'Investimento' ? <RiFundsBoxLine size={20}  className={mov.tipo === 'RECEITA' ? 'text-green-800' : 'text-red-800'}/>
             : mov.descritivo === 'Fatura' ? <RiBillLine size={20} className='text-red-800'/>
-            : mov.descritivo === 'Salário' ? <BiMoneyWithdraw size={20}  className='text-green-800'/>
+            : mov.descritivo === 'Salário - V4' ? <BiMoneyWithdraw size={20}  className='text-green-800'/>
             : mov.descritivo === 'Freelance' ? <SiFreelancer size={20}  className='text-green-800'/>
             : mov.descritivo === 'Limite Cartão' ? <BiCreditCardAlt size={20}  className='text-green-800'/>
             :  <BsThreeDots size={20}  className={mov.tipo === 'RECEITA' ? 'text-green-800' : 'text-red-800'}/>
