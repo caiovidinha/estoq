@@ -55,7 +55,7 @@ const orders = () => {
 		produto.salvar(data.table.rows[i].c[0].v,data.table.rows[i].c[1].v,data.table.rows[i].c[2].v.toFixed(2),data.table.rows[i].c[3].v,data.table.rows[i].c[4].v,data.table.rows[i].c[5].v,data.table.rows[i].c[6].v,data.table.rows[i].c[7].v)
 		}
 		setMovimentacao(produto.arrayMov)
-	  });
+		});
 	
 
 
@@ -73,7 +73,7 @@ const orders = () => {
 				<ul>
 				{movimentacao.slice(0).reverse().map((mov,index) => (
 						<li onClick={() => handler(mov.tipo,mov.descritivo,mov.valor,mov.data,mov.mes,mov.detalhes,mov.situacao,mov.conta)} key={index} className='bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer'>
-							 
+							
 							<div className='flex'>
 								<div className={mov.tipo==='RECEITA' ? 'bg-green-200 rounded-lg p-3' :'bg-red-200 rounded-lg p-3'}>
 								{ mov.descritivo === 'Alimentação' ? <BiRestaurant size={20} className='text-red-800'/>
