@@ -8,7 +8,6 @@ import AddIncomeModalCredito from './AddIncomeModalCredito'
 import AddExpenseModalCredito from './AddExpenseModalCredito'
 import AddIncomeModalBus from './AddIncomeModalBus'
 import AddExpenseModalBus from './AddExpenseModalBus'
-import AddInvestimento from './AddInvestimento'
 import AddFatura from './AddFatura'
 import SeeCreditCards from './SeeCreditCards'
 
