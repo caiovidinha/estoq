@@ -76,7 +76,7 @@ const mes = () => {
                         {balanco.map((bal, index) => (
                             <li
                                 key={index}
-                                className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid grid-cols-2 items-center justify-between cursor-pointer"
+                                className="bg-gray-50 hover:bg-gray-200 rounded-lg my-3 p-3 sm:p-8 grid grid-cols-2 items-center justify-between cursor-pointer"
                             >
                                 <div className="w-full flex items-center justify-center sm:justify-left">
                                     <div
