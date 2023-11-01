@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import Header from '@/components/Header'
 import { BsThreeDots } from 'react-icons/bs'
 import {
     BiRestaurant,
@@ -29,6 +28,8 @@ const movimentacoes = () => {
     const [detalhes, setDetalhes] = useState([])
     const [situacao, setSituacao] = useState([])
     const [conta, setConta] = useState([])
+	const zap = 'https://hooks.zapier.com/hooks/catch/11052334/38vxzm2/'
+	const zapDelete = 'https://hooks.zapier.com/hooks/catch/11052334/3zy3cd0/'
 
     const handler = (
         tipo,
@@ -54,6 +55,86 @@ const movimentacoes = () => {
     const closeHandler = () => {
         setVisible(false)
     }
+
+	const changeStatus = async(
+		tipo,
+        descritivo,
+        valor,
+        data,
+        mes,
+        detalhes,
+        conta
+	) =>{
+		setTipo(tipo)
+        seteDescritivo(descritivo)
+		valor=valor.replace('.',',')
+        setValor(valor)
+        setData(data)
+        setMes(mes)
+        setDetalhes(detalhes)
+        setConta(conta)
+		const post = {
+            tipo: tipo,
+            descritivo: descritivo,
+            valor: valor,
+            data: data,
+            mes: mes,
+            detalhes: detalhes,
+            situacao: situacao,
+            conta: conta,
+        }
+		const res = await fetch(
+            zap,
+            {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(post),
+            }
+        )
+	}
+
+	const deleteRow = async(
+		tipo,
+        descritivo,
+        valor,
+        data,
+        mes,
+        detalhes,
+        conta) =>{
+		setTipo(tipo)
+        seteDescritivo(descritivo)
+		valor=valor.replace('.',',')
+        setValor(valor)
+        setData(data)
+        setMes(mes)
+        setDetalhes(detalhes)
+        setConta(conta)
+		const post = {
+            tipo: tipo,
+            descritivo: descritivo,
+            valor: valor,
+            data: data,
+            mes: mes,
+            detalhes: detalhes,
+            situacao: situacao,
+            conta: conta,
+        }
+		const res = await fetch(
+            zap,
+            {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(post),
+            }
+        )
+
+	}
 
     const [movimentacao, setMovimentacao] = useState([])
 
@@ -88,6 +169,10 @@ const movimentacoes = () => {
             setMovimentacao(produto.arrayMov)
         })
 
+		useEffect(()=>{
+			const selectStatus = document.querySelector('#situacao')
+			if (selectStatus) selectStatus.addEventListener("change",e=>setSituacao(e.target.value))
+		})
     return (
         <div className="bg-gray-100 min-h-screen">
             <div className="p-4">
@@ -104,7 +189,12 @@ const movimentacoes = () => {
                             .reverse()
                             .map((mov, index) => (
                                 <li
-                                    onClick={() =>
+                                    key={index}
+                                    className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
+                                >
+                                    <div 
+									className="flex"                                     
+									onClick={() =>
                                         handler(
                                             mov.tipo,
                                             mov.descritivo,
@@ -115,11 +205,7 @@ const movimentacoes = () => {
                                             mov.situacao,
                                             mov.conta
                                         )
-                                    }
-                                    key={index}
-                                    className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
-                                >
-                                    <div className="flex">
+                                    }>
                                         <div
                                             className={
                                                 mov.tipo === 'RECEITA'
@@ -263,8 +349,21 @@ const movimentacoes = () => {
                                                     ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                                                     : mov.situacao == 'Pago'
                                                     ? 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
-                                                    : 'bg-yellow-200 p-1 rounded-lg hover:bg-yellow-400 text-yellow-800 font-semibold hover:cursor-pointer'
+                                                    : mov.situacao == 'A receber'
+													? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
+													: 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                                             }
+											onChange={() =>
+												changeStatus(
+													mov.tipo,
+													mov.descritivo,
+													mov.valor,
+													mov.data,
+													mov.mes,
+													mov.detalhes,
+													mov.conta
+												)}
+											id="situacao"
                                         >
                                             <option value={mov.situacao}>
                                                 {mov.situacao}
