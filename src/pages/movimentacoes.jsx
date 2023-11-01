@@ -237,7 +237,7 @@ const movimentacoes = () => {
                                                 />
                                             )}
                                         </div>
-                                        <div className="pl-2">
+                                        <div className="pl-2 w-32">
                                             <p className="text-gray-800 font-bold text-xs">
                                                 R${' '}
                                                 {parseFloat(mov.valor)
@@ -245,8 +245,8 @@ const movimentacoes = () => {
                                                     .replace('.', ',')}
                                             </p>
                                             <p className="text-gray-800 text-sm lg:hidden">
-                                                {mov.detalhes.length >= 9
-                                                    ? mov.detalhes.slice(0, 7) +
+                                                {mov.detalhes.length >= 15
+                                                    ? mov.detalhes.slice(0, 13) +
                                                       '...'
                                                     : mov.detalhes}
                                             </p>
