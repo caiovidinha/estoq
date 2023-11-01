@@ -1,25 +1,32 @@
 export class Mov {
-
-    constructor(){
+    constructor() {
         this.id = 1
         this.arrayMov = []
     }
 
-
-    salvar(tipo,descritivo,valor,data,mes,detalhes,situacao,conta){
-        let produto = this.lerDados(tipo,descritivo,valor,data,mes,detalhes,situacao,conta)
+    salvar(tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
+        let produto = this.lerDados(
+            tipo,
+            descritivo,
+            valor,
+            data,
+            mes,
+            detalhes,
+            situacao,
+            conta
+        )
         this.arrayMov.push(produto)
     }
 
-    lerDados(tipo,descritivo,valor,data,mes,detalhes,situacao,conta){
+    lerDados(tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
         let produto = {}
         data = data.replace(/[^0-9,]/g, '')
 
-        if(data[6]===','){
-            data = data.slice(0,5) + '0' + data.slice(5)
+        if (data[6] === ',') {
+            data = data.slice(0, 5) + '0' + data.slice(5)
         }
-        let month = parseInt(data.slice(5,7))+1
-        data = data.slice(8) + '/' + month + '/' + data.slice(0,4)
+        let month = parseInt(data.slice(5, 7)) + 1
+        data = data.slice(8) + '/' + month + '/' + data.slice(0, 4)
         produto.id = this.id
         produto.tipo = tipo
         produto.descritivo = descritivo
@@ -29,12 +36,8 @@ export class Mov {
         produto.detalhes = detalhes
         produto.situacao = situacao
         produto.conta = conta
-               
+
         this.id++
         return produto
     }
-
-        
-
-        
 }
