@@ -28,7 +28,7 @@ export class Mov {
         }
         let month = parseInt(data.slice(5, 7)) + 1
         let day = data.slice(8)
-        if(day.length === 1) day = '0' + day
+        if (day.length === 1) day = '0' + day
         data = day + '/' + month + '/' + data.slice(0, 4)
         produto.id = this.id
         produto.tipo = tipo
@@ -39,7 +39,6 @@ export class Mov {
         produto.detalhes = detalhes
         produto.situacao = situacao
         produto.conta = conta
-        
 
         this.id++
         return produto

@@ -14,9 +14,9 @@ import {
 import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
 import { SiBetfair, SiFreelancer } from 'react-icons/si'
 import { AiOutlineTool } from 'react-icons/ai'
-import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri'
+import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri'
 import { Mov } from '@/components/Mov'
-import { Modal, Button, Text } from '@nextui-org/react'
+import { Modal, Button, Text, Loading } from '@nextui-org/react'
 
 const movimentacoes = () => {
     const [visible, setVisible] = useState(false)
@@ -28,8 +28,12 @@ const movimentacoes = () => {
     const [detalhes, setDetalhes] = useState([])
     const [situacao, setSituacao] = useState([])
     const [conta, setConta] = useState([])
-	const zap = 'https://hooks.zapier.com/hooks/catch/11052334/38vxzm2/'
-	const zapDelete = 'https://hooks.zapier.com/hooks/catch/11052334/3zy3cd0/'
+    const zap = 'https://hooks.zapier.com/hooks/catch/11052334/38vxzm2/'
+    const zapDelete = 'https://hooks.zapier.com/hooks/catch/11052334/3zy3cd0/'
+	const[exc,setExc] = useState(false)
+	const[confirmarExc,setConfirmarExc] = useState(false)
+	const[excluido,setExcluido] = useState(false)
+	const[loading,setLoading] = useState(false)
 
     const handler = (
         tipo,
@@ -56,24 +60,37 @@ const movimentacoes = () => {
         setVisible(false)
     }
 
-	const changeStatus = async(
-		tipo,
+	const openConf = () =>{
+		setConfirmarExc(true)
+	} 
+
+    const closeConf = () => {
+        setConfirmarExc(false)
+		setExcluido(false)
+    }
+
+	const confirmaExcFinal = () => {
+		setExc(true)
+	}
+
+    const changeStatus = async (
+        tipo,
         descritivo,
         valor,
         data,
         mes,
         detalhes,
         conta
-	) =>{
-		setTipo(tipo)
+    ) => {
+        setTipo(tipo)
         seteDescritivo(descritivo)
-		valor=valor.replace('.',',')
+        valor = valor.replace('.', ',')
         setValor(valor)
         setData(data)
         setMes(mes)
         setDetalhes(detalhes)
         setConta(conta)
-		const post = {
+        const post = {
             tipo: tipo,
             descritivo: descritivo,
             valor: valor,
@@ -83,58 +100,42 @@ const movimentacoes = () => {
             situacao: situacao,
             conta: conta,
         }
-		const res = await fetch(
-            zap,
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
-	}
+        const res = await fetch(zap, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+        })
+    }
 
-	const deleteRow = async(
-		tipo,
-        descritivo,
-        valor,
+    const deleteRow = async (
         data,
-        mes,
-        detalhes,
-        conta) =>{
-		setTipo(tipo)
-        seteDescritivo(descritivo)
-		valor=valor.replace('.',',')
-        setValor(valor)
-        setData(data)
-        setMes(mes)
-        setDetalhes(detalhes)
-        setConta(conta)
-		const post = {
-            tipo: tipo,
-            descritivo: descritivo,
-            valor: valor,
+        detalhes
+    ) => {
+        const post = {
             data: data,
-            mes: mes,
-            detalhes: detalhes,
-            situacao: situacao,
-            conta: conta,
+            detalhes: detalhes
         }
-		const res = await fetch(
-            zap,
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
-
-	}
+		openConf()
+		if(exc){
+        const res = await fetch(zapDelete, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+        })
+		setExc(false)
+		setLoading(true)
+		setTimeout(() => {
+            setLoading(false)
+			setExcluido(true)
+        }, 1000)
+    }	
+}
 
     const [movimentacao, setMovimentacao] = useState([])
 
@@ -169,15 +170,18 @@ const movimentacoes = () => {
             setMovimentacao(produto.arrayMov)
         })
 
-		useEffect(()=>{
-			const selectStatus = document.querySelector('#situacao')
-			if (selectStatus) selectStatus.addEventListener("change",e=>setSituacao(e.target.value))
-		})
+    useEffect(() => {
+        const selectStatus = document.querySelector('#situacao')
+        if (selectStatus)
+            selectStatus.addEventListener('change', (e) =>
+                setSituacao(e.target.value)
+            )
+    })
     return (
         <div className="bg-gray-100 min-h-screen">
             <div className="p-4">
                 <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
-                    <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between font-bold">
+                    <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
                         <span>Movimentação</span>
                         <span className="sm:text-left text-right">Status</span>
                         <span className="hidden md:grid">Data</span>
@@ -192,20 +196,21 @@ const movimentacoes = () => {
                                     key={index}
                                     className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                                 >
-                                    <div 
-									className="flex"                                     
-									onClick={() =>
-                                        handler(
-                                            mov.tipo,
-                                            mov.descritivo,
-                                            mov.valor,
-                                            mov.data,
-                                            mov.mes,
-                                            mov.detalhes,
-                                            mov.situacao,
-                                            mov.conta
-                                        )
-                                    }>
+                                    <div
+                                        className="flex"
+                                        onClick={() =>
+                                            handler(
+                                                mov.tipo,
+                                                mov.descritivo,
+                                                mov.valor,
+                                                mov.data,
+                                                mov.mes,
+                                                mov.detalhes,
+                                                mov.situacao,
+                                                mov.conta
+                                            )
+                                        }
+                                    >
                                         <div
                                             className={
                                                 mov.tipo === 'RECEITA'
@@ -332,8 +337,10 @@ const movimentacoes = () => {
                                             </p>
                                             <p className="text-gray-800 text-sm lg:hidden">
                                                 {mov.detalhes.length >= 15
-                                                    ? mov.detalhes.slice(0, 13) +
-                                                      '...'
+                                                    ? mov.detalhes.slice(
+                                                          0,
+                                                          13
+                                                      ) + '...'
                                                     : mov.detalhes}
                                             </p>
                                             <p className="text-gray-800 text-sm hidden lg:block">
@@ -341,7 +348,7 @@ const movimentacoes = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="text-gray-600 sm:text-left text-right">
+                                    <p className="flex text-gray-600 sm:text-left text-left">
                                         <select
                                             key={index}
                                             className={
@@ -349,21 +356,23 @@ const movimentacoes = () => {
                                                     ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                                                     : mov.situacao == 'Pago'
                                                     ? 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
-                                                    : mov.situacao == 'A receber'
-													? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
-													: 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
+                                                    : mov.situacao ==
+                                                      'A receber'
+                                                    ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
+                                                    : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                                             }
-											onChange={() =>
-												changeStatus(
-													mov.tipo,
-													mov.descritivo,
-													mov.valor,
-													mov.data,
-													mov.mes,
-													mov.detalhes,
-													mov.conta
-												)}
-											id="situacao"
+                                            onChange={() =>
+                                                changeStatus(
+                                                    mov.tipo,
+                                                    mov.descritivo,
+                                                    mov.valor,
+                                                    mov.data,
+                                                    mov.mes,
+                                                    mov.detalhes,
+                                                    mov.conta
+                                                )
+                                            }
+                                            id="situacao"
                                         >
                                             <option value={mov.situacao}>
                                                 {mov.situacao}
@@ -390,16 +399,20 @@ const movimentacoes = () => {
                                                     : 'Pago'}
                                             </option>
                                         </select>
+										<div onClick={()=>deleteRow(mov.data,mov.detalhes)} className='sm:hidden ml-5 bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
+											<RiDeleteBin2Fill className="text-black" size={20}/>
+										</div>
                                     </p>
                                     <p className="hidden md:flex">{mov.data}</p>
-                                    <div className="sm:flex hidden justify-between items-center">
-                                        <p>
+                                    <div className="flex justify-between items-center">
+                                        <p className='sm:flex hidden '>
                                             {mov.conta}
-                                            {mov.cartao
-                                                ? ` - ${mov.cartao}`
-                                                : ''}
                                         </p>
+										<div onClick={()=>deleteRow(mov.data,mov.detalhes)} className='bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950'>
+											<RiDeleteBin2Fill className="text-black" size={20}/>
+										</div>
                                     </div>
+
                                 </li>
                             ))}
                     </ul>
@@ -486,6 +499,41 @@ const movimentacoes = () => {
                     <Modal.Footer>
                         <Button auto flat color="error" onPress={closeHandler}>
                             Fechar
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+				<Modal
+                    closeButton
+                    aria-labelledby="modal-title"
+                    open={confirmarExc}
+                    onClose={closeConf}
+                >
+                    <Modal.Header>
+                        <Text id="modal-title" size={18}>
+                            <Text b size={18}>
+								{excluido ? 'Feito!' : loading ? 'Excluindo...' : 'Tem certeza?'}
+                            </Text>
+                        </Text>
+                    </Modal.Header>
+                    <Modal.Body className="text-center">
+                        <div className="text-center bg-gray-100 rounded-lg -my-1 p-3 grid">
+                            <Text>
+							{excluido ? 'Movimentação excluída com sucesso!' : loading ? 'Por favor, aguarde...' : 'Deseja excluir a movimentação do histórico? Isso irá afetar todos valores que utilizavam essa informação!'}
+                            </Text>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+						<Button auto flat color="success" onPress={confirmaExcFinal}>
+                        {excluido ? (
+                            <AiFillCheckCircle size={20} />
+                        ) : loading ? (
+                            <Loading type="spinner" color="white" size="sm" />
+                        ) : (
+                            'Ok!'
+                        )}
+                        </Button>
+                        <Button auto flat color="error" onPress={closeConf}>
+                            Cancelar
                         </Button>
                     </Modal.Footer>
                 </Modal>
