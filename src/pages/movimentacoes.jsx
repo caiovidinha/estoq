@@ -13,7 +13,7 @@ import {
 } from 'react-icons/bi'
 import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
 import { SiBetfair, SiFreelancer } from 'react-icons/si'
-import { AiOutlineTool } from 'react-icons/ai'
+import { AiOutlineTool,AiFillCheckCircle } from 'react-icons/ai'
 import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri'
 import { Mov } from '@/components/Mov'
 import { Modal, Button, Text, Loading } from '@nextui-org/react'
@@ -28,6 +28,7 @@ const movimentacoes = () => {
     const [detalhes, setDetalhes] = useState([])
     const [situacao, setSituacao] = useState([])
     const [conta, setConta] = useState([])
+    const [post, setPost] = useState([])
     const zap = 'https://hooks.zapier.com/hooks/catch/11052334/38vxzm2/'
     const zapDelete = 'https://hooks.zapier.com/hooks/catch/11052334/3zy3cd0/'
 	const[exc,setExc] = useState(false)
@@ -80,7 +81,8 @@ const movimentacoes = () => {
         data,
         mes,
         detalhes,
-        conta
+        conta,
+        index
     ) => {
         setTipo(tipo)
         seteDescritivo(descritivo)
@@ -90,6 +92,7 @@ const movimentacoes = () => {
         setMes(mes)
         setDetalhes(detalhes)
         setConta(conta)
+        let indice = movimentacao.length + 2 - index
         const post = {
             tipo: tipo,
             descritivo: descritivo,
@@ -99,6 +102,7 @@ const movimentacoes = () => {
             detalhes: detalhes,
             situacao: situacao,
             conta: conta,
+            index: indice
         }
         const res = await fetch(zap, {
             method: 'POST',
@@ -111,31 +115,14 @@ const movimentacoes = () => {
     }
 
     const deleteRow = async (
-        data,
-        detalhes
+        index
     ) => {
-        const post = {
-            data: data,
-            detalhes: detalhes
-        }
-		openConf()
-		if(exc){
-        const res = await fetch(zapDelete, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
+        let i = movimentacao.length + 2 - parseInt(index)
+        setPost({
+            index: i
         })
-		setExc(false)
-		setLoading(true)
-		setTimeout(() => {
-            setLoading(false)
-			setExcluido(true)
-        }, 1000)
-    }	
-}
+		openConf()
+	}
 
     const [movimentacao, setMovimentacao] = useState([])
 
@@ -176,6 +163,22 @@ const movimentacoes = () => {
             selectStatus.addEventListener('change', (e) =>
                 setSituacao(e.target.value)
             )
+        if(exc){
+        fetch(zapDelete, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(post),
+                })
+                setExc(false)
+                setLoading(true)
+                setTimeout(() => {
+                    setLoading(false)
+                    setExcluido(true)
+                }, 1000)
+            }
     })
     return (
         <div className="bg-gray-100 min-h-screen">
@@ -369,7 +372,8 @@ const movimentacoes = () => {
                                                     mov.data,
                                                     mov.mes,
                                                     mov.detalhes,
-                                                    mov.conta
+                                                    mov.conta,
+                                                    index
                                                 )
                                             }
                                             id="situacao"
@@ -399,7 +403,7 @@ const movimentacoes = () => {
                                                     : 'Pago'}
                                             </option>
                                         </select>
-										<div onClick={()=>deleteRow(mov.data,mov.detalhes)} className='sm:hidden ml-5 bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
+										<div onClick={()=>deleteRow(index)} className='sm:hidden ml-5 bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
                                     </p>
@@ -408,7 +412,7 @@ const movimentacoes = () => {
                                         <p className='sm:flex hidden '>
                                             {mov.conta}
                                         </p>
-										<div onClick={()=>deleteRow(mov.data,mov.detalhes)} className='bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950'>
+										<div onClick={()=>deleteRow(index)} className='bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
                                     </div>
@@ -523,7 +527,7 @@ const movimentacoes = () => {
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
-						<Button auto flat color="success" onPress={confirmaExcFinal}>
+						<Button auto flat color="success" onPress={excluido ? closeConf : confirmaExcFinal}>
                         {excluido ? (
                             <AiFillCheckCircle size={20} />
                         ) : loading ? (
