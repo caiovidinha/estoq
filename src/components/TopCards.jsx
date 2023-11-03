@@ -50,7 +50,7 @@ const TopCards = () => {
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
                         {'R$ '}
-                        {saldoNu}
+                        {parseFloat(saldoNu).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
                         Conta Nubank
@@ -69,9 +69,9 @@ const TopCards = () => {
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
                         {'R$ '}
-                        {parseFloat(limiteNeonJulia) +
+                        {(parseFloat(limiteNeonJulia) +
                             parseFloat(limiteNuJulia) +
-                            parseFloat(limiteNuCaio)}
+                            parseFloat(limiteNuCaio)).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
                     <AddFatura />
@@ -90,7 +90,7 @@ const TopCards = () => {
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
                         {'R$ '}
-                        {saldoBU}
+                        {parseFloat(saldoBU).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
                         Bilhete Único

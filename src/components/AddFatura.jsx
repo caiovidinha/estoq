@@ -108,9 +108,9 @@ const AddFatura = () => {
             >
                 Fatura:
                 {' R$ '}
-                {parseFloat(faturaNeonJulia) +
+                {(parseFloat(faturaNeonJulia) +
                     parseFloat(faturaNuJulia) +
-                    parseFloat(faturaNuCaio)}
+                    parseFloat(faturaNuCaio)).toFixed(2).toString().replace('.',',')}
             </Button>
             <Modal
                 closeButton
@@ -128,9 +128,9 @@ const AddFatura = () => {
                         <Text b size={18} color="error">
                             R${' '}
                             <span id="fatura">
-                                {parseFloat(faturaNeonJulia) +
+                                {(parseFloat(faturaNeonJulia) +
                                     parseFloat(faturaNuJulia) +
-                                    parseFloat(faturaNuCaio)}
+                                    parseFloat(faturaNuCaio)).toFixed(2).toString().replace('.',',')}
                             </span>
                         </Text>
                     </Text>
