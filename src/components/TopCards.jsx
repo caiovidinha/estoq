@@ -30,7 +30,8 @@ const TopCards = () => {
     const [limiteNeonJulia, setLimiteNeonJulia] = useState([])
     const [saldoBU, setSaldoBU] = useState([])
 
-    fetch(FULL_URL)
+    const getSaldo = () =>{
+        fetch(FULL_URL)
         .then((res) => res.text())
         .then((rep) => {
             let data = JSON.parse(rep.substr(47).slice(0, -2))
@@ -39,6 +40,12 @@ const TopCards = () => {
             setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
             setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
             setSaldoBU(data.table.rows[0].c[7].v.toFixed(2))
+        })
+    }
+
+
+        useEffect(() => {
+            getSaldo()
         })
 
     return (
