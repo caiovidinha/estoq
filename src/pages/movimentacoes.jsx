@@ -197,7 +197,7 @@ const movimentacoes = () => {
                             .map((mov, index) => (
                                 <li
                                     key={index}
-                                    className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
+                                    className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                                 >
                                     <div
                                         className="flex"
@@ -351,7 +351,7 @@ const movimentacoes = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="flex text-gray-600 sm:text-left text-left">
+                                    <p className="flex text-gray-600 sm:text-left text-left justify-between">
                                         <select
                                             key={index}
                                             className={
@@ -359,8 +359,7 @@ const movimentacoes = () => {
                                                     ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                                                     : mov.situacao == 'Pago'
                                                     ? 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
-                                                    : mov.situacao ==
-                                                      'A receber'
+                                                    : mov.situacao == 'A receber'
                                                     ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                                                     : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                                             }
@@ -403,7 +402,7 @@ const movimentacoes = () => {
                                                     : 'Pago'}
                                             </option>
                                         </select>
-										<div onClick={()=>deleteRow(index)} className='sm:hidden ml-5 bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
+										<div onClick={()=>deleteRow(index)} className='sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
                                     </p>
