@@ -82,13 +82,13 @@ const SeeCreditCards = () => {
                                             color="secondary"
                                             value={(
                                                 (faturaNuCaio * 100) /
-                                                400
+                                                800
                                             ).toFixed(1)}
                                         />
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ 400.00
+                                    R$ {parseFloat(faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ 800.00
                                 </p>
                             </div>
 
