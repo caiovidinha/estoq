@@ -111,10 +111,10 @@ const mes = () => {
                                                     : 'danger'
                                             }
                                             value={(
-                                                ((3800 -
+                                                ((4800 -
                                                     parseFloat(bal.valor)) *
                                                     100) /
-                                                3800
+                                                4800
                                             ).toFixed(1)}
                                         />
                                     </div>
