@@ -36,7 +36,7 @@ const mes = () => {
     hoje = hoje.slice(5, 7)
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
     let SHEET_TITLE = 'Dashboard'
-    let SHEET_RANGE = 'A:C'
+    let SHEET_RANGE = 'A:D'
     let FULL_URL =
         'https://docs.google.com/spreadsheets/d/' +
         SHEET_ID +
@@ -56,10 +56,12 @@ const mes = () => {
                 valor = parseFloat(valor.replace(/[\D]+/g, ''))
                 valor = valor + ''
                 valor = valor.replace(/([0-9]{2})$/g, ',$1')
+                
                 balanco.salvar(
                     data.table.rows[i].c[0].v,
                     data.table.rows[i].c[1].v,
-                    valor
+                    valor,
+                    data.table.rows[i].c[3].v.toFixed(2)
                 )
             }
             setBalanco(balanco.arrayBal)
@@ -111,10 +113,10 @@ const mes = () => {
                                                     : 'danger'
                                             }
                                             value={(
-                                                ((4800 -
+                                                ((bal.salario -
                                                     parseFloat(bal.valor)) *
                                                     100) /
-                                                4800
+                                                bal.salario
                                             ).toFixed(1)}
                                         />
                                     </div>
