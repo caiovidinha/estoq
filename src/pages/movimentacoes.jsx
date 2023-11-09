@@ -91,6 +91,8 @@ const movimentacoes = () => {
         setData(data)
         setMes(mes)
         setDetalhes(detalhes)
+        let ident = 'status' + index
+        let statusMov = document.getElementById(ident).value
         setConta(conta)
         let indice = movimentacao.length + 2 - index
         const post = {
@@ -100,7 +102,7 @@ const movimentacoes = () => {
             data: data,
             mes: mes,
             detalhes: detalhes,
-            situacao: situacao,
+            situacao: statusMov,
             conta: conta,
             index: indice
         }
@@ -158,11 +160,6 @@ const movimentacoes = () => {
         })
 
     useEffect(() => {
-        const selectStatus = document.querySelector('#situacao')
-        if (selectStatus)
-            selectStatus.addEventListener('change', (e) =>
-                setSituacao(e.target.value)
-            )
         if(exc){
         fetch(zapDelete, {
                     method: 'POST',
@@ -353,6 +350,7 @@ const movimentacoes = () => {
                                     </div>
                                     <p className="flex text-gray-600 sm:text-left text-left justify-between">
                                         <select
+                                            id={'status' + index}
                                             key={index}
                                             className={
                                                 mov.situacao == 'Recebido'
@@ -375,7 +373,6 @@ const movimentacoes = () => {
                                                     index
                                                 )
                                             }
-                                            id="situacao"
                                         >
                                             <option value={mov.situacao}>
                                                 {mov.situacao}
