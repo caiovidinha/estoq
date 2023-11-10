@@ -28,6 +28,9 @@ const TopCards = () => {
     const [limiteNuCaio, setLimiteNuCaio] = useState([])
     const [limiteNuJulia, setLimiteNuJulia] = useState([])
     const [limiteNeonJulia, setLimiteNeonJulia] = useState([])
+    const [faturaNuCaio, setFaturaNuCaio] = useState([])
+    const [faturaNuJulia, setFaturaNuJulia] = useState([])
+    const [faturaNeonJulia, setFaturaNeonJulia] = useState([])
     const [saldoBU, setSaldoBU] = useState([])
 
     const getSaldo = () =>{
@@ -39,6 +42,9 @@ const TopCards = () => {
             setLimiteNuCaio(data.table.rows[0].c[1].v.toFixed(2))
             setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
             setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
+            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
+            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
+            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
             setSaldoBU(data.table.rows[0].c[7].v.toFixed(2))
         })
     }
@@ -78,7 +84,11 @@ const TopCards = () => {
                         {'R$ '}
                         {(parseFloat(limiteNeonJulia) +
                             parseFloat(limiteNuJulia) +
-                            parseFloat(limiteNuCaio)).toFixed(2).toString().replace('.',',')}
+                            parseFloat(limiteNuCaio) -
+                            parseFloat(faturaNuCaio) -
+                            parseFloat (faturaNeonJulia) 
+                            //- parseFloat (faturaNuJulia)
+                            ).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
                     <AddFatura />

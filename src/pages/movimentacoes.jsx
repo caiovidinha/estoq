@@ -11,6 +11,7 @@ import {
     BiGift,
     BiMoneyWithdraw,
 } from 'react-icons/bi'
+import { MdMoneyOff } from 'react-icons/md'
 import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
 import { SiBetfair, SiFreelancer } from 'react-icons/si'
 import { AiOutlineTool,AiFillCheckCircle } from 'react-icons/ai'
@@ -317,6 +318,11 @@ const movimentacoes = () => {
                                                     size={20}
                                                     className="text-green-800"
                                                 />
+                                            ) : mov.descritivo === 'Reembolso' ? (
+                                                <MdMoneyOff
+                                                    size={20}
+                                                    className="text-green-800"
+                                                    />
                                             ) : (
                                                 <BsThreeDots
                                                     size={20}

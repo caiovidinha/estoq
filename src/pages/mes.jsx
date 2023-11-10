@@ -4,31 +4,6 @@ import { BsFillCalendarCheckFill } from 'react-icons/bs'
 import { Balanco } from '@/components/Balanco'
 
 const mes = () => {
-    // const [visible, setVisible] = useState(false)
-    // const [tipo, setTipo] = useState([])
-    // const [descritivo, seteDescritivo] = useState([])
-    // const [valor, setValor] = useState([])
-    // const [data, setData] = useState([])
-    // const [mes, setMes] = useState([])
-    // const [detalhes, setDetalhes] = useState([])
-    // const [situacao, setSituacao] = useState([])
-    // const [conta, setConta] = useState([])
-
-    // const handler = (tipo,descritivo,valor,data,mes,detalhes,situacao,conta) => {
-    // 	setTipo(tipo)
-    // 	seteDescritivo(descritivo)
-    // 	setValor(valor)
-    // 	setData(data)
-    // 	setMes(mes)
-    // 	setDetalhes(detalhes)
-    // 	setSituacao(situacao)
-    // 	setConta(conta)
-    // 	setVisible(true)
-    // }
-
-    // const closeHandler = () => {
-    //   setVisible(false)
-    // }
 
     const [balanco, setBalanco] = useState([])
 
@@ -113,8 +88,7 @@ const mes = () => {
                                                     : 'danger'
                                             }
                                             value={(
-                                                ((bal.salario -
-                                                    parseFloat(bal.valor)) *
+                                                (parseFloat(bal.valor) *
                                                     100) /
                                                 bal.salario
                                             ).toFixed(1)}

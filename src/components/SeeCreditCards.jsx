@@ -81,14 +81,14 @@ const SeeCreditCards = () => {
                                         <Progress
                                             color="secondary"
                                             value={(
-                                                (faturaNuCaio * 100) /
-                                                800
+                                                ((limiteNuCaio-faturaNuCaio) * 100) /
+                                                limiteNuCaio
                                             ).toFixed(1)}
                                         />
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ 800.00
+                                    R$ {parseFloat(faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuCaio).toFixed(2).toString().replace('.',',')}
                                 </p>
                             </div>
 
@@ -102,14 +102,14 @@ const SeeCreditCards = () => {
                                         <Progress
                                             color="secondary"
                                             value={(
-                                                (parseFloat(faturaNuJulia) * 100) /
-                                                2595.26
+                                                ((limiteNuJulia-faturaNuJulia) * 100) /
+                                                limiteNuJulia
                                             ).toFixed(1)}
                                         />
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ 2595,26
+                                    R$ {parseFloat(faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ 2558,25
                                 </p>
                             </div>
 
@@ -122,14 +122,14 @@ const SeeCreditCards = () => {
                                     <div className="w-28">
                                         <Progress
                                             value={(
-                                                (faturaNeonJulia * 100) /
-                                                590
+                                                ((limiteNeonJulia-faturaNeonJulia) * 100) /
+                                                limiteNeonJulia
                                             ).toFixed(1)}
                                         />
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ 590.00
+                                    R$ {parseFloat(faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNeonJulia).toFixed(2).toString().replace('.',',')} 
                                 </p>
                             </div>
                         </Card.Body>
