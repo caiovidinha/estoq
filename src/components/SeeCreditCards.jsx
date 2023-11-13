@@ -88,7 +88,7 @@ const SeeCreditCards = () => {
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuCaio).toFixed(2).toString().replace('.',',')}
+                                    R$ {parseFloat(limiteNuCaio-faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuCaio).toFixed(2).toString().replace('.',',')}
                                 </p>
                             </div>
 
@@ -109,7 +109,7 @@ const SeeCreditCards = () => {
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ 2558,25
+                                    R$ {parseFloat(limiteNuJulia-faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuJulia).toFixed(2).toString().replace('.',',')} 
                                 </p>
                             </div>
 
@@ -129,7 +129,7 @@ const SeeCreditCards = () => {
                                     </div>
                                 </div>
                                 <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNeonJulia).toFixed(2).toString().replace('.',',')} 
+                                    R$ {parseFloat(limiteNeonJulia-faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNeonJulia).toFixed(2).toString().replace('.',',')} 
                                 </p>
                             </div>
                         </Card.Body>

@@ -86,8 +86,8 @@ const TopCards = () => {
                             parseFloat(limiteNuJulia) +
                             parseFloat(limiteNuCaio) -
                             parseFloat(faturaNuCaio) -
-                            parseFloat (faturaNeonJulia) 
-                            //- parseFloat (faturaNuJulia)
+                            parseFloat (faturaNeonJulia) - 
+                            parseFloat (faturaNuJulia)
                             ).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
