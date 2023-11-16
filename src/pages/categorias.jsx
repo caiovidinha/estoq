@@ -270,11 +270,6 @@ const categorias = () => {
                                                     size={20}
                                                     className="text-blue-800"
                                                 />
-                                            ) : cat.categoria === 'Cartão' ? (
-                                                <BiCreditCardAlt
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
                                             ) : cat.categoria === 'Dívida' ? (
                                                 <BiBomb
                                                     size={20}
@@ -334,13 +329,7 @@ const categorias = () => {
                                                     size={20}
                                                     className="text-green-800"
                                                 />
-                                            ) : cat.categoria ===
-                                              'Limite Cartão' ? (
-                                                <BiCreditCardAlt
-                                                    size={20}
-                                                    className="text-green-800"
-                                                />
-                                            ) : cat.categoria === 'Reembolso' ? (
+                                            ): cat.categoria === 'Reembolso' ? (
                                                 <MdMoneyOff
                                                     size={20}
                                                     className="text-green-800"
