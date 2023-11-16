@@ -16,7 +16,7 @@ import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
 import { SiBetfair, SiFreelancer, SiYourtraveldottv  } from 'react-icons/si'
 import { AiOutlineTool } from 'react-icons/ai'
 import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri'
-import { Categorias } from '@/components/categorias'
+import { Categorias } from '@/components/Categorias'
 
 const categorias = () => {
 
