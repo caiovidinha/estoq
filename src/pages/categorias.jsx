@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Progress, Popover, Dropdown} from '@nextui-org/react'
-import { BsFillCalendarCheckFill } from 'react-icons/bs'
+import { Progress, Popover} from '@nextui-org/react'
 import { BsThreeDots } from 'react-icons/bs'
 import {
     BiRestaurant,
@@ -15,8 +14,8 @@ import {
 import { MdMoneyOff } from 'react-icons/md'
 import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
 import { SiBetfair, SiFreelancer, SiYourtraveldottv  } from 'react-icons/si'
-import { AiOutlineTool,AiFillCheckCircle } from 'react-icons/ai'
-import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri'
+import { AiOutlineTool } from 'react-icons/ai'
+import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri'
 import { Categorias } from '@/components/categorias'
 
 const categorias = () => {
@@ -272,7 +271,7 @@ const categorias = () => {
                                                     className="text-blue-800"
                                                 />
                                             ) : cat.categoria === 'Cartão' ? (
-                                                <BiCblueitCardAlt
+                                                <BiCreditCardAlt
                                                     size={20}
                                                     className="text-blue-800"
                                                 />
@@ -337,7 +336,7 @@ const categorias = () => {
                                                 />
                                             ) : cat.categoria ===
                                               'Limite Cartão' ? (
-                                                <BiCblueitCardAlt
+                                                <BiCreditCardAlt
                                                     size={20}
                                                     className="text-green-800"
                                                 />

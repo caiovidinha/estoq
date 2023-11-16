@@ -13,7 +13,7 @@ import {
 } from 'react-icons/bi'
 import { MdMoneyOff } from 'react-icons/md'
 import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
-import { SiBetfair, SiFreelancer } from 'react-icons/si'
+import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si'
 import { AiOutlineTool,AiFillCheckCircle } from 'react-icons/ai'
 import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri'
 import { Mov } from '@/components/Mov'
@@ -323,7 +323,12 @@ const movimentacoes = () => {
                                                     size={20}
                                                     className="text-green-800"
                                                     />
-                                            ) : (
+                                            ) : mov.descritivo === 'Viagem' ? (
+                                                <SiYourtraveldottv size={20}
+                                                className="text-red-800"
+                                                /> 
+                                            ) 
+                                            : (
                                                 <BsThreeDots
                                                     size={20}
                                                     className={

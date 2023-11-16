@@ -38,11 +38,12 @@ const Header = ({ children }) => {
                     <div
                         className={
                             pagina === 'dashboard'
-                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full inline-block'
-                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full inline-block'
+                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
+                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }
                     >
-                        <BiSolidDashboard size={25} />
+                        <BiSolidDashboard className={'sm:mr-2'} size={25} />
+                        <p className='hidden sm:block font-bold'>Visão Geral</p>
                     </div>
                 </Link>
 
@@ -50,11 +51,12 @@ const Header = ({ children }) => {
                     <div
                         className={
                             pagina === 'movimentacao'
-                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full inline-block'
-                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full inline-block'
+                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
+                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }
                     >
-                        <BiTransferAlt size={25} />
+                        <BiTransferAlt className={'sm:mr-2'} size={25} />
+                        <p className='hidden sm:block font-bold'>Movimentações</p>
                     </div>
                 </Link>
 
@@ -62,11 +64,12 @@ const Header = ({ children }) => {
                     <div
                         className={
                             pagina === 'categorias'
-                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full inline-block'
-                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full inline-block'
+                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
+                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }
                     >
-                        <FaChartPie size={25} />
+                        <FaChartPie className={'sm:mr-2'} size={25} />
+                        <p className='hidden sm:block font-bold'>Categorias</p>
                     </div>
                 </Link>
 
@@ -74,11 +77,12 @@ const Header = ({ children }) => {
                     <div
                         className={
                             pagina === 'mes'
-                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full inline-block'
-                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full inline-block'
+                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
+                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }
                     >
-                        <BiSolidBarChartAlt2 size={25} />
+                        <BiSolidBarChartAlt2 className={'sm:mr-2'} size={25} />
+                        <p className='hidden sm:block font-bold'>Balanço Mensal</p>
                     </div>
                 </Link>
 
@@ -86,11 +90,12 @@ const Header = ({ children }) => {
                     <div
                         className={
                             pagina === 'wishlist'
-                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full inline-block'
-                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full inline-block'
+                                ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
+                                : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }
                     >
-                        <BsBagHeartFill size={25} />
+                        <BsBagHeartFill className={'sm:mr-2'} size={25} />
+                        <p className='hidden sm:block font-bold'>Lista de desejos</p>
                     </div>
                 </Link>
 
