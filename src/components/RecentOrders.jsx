@@ -61,7 +61,7 @@ const RecentOrders = () => {
                     .map((mov, id) => (
                         <li
                             key={id}
-                            className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 flex items-center cursor-pointer"
+                            className="bg-gray-50 rounded-lg my-3 p-2 flex items-center cursor-pointer"
                         >
                             <div
                                 className={
