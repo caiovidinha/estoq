@@ -499,7 +499,7 @@ const categorias = () => {
                             .map((mov,index) => (
                             <li
                             key={index}
-                            className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 w-full flex justify-between cursor-pointer"
+                            className="bg-gray-50 rounded-lg my-3 p-2 w-full flex justify-between cursor-pointer"
                             >
                                 <div className="grid grid-cols-1 w-2/3">
                                 <div className='font-bold'>{mov.detalhes}</div>
