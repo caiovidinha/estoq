@@ -178,7 +178,7 @@ const AddIncomeModalConta = () => {
                             <Dropdown.Item key="Limite Cartão">
                                 Limite Cartão
                             </Dropdown.Item>
-                            <Dropdown.Item key="outros">Outros</Dropdown.Item>
+                            <Dropdown.Item key="Outros">Outros</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input

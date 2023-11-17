@@ -174,34 +174,14 @@ const AddExpenseModalCrédito = () => {
                             onSelectionChange={setSelected}
                             id="categoria"
                         >
-                            <Dropdown.Item key="Alimentação">
-                                Alimentação
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Locomoção">
-                                Locomoção
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Academia">
-                                Academia
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Celular">Celular</Dropdown.Item>
-                            <Dropdown.Item key="Vestuário">
-                                Vestuário
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Cartão">Cartão</Dropdown.Item>
+                            <Dropdown.Item key="Alimentação">Alimentação</Dropdown.Item>
                             <Dropdown.Item key="Dívida">Dívida</Dropdown.Item>
                             <Dropdown.Item key="Lazer">Lazer</Dropdown.Item>
+                            <Dropdown.Item key="Locomoção">Locomoção</Dropdown.Item>
+                            <Dropdown.Item key="Presente">Presente</Dropdown.Item>
                             <Dropdown.Item key="Saúde">Saúde</Dropdown.Item>
-                            <Dropdown.Item key="Bet">Bet</Dropdown.Item>
-                            <Dropdown.Item key="Presente">
-                                Presente
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Serviços">
-                                Serviços
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Investimento">
-                                Investimento
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Fatura">Fatura</Dropdown.Item>
+                            <Dropdown.Item key="Serviços">Serviços</Dropdown.Item>
+                            <Dropdown.Item key="Vestuário">Vestuário</Dropdown.Item>
                             <Dropdown.Item key="Viagem">Viagem</Dropdown.Item>
                             <Dropdown.Item key="Outros">Outros</Dropdown.Item>
                         </Dropdown.Menu>
