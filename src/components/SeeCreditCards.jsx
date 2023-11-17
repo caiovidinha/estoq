@@ -1,5 +1,5 @@
-import { React, useEffect, useState } from 'react'
-import { Modal, Button, Text, Card, Progress } from '@nextui-org/react'
+import { React, useState } from 'react'
+import { Modal, Button, Text, Card, Progress, Popover} from '@nextui-org/react'
 import { BsCreditCardFill } from 'react-icons/bs'
 
 const SeeCreditCards = () => {
@@ -71,6 +71,8 @@ const SeeCreditCards = () => {
                 <Modal.Body>
                     <Card>
                         <Card.Body>
+                        <Popover placement="top-start" showArrow={true}>
+                        <Popover.Trigger>
                             <div>
                                 <div className="flex items-center justify-between">
                                     <div className="rounded-full p-3 bg-purple-200">
@@ -91,7 +93,14 @@ const SeeCreditCards = () => {
                                     R$ {parseFloat(limiteNuCaio-faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuCaio).toFixed(2).toString().replace('.',',')}
                                 </p>
                             </div>
+                            </Popover.Trigger>
+                                    <Popover.Content>
+                                        <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNuCaio}</div>
+                                    </Popover.Content>
+                                    </Popover>
 
+                    <Popover placement="top-start" showArrow={true}>
+                        <Popover.Trigger>
                             <div>
                                 <div className="flex items-center justify-between">
                                     <div className="rounded-full p-3 bg-purple-200">
@@ -112,7 +121,14 @@ const SeeCreditCards = () => {
                                     R$ {parseFloat(limiteNuJulia-faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuJulia).toFixed(2).toString().replace('.',',')} 
                                 </p>
                             </div>
+                            </Popover.Trigger>
+                            <Popover.Content>
+                                <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNuJulia}</div>
+                            </Popover.Content>
+                            </Popover>
 
+                        <Popover className="-mr-20" placement="top-start" showArrow={true}>
+                            <Popover.Trigger>
                             <div>
                                 <div className="flex items-center justify-between">
                                     <div className="rounded-full p-3 bg-blue-200">
@@ -132,6 +148,11 @@ const SeeCreditCards = () => {
                                     R$ {parseFloat(limiteNeonJulia-faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNeonJulia).toFixed(2).toString().replace('.',',')} 
                                 </p>
                             </div>
+                            </Popover.Trigger>
+                            <Popover.Content>
+                                <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNeonJulia}</div>
+                            </Popover.Content>
+                            </Popover>
                         </Card.Body>
                     </Card>
                 </Modal.Body>
