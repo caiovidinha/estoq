@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Progress, Popover} from '@nextui-org/react'
+import { Modal, Progress, Popover, Text} from '@nextui-org/react'
 import { BsThreeDots } from 'react-icons/bs'
 import {
     BiRestaurant,
@@ -17,12 +17,16 @@ import { SiBetfair, SiFreelancer, SiYourtraveldottv  } from 'react-icons/si'
 import { AiOutlineTool } from 'react-icons/ai'
 import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri'
 import { Categorias } from '@/components/Categorias'
+import { Mov } from '@/components/Mov'
 
 const categorias = () => {
 
     const [categorias, setCategorias] = useState([])
     const [total, setTotal] = useState([])
-
+    const [det, setDetalhes] = useState([])
+    const [visible, setVisible] = useState(false)
+    const [mesModal, setMesModal] = useState([])
+    const [catModal, setCatModal] = useState([])
 
     let zapier = 'https://hooks.zapier.com/hooks/catch/11052334/3kuysos/'
     let hoje = new Date().toISOString()
@@ -67,16 +71,32 @@ const categorias = () => {
             break                                                               
     }
 
+    
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
     let SHEET_TITLE = 'Categorias'
     let SHEET_RANGE = 'A2:B'
     let FULL_URL =
+    'https://docs.google.com/spreadsheets/d/' +
+    SHEET_ID +
+    '/gviz/tq?sheet=' +
+    SHEET_TITLE +
+    '&range=' +
+    SHEET_RANGE
+    
+    let SHEET_TITLE_MOV = 'Extrato'
+    let SHEET_RANGE_MOV = 'A:H'
+    let FULL_URL_MOV =
         'https://docs.google.com/spreadsheets/d/' +
         SHEET_ID +
         '/gviz/tq?sheet=' +
-        SHEET_TITLE +
+        SHEET_TITLE_MOV +
         '&range=' +
-        SHEET_RANGE
+        SHEET_RANGE_MOV
+
+
+    const closeHandler = () => {
+        setVisible(false)
+    }
 
     const changeData = async () => {
         let ano = document.getElementById('ano').value
@@ -154,6 +174,79 @@ const categorias = () => {
         setTotal(totals)
         setCategorias(categorias.arrayCat)
     })
+
+    const detailCategory = async (categoria) => {
+        let mes = document.getElementById('mes').value
+        setMesModal(mes)
+        setCatModal(categoria)
+        switch(mes){
+            case "Janeiro":
+                mes = '1'
+                break
+            case "Fevereiro":
+                mes = '2'
+                break
+            case "Março":
+                mes = '3'
+                break
+            case "Abril":
+                mes = '4'
+                break
+            case "Maio":
+                mes = '5'
+                break
+            case "Junho":
+                mes = '6'
+                break
+            case "Julho":
+                mes = '7'
+                break
+            case "Agosto":
+                mes = '8'
+                break
+            case "Setembro":
+                mes = '9'
+                break  
+            case "Outubro":
+                mes = '10'
+                break  
+            case "Novembro":
+                mes = '11'
+                break  
+            case "Dezembro":
+                mes = '12'
+                break                                                               
+        }
+        fetch(FULL_URL_MOV)
+        .then((res) => res.text())
+        .then((rep) => {
+            let data = JSON.parse(rep.substr(47).slice(0, -2))
+            let produto = new Mov()
+            for (let i = 0; i < data.table.rows.length; i++) {
+                let date = data.table.rows[i].c[3].v
+                date = date.replace(/[^0-9,]/g, '')
+                if (date[6] === ',') {
+                    date = date.slice(0, 5) + '0' + date.slice(5)
+                }
+                let month = parseInt(date.slice(5, 7)) + 1
+                if(data.table.rows[i].c[1].v===categoria && month==mes){
+                produto.salvar(
+                    data.table.rows[i].c[0].v,
+                    data.table.rows[i].c[1].v,
+                    data.table.rows[i].c[2].v.toFixed(2),
+                    data.table.rows[i].c[3].v,
+                    data.table.rows[i].c[4].v,
+                    data.table.rows[i].c[5].v,
+                    data.table.rows[i].c[6].v,
+                    data.table.rows[i].c[7].v
+                )
+            }
+            }
+            setDetalhes(produto.arrayMov)
+        }).then((ret) => {
+            setVisible(true)
+        })
+    }
 
     useEffect(() => {
         changeData();
@@ -374,6 +467,7 @@ const categorias = () => {
                                     </div>
                                     <div
                                         className='text-blue-700 font-bold'
+                                        onClick={() => detailCategory(cat.categoria)}
                                     >
                                         {'R$ ' + cat.valor}
                                     </div>
@@ -385,6 +479,39 @@ const categorias = () => {
 
                 </div>
             </div>
+            <Modal
+                    closeButton
+                    aria-labelledby="modal-title"
+                    open={visible}
+                    onClose={closeHandler}
+                >
+                    <Modal.Header>
+                        <Text id="modal-title" size={18}>
+                            <Text b size={18}>
+                                {catModal + ' - ' + mesModal}
+                            </Text>
+                        </Text>
+                    </Modal.Header>
+                    <Modal.Body className="text-center">
+                        <ul>{det
+                            .slice(0)
+                            .reverse()
+                            .map((mov,index) => (
+                            <li
+                            key={index}
+                            className="bg-gray-50 hover:bg-gray-100 rounded-lg my-3 p-2 w-full flex justify-between cursor-pointer"
+                            >
+                                <div className="grid grid-cols-1 w-2/3">
+                                <div className='font-bold'>{mov.detalhes}</div>
+                                <div className='text-red-700'>{'R$ '+(parseFloat(-mov.valor).toFixed(2).replace('.', ','))}</div>
+                                </div>
+                                <div className='self-center'>{mov.data}</div>
+                            </li>
+                            ))
+                            }
+                        </ul>
+                    </Modal.Body>
+            </Modal>
         </div>
     )
 }
