@@ -209,7 +209,7 @@ const AddExpenseModalCrédito = () => {
                         placeholder="Data"
                         onFocus={fillDate}
                     />
-                    <Dropdown>
+                    <Dropdown type='listbox'>
                         <Dropdown.Button
                             bordered
                             color="error"
@@ -224,6 +224,7 @@ const AddExpenseModalCrédito = () => {
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
                             id="mes"
+                            className='h-72'
                         >
                             <Dropdown.Item key="01 - JANEIRO">
                                 01 - JANEIRO

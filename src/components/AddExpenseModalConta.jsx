@@ -137,6 +137,7 @@ const AddExpenseModalConta = () => {
                 aria-labelledby="modal-title"
                 open={visible}
                 onClose={closeHandler}
+                
             >
                 <Modal.Header>
                     <Text id="modal-title" size={18}>
@@ -200,7 +201,7 @@ const AddExpenseModalConta = () => {
                         placeholder="Data"
                         onFocus={fillDate}
                     />
-                    <Dropdown>
+                    <Dropdown type='listbox'>
                         <Dropdown.Button
                             bordered
                             color="error"
@@ -208,6 +209,7 @@ const AddExpenseModalConta = () => {
                         >
                             {selectedValueMes}
                         </Dropdown.Button>
+                        
                         <Dropdown.Menu
                             aria-label="Single selection actions"
                             color="error"
@@ -215,6 +217,7 @@ const AddExpenseModalConta = () => {
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
                             id="mes"
+                            className='h-72'
                         >
                             <Dropdown.Item key="01 - JANEIRO">
                                 01 - JANEIRO
@@ -252,6 +255,7 @@ const AddExpenseModalConta = () => {
                             <Dropdown.Item key="12 - DEZEMBRO">
                                 12 - DEZEMBRO
                             </Dropdown.Item>
+                            
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input

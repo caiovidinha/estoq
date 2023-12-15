@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { Checkbox } from '@nextui-org/react'
-import { BsFillCalendarCheckFill } from 'react-icons/bs'
+import React, { useState } from 'react'
 import { Categorias } from '@/components/Categorias'
 
 const mes = () => {
 
     const [items, setItems] = useState([])
-    const [totals, setTotal] = useState([])
 
     let hoje = new Date().toISOString()
     hoje = hoje.slice(5, 7)
@@ -40,7 +37,6 @@ const mes = () => {
                     valor,
                 )
             }
-            setTotal(totals)
             categorias.salvar("Total",totals)
             setItems(categorias.arrayCat)
         })

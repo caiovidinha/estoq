@@ -165,7 +165,7 @@ const AddIncomeModalBus = () => {
                         placeholder="Data"
                         onFocus={fillDate}
                     />
-                    <Dropdown>
+                    <Dropdown type='listbox'>
                         <Dropdown.Button
                             bordered
                             color="success"
@@ -180,6 +180,7 @@ const AddIncomeModalBus = () => {
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
                             id="mes"
+                            className='h-72'
                         >
                             <Dropdown.Item key="01 - JANEIRO">
                                 01 - JANEIRO
