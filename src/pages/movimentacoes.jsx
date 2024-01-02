@@ -360,7 +360,7 @@ const movimentacoes = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="flex text-gray-600 sm:text-left text-left justify-between">
+                                    <div className="flex text-gray-600 sm:text-left text-left justify-between">
                                         <select
                                             id={'status' + index}
                                             key={index}
@@ -414,7 +414,7 @@ const movimentacoes = () => {
 										<div onClick={()=>deleteRow(index)} className='sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
-                                    </p>
+                                    </div>
                                     <p className="hidden md:flex">{mov.data}</p>
                                     <div className="flex justify-between items-center">
                                         <p className='sm:flex hidden '>
