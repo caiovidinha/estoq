@@ -10,6 +10,7 @@ import { FaChartPie  } from 'react-icons/fa'
  
 const Header = ({ children }) => {
     const [pagina, setPagina] = useState(children.type.name)
+    console.log(pagina)
 
     const dashboard = () => {
         setPagina('Home')
