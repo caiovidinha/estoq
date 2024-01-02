@@ -43,6 +43,7 @@ const mes = () => {
 
     return (
         <div className="bg-gray-100 min-h-screen">
+            <title>Lista de Desejos - CF</title>
             <div className="p-4">
                 <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
                     <div className="text-center font-bold text-lg">

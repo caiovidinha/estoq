@@ -255,6 +255,7 @@ const categorias = () => {
 
     return (
         <div className="bg-gray-100 min-h-screen">
+            <title>Categorias - CF</title>
             <div className="p-4">
                 <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
                     <div className="grid grid-cols-3 font-bold text-lg">

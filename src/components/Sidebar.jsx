@@ -1,8 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
-import { RxHamburgerMenu, RxDashboard, RxPerson } from 'react-icons/rx'
+import { RxHamburgerMenu, RxDashboard } from 'react-icons/rx'
 import { BiTransferAlt } from 'react-icons/bi'
-import { FiSettings } from 'react-icons/fi'
 
 const Sidebar = ({ children }) => {
     return (
