@@ -8,7 +8,6 @@ import AddIncomeModalCredito from './AddIncomeModalCredito'
 import AddExpenseModalCredito from './AddExpenseModalCredito'
 import AddIncomeModalBus from './AddIncomeModalBus'
 import AddExpenseModalBus from './AddExpenseModalBus'
-import AddFatura from './AddFatura'
 import SeeCreditCards from './SeeCreditCards'
 
 const TopCards = () => {
@@ -91,7 +90,6 @@ const TopCards = () => {
                             ).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
-                    <AddFatura />
                 </div>
                 <div className="flex w-[130px] justify-between">
                     <AddIncomeModalCredito />

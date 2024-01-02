@@ -9,7 +9,8 @@ import { BsBagHeartFill  } from 'react-icons/bs'
 import { FaChartPie  } from 'react-icons/fa'
  
 const Header = ({ children }) => {
-    const [pagina, setPagina] = useState('dashboard')
+    const [pagina, setPagina] = useState('')
+    // console.log(document.title)
 
     const dashboard = () => {
         setPagina('dashboard')
