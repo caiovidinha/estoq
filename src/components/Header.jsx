@@ -9,11 +9,10 @@ import { BsBagHeartFill  } from 'react-icons/bs'
 import { FaChartPie  } from 'react-icons/fa'
  
 const Header = ({ children }) => {
-    const [pagina, setPagina] = useState('')
-    // console.log(document.title)
+    const [pagina, setPagina] = useState(children.type.name)
 
     const dashboard = () => {
-        setPagina('dashboard')
+        setPagina('Home')
     }
 
     const movimentacao = () => {
@@ -38,7 +37,7 @@ const Header = ({ children }) => {
                 <Link className='inline-block rounded-full' onClick={dashboard} href="/">
                     <div
                         className={
-                            pagina === 'dashboard'
+                            pagina === 'Home'
                                 ? 'bg-gray-400 hover:bg-gray-500 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                                 : 'bg-gray-200 hover:bg-gray-300 cursor-pointer p-3 rounded-full sm:rounded-lg sm:w-full inline-block sm:flex sm:justify-center'
                         }

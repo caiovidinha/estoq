@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Categorias } from '@/components/Categorias'
 
-const mes = () => {
+const wishlist = () => {
 
     const [items, setItems] = useState([])
 
@@ -72,4 +72,4 @@ const mes = () => {
     )
 }
 
-export default mes
+export default wishlist
