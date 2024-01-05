@@ -36,6 +36,55 @@ const apagar = () => {
 	const[confirmarExc,setConfirmarExc] = useState(false)
 	const[excluido,setExcluido] = useState(false)
 	const[loading,setLoading] = useState(false)
+    const[filterMes, setFilterMes] = useState([])
+    const[filterAno, setFilterAno] = useState([])
+    const[update, setUpdate] = useState(false)
+    let hoje = new Date().toISOString()
+    let hojeMes = hoje.slice(5, 7)
+    let hojeAno = hoje.slice(0, 4)
+    if(!update){
+        setFilterMes(hojeMes)
+        setFilterAno(hojeAno)
+        setUpdate(true)
+    }
+    switch(hojeMes){
+        case "01":
+            hojeMes = 'Janeiro'
+            break
+        case "02":
+            hojeMes = 'Fevereiro'
+            break
+        case "03":
+            hojeMes = 'Março'
+            break
+        case "04":
+            hojeMes = 'Abril'
+            break
+        case "05":
+            hojeMes = 'Maio'
+            break
+        case "06":
+            hojeMes = 'Junho'
+            break
+        case "07":
+            hojeMes = 'Julho'
+            break
+        case "08":
+            hojeMes = 'Agosto'
+            break
+        case "09":
+            hojeMes = 'Setembro'
+            break  
+        case "10":
+            hojeMes = 'Outubro'
+            break  
+        case "11":
+            hojeMes = 'Novembro'
+            break  
+        case "12":
+            hojeMes = 'Dezembro'
+            break                                                               
+    }
 
     const handler = (
         tipo,
@@ -117,6 +166,52 @@ const apagar = () => {
         })
     }
 
+    const changeData = async () => {
+        let ano = document.getElementById('ano').value
+        setFilterAno(ano)
+        let mes = document.getElementById('mes').value
+        switch(mes){
+            case "Janeiro":
+                mes = '01'
+                break
+            case "Fevereiro":
+                mes = '02'
+                break
+            case "Março":
+                mes = '03'
+                break
+            case "Abril":
+                mes = '04'
+                break
+            case "Maio":
+                mes = '05'
+                break
+            case "Junho":
+                mes = '06'
+                break
+            case "Julho":
+                mes = '07'
+                break
+            case "Agosto":
+                mes = '08'
+                break
+            case "Setembro":
+                mes = '09'
+                break  
+            case "Outubro":
+                mes = '10'
+                break  
+            case "Novembro":
+                mes = '11'
+                break  
+            case "Dezembro":
+                mes = '12'
+                break                                                               
+        }
+        setFilterMes(mes)
+        
+    }
+
     const deleteRow = async (
         index
     ) => {
@@ -146,8 +241,22 @@ const apagar = () => {
             let data = JSON.parse(rep.substr(47).slice(0, -2))
             let produto = new Mov()
             for (let i = 0; i < data.table.rows.length; i++) {
-                if(data.table.rows[i].c[6].v=='A pagar' || data.table.rows[i].c[6].v=='A receber')
-                {produto.salvar(
+                let date = data.table.rows[i].c[3].v
+                date = date.replace(/[^0-9,]/g, '')
+
+                if (date[6] === ',') {
+                    date = date.slice(0, 5) + '0' + date.slice(5)
+                }
+                let month = parseInt(date.slice(5, 7)) + 1
+                if(month<10) month =  '0' + month.toString()
+                let year = date.slice(0, 4)
+                
+                if(filterMes == month && filterAno == year)
+                {
+                    
+                    if(data.table.rows[i].c[6].v=='A pagar' || data.table.rows[i].c[6].v=='A receber')
+                {
+                    produto.salvar(
                     data.table.rows[i].c[0].v,
                     data.table.rows[i].c[1].v,
                     data.table.rows[i].c[2].v.toFixed(2),
@@ -156,7 +265,7 @@ const apagar = () => {
                     data.table.rows[i].c[5].v,
                     data.table.rows[i].c[6].v,
                     data.table.rows[i].c[7].v
-                )}
+                )}}
             }
             setMovimentacao(produto.arrayMov)
         })
@@ -184,6 +293,71 @@ const apagar = () => {
             <title>A pagar/A receber - CF</title>
             <div className="p-4">
                 <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
+                    <div className='w-full flex md:justify-end h-10 '>
+                        <div className='w-[100%] md:w-[30%] md:justify-end gap-[10%] md:gap-3 flex'>
+                            <select
+                            id="ano"
+                            key="ano"
+                            className=" w-[30%] md:w-20 h-full bg-blue-800 p-1 rounded-lg hover:bg-blue-400 text-blue-200 font-semibold outline-none hover:cursor-pointer text-lg"
+                            onChange={changeData}
+                            defaultValue={hojeAno}
+                        >
+                            <option key="2023">
+                                2023
+                            </option>
+                            <option key="2024">
+                                2024
+                            </option>
+                            
+
+                        </select>
+
+                        <select
+                            id="mes"
+                            key="mes"
+                            className="w-[60%] md:w-32 h-full bg-blue-200 p-1 rounded-lg hover:bg-blue-400 text-blue-800 outline-none font-semibold hover:cursor-pointer text-lg"
+                            onChange={changeData}
+                            defaultValue={hojeMes}
+                        >
+                            <option value="Janeiro">
+                                Janeiro
+                            </option>
+                            <option value="Fevereiro">
+                                Fevereiro
+                            </option>
+                            <option value="Março">
+                                Março
+                            </option>
+                            <option value="Abril">
+                                Abril
+                            </option>
+                            <option value="Maio">
+                                Maio
+                            </option>
+                            <option value="Junho">
+                                Junho
+                            </option>
+                            <option value="Julho">
+                                Julho
+                            </option>
+                            <option value="Agosto">
+                                Agosto
+                            </option>
+                            <option value="Setembro">
+                                Setembro
+                            </option>
+                            <option value="Outubro">
+                                Outubro
+                            </option>
+                            <option  value="Novembro">
+                                Novembro
+                            </option>
+                            <option value="Dezembro">
+                                Dezembro
+                            </option>
+
+                        </select></div>
+                    </div>
                     <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
                         <span>Movimentação</span>
                         <span className="sm:text-left text-right">Status</span>
