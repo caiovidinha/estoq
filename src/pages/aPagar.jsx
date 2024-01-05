@@ -267,6 +267,11 @@ const apagar = () => {
                     data.table.rows[i].c[7].v
                 )}}
             }
+            produto.arrayMov = produto.arrayMov.sort((a,b) => {
+                let [dayA, monthA, yearA] = a.data.split('/')
+                let [dayB, monthB, yearB] = b.data.split('/')
+                return new Date(+yearA, +monthA - 1, +dayA) - new Date(+yearB, +monthB - 1, +dayB)
+            })
             setMovimentacao(produto.arrayMov)
         })
 
@@ -367,7 +372,6 @@ const apagar = () => {
                     <ul>
                         {movimentacao
                             .slice(0)
-                            .reverse()
                             .map((mov, index) => (
                                 <li
                                     key={index}
