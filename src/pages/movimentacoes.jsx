@@ -83,7 +83,8 @@ const movimentacoes = () => {
         mes,
         detalhes,
         conta,
-        index
+        index,
+        id
     ) => {
         setTipo(tipo)
         seteDescritivo(descritivo)
@@ -95,7 +96,6 @@ const movimentacoes = () => {
         let ident = 'status' + index
         let statusMov = document.getElementById(ident).value
         setConta(conta)
-        let indice = movimentacao.length + 2 - index
         const post = {
             tipo: tipo,
             descritivo: descritivo,
@@ -105,7 +105,7 @@ const movimentacoes = () => {
             detalhes: detalhes,
             situacao: statusMov,
             conta: conta,
-            index: indice
+            index: id
         }
         const res = await fetch(zap, {
             method: 'POST',
@@ -118,11 +118,10 @@ const movimentacoes = () => {
     }
 
     const deleteRow = async (
-        index
+        id
     ) => {
-        let i = movimentacao.length + 2 - parseInt(index)
         setPost({
-            index: i
+            index: id
         })
 		openConf()
 	}
@@ -147,6 +146,7 @@ const movimentacoes = () => {
             let produto = new Mov()
             for (let i = 0; i < data.table.rows.length; i++) {
                 produto.salvar(
+                    (i+3),
                     data.table.rows[i].c[0].v,
                     data.table.rows[i].c[1].v,
                     data.table.rows[i].c[2].v.toFixed(2),
@@ -195,7 +195,7 @@ const movimentacoes = () => {
                             .reverse()
                             .map((mov, index) => (
                                 <li
-                                    key={index}
+                                    key={mov.id}
                                     className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                                 >
                                     <div
@@ -382,7 +382,8 @@ const movimentacoes = () => {
                                                     mov.mes,
                                                     mov.detalhes,
                                                     mov.conta,
-                                                    index
+                                                    index,
+                                                    mov.id
                                                 )
                                             }
                                         >
@@ -411,7 +412,7 @@ const movimentacoes = () => {
                                                     : 'Pago'}
                                             </option>
                                         </select>
-										<div onClick={()=>deleteRow(index)} className='sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
+										<div onClick={()=>deleteRow(mov.id)} className='sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
                                     </div>
@@ -420,7 +421,7 @@ const movimentacoes = () => {
                                         <p className='sm:flex hidden '>
                                             {mov.conta}
                                         </p>
-										<div onClick={()=>deleteRow(index)} className='bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950'>
+										<div onClick={()=>deleteRow(mov.id)} className='bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950'>
 											<RiDeleteBin2Fill className="text-black" size={20}/>
 										</div>
                                     </div>

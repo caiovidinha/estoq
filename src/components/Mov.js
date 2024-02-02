@@ -4,8 +4,9 @@ export class Mov {
         this.arrayMov = []
     }
 
-    salvar(tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
+    salvar(id, tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
         let produto = this.lerDados(
+            id,
             tipo,
             descritivo,
             valor,
@@ -18,7 +19,7 @@ export class Mov {
         this.arrayMov.push(produto)
     }
 
-    lerDados(tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
+    lerDados(id, tipo, descritivo, valor, data, mes, detalhes, situacao, conta) {
         let produto = {}
         produto.dataRaw = data
         data = data.replace(/[^0-9,]/g, '')
@@ -30,7 +31,7 @@ export class Mov {
         let day = data.slice(8)
         if (day.length === 1) day = '0' + day
         data = day + '/' + month + '/' + data.slice(0, 4)
-        produto.id = this.id
+        produto.id = id
         produto.tipo = tipo
         produto.descritivo = descritivo
         produto.valor = valor
@@ -40,7 +41,6 @@ export class Mov {
         produto.situacao = situacao
         produto.conta = conta
 
-        this.id++
         return produto
     }
 }

@@ -38,7 +38,10 @@ const RecentOrders = () => {
             let data = JSON.parse(rep.substr(47).slice(0, -2))
             let produto = new Mov()
             for (let i = 0; i < data.table.rows.length; i++) {
+                // if(data.table.rows[i].c[5].v == 'Parcela Emp. Lucca (16/18)') console.log(i)
+                
                 produto.salvar(
+                    (i+3),
                     data.table.rows[i].c[0].v,
                     data.table.rows[i].c[1].v,
                     data.table.rows[i].c[2].v.toFixed(2),
@@ -60,7 +63,7 @@ const RecentOrders = () => {
                     .reverse()
                     .map((mov, id) => (
                         <li
-                            key={id}
+                            key={mov.id}
                             className="bg-gray-50 rounded-lg my-3 p-2 flex items-center cursor-pointer"
                         >
                             <div
