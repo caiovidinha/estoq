@@ -1,7 +1,7 @@
 import { React, useEffect, useState, useRef } from 'react'
 import { BiLogoMastercard } from 'react-icons/bi'
 import { BsBusFrontFill } from 'react-icons/bs'
-import { SiNubank } from 'react-icons/si'
+import { BiSolidBank } from "react-icons/bi";
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
 import AddIncomeModalCredito from './AddIncomeModalCredito'
@@ -48,7 +48,6 @@ const TopCards = () => {
         })
     }
 
-
         useEffect(() => {
             getSaldo()
         })
@@ -57,7 +56,7 @@ const TopCards = () => {
         <div className="grid lg:grid-cols-6 gap-4 p-4">
             <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
                 <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
-                    <SiNubank size={30} />
+                    <BiSolidBank size={30} />
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
@@ -65,7 +64,7 @@ const TopCards = () => {
                         {parseFloat(saldoNu).toFixed(2).toString().replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
-                        Conta Nubank
+                        Saldo em Conta
                     </p>
                 </div>
                 <div className="flex w-[130px] justify-between">
