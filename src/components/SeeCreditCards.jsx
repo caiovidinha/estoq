@@ -1,19 +1,15 @@
 import { React, useState } from 'react'
 import { Modal, Button, Text, Card, Progress, Popover} from '@nextui-org/react'
 import { BsCreditCardFill } from 'react-icons/bs'
+import { Cards } from './Cards'
 
 const SeeCreditCards = () => {
     //API
 
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
     let SHEET_TITLE = 'API'
-    let SHEET_RANGE = 'A1:H2'
-    const [faturaNuCaio, setFaturaNuCaio] = useState([])
-    const [faturaNuJulia, setFaturaNuJulia] = useState([])
-    const [faturaNeonJulia, setFaturaNeonJulia] = useState([])
-    const [limiteNuCaio, setLimiteNuCaio] = useState([])
-    const [limiteNuJulia, setLimiteNuJulia] = useState([])
-    const [limiteNeonJulia, setLimiteNeonJulia] = useState([])
+    let SHEET_RANGE = 'J:M'
+    const [cartoes, setCartoes] = useState([])
 
     let FULL_URL =
         'https://docs.google.com/spreadsheets/d/' +
@@ -26,12 +22,18 @@ const SeeCreditCards = () => {
         .then((res) => res.text())
         .then((rep) => {
             let data = JSON.parse(rep.substr(47).slice(0, -2))
-            setLimiteNuCaio(data.table.rows[0].c[1].v.toFixed(2))
-            setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
-            setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
-            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
-            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
-            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
+            let cartao = new Cards()
+            for(let i=0;i<data.table.rows.length;i++){
+                cartao.salvar(
+                i,
+                data.table.rows[i].c[0].v,
+                data.table.rows[i].c[1].v,
+                data.table.rows[i].c[2].v.toFixed(2),
+                data.table.rows[i].c[3].v.toFixed(2)
+                )
+            }
+            setCartoes(cartao.arrayCard)
+
         })
 
     //API
@@ -71,88 +73,51 @@ const SeeCreditCards = () => {
                 <Modal.Body>
                     <Card>
                         <Card.Body>
-                        <Popover placement="top-start" showArrow={true}>
-                        <Popover.Trigger>
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <div className="rounded-full p-3 bg-purple-200">
-                                        <BsCreditCardFill className="text-purple-900" />
+
+                            <ul>
+                                {cartoes
+                                .slice(0)
+                                .map((card,index)=>(<li>
+                                    <Popover placement="top-start" showArrow={true}>
+                                    <Popover.Trigger>
+                                    <div>
+                                        <div className="flex items-center justify-between">
+                                            <div className={card.cartao.split(' ')[0] == 
+                                                'Nubank' ? "rounded-full p-3 bg-purple-200" 
+                                                : card.cartao.split(' ')[0] == 
+                                                'Neon' ? "rounded-full p-3 bg-blue-200"
+                                                : "rounded-full p-3 bg-gray-200"}>
+                                                <BsCreditCardFill className=
+                                                {card.cartao.split(' ')[0] == 
+                                                'Nubank' ? "text-purple-900" 
+                                                : card.cartao.split(' ')[0] == 
+                                                'Neon' ? "text-blue-900"
+                                                : "text-gray-700"} />
+                                            </div>
+                                            <Text>{card.cartao}</Text>
+                                            <div className="w-28">
+                                                <Progress
+                                                    color="secondary"
+                                                    value={(
+                                                        ((card.limite-card.fatura) * 100) /
+                                                        card.limite
+                                                    ).toFixed(1)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-right mr-1 -mt-1 text-xs text-gray-400">
+                                            R$ {parseFloat(card.limite-card.fatura).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(card.limite).toFixed(2).toString().replace('.',',')}
+                                        </p>
                                     </div>
-                                    <Text>Nubank Caio</Text>
-                                    <div className="w-28">
-                                        <Progress
-                                            color="secondary"
-                                            value={(
-                                                ((limiteNuCaio-faturaNuCaio) * 100) /
-                                                limiteNuCaio
-                                            ).toFixed(1)}
-                                        />
-                                    </div>
-                                </div>
-                                <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(limiteNuCaio-faturaNuCaio).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuCaio).toFixed(2).toString().replace('.',',')}
-                                </p>
-                            </div>
-                            </Popover.Trigger>
-                                    <Popover.Content>
-                                        <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNuCaio}</div>
-                                    </Popover.Content>
+                                    </Popover.Trigger>
+                                            <Popover.Content>
+                                                <div className="text-small font-bold p-4">{'Fatura: R$ '+ card.fatura}</div>
+                                            </Popover.Content>
                                     </Popover>
-
-                    <Popover placement="top-start" showArrow={true}>
-                        <Popover.Trigger>
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <div className="rounded-full p-3 bg-purple-200">
-                                        <BsCreditCardFill className="text-purple-900" />
-                                    </div>
-                                    <Text>Nubank Julia</Text>
-                                    <div className="w-28">
-                                        <Progress
-                                            color="secondary"
-                                            value={(
-                                                ((limiteNuJulia-faturaNuJulia) * 100) /
-                                                limiteNuJulia
-                                            ).toFixed(1)}
-                                        />
-                                    </div>
-                                </div>
-                                <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(limiteNuJulia-faturaNuJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNuJulia).toFixed(2).toString().replace('.',',')} 
-                                </p>
-                            </div>
-                            </Popover.Trigger>
-                            <Popover.Content>
-                                <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNuJulia}</div>
-                            </Popover.Content>
-                            </Popover>
-
-                        <Popover className="-mr-20" placement="top-start" showArrow={true}>
-                            <Popover.Trigger>
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <div className="rounded-full p-3 bg-blue-200">
-                                        <BsCreditCardFill className="text-blue-900" />
-                                    </div>
-                                    <Text>Neon Julia</Text>
-                                    <div className="w-28">
-                                        <Progress
-                                            value={(
-                                                ((limiteNeonJulia-faturaNeonJulia) * 100) /
-                                                limiteNeonJulia
-                                            ).toFixed(1)}
-                                        />
-                                    </div>
-                                </div>
-                                <p className="text-right mr-1 text-xs text-gray-400">
-                                    R$ {parseFloat(limiteNeonJulia-faturaNeonJulia).toFixed(2).toString().replace('.',',')} / R$ {parseFloat(limiteNeonJulia).toFixed(2).toString().replace('.',',')} 
-                                </p>
-                            </div>
-                            </Popover.Trigger>
-                            <Popover.Content>
-                                <div className="text-small font-bold p-4">{'Fatura: R$ '+ faturaNeonJulia}</div>
-                            </Popover.Content>
-                            </Popover>
+                                </li>))}
+                            
+                            </ul>
+                    
                         </Card.Body>
                     </Card>
                 </Modal.Body>
