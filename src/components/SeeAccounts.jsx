@@ -74,7 +74,7 @@ const SeeAccounts = () => {
                             <ul>
                                 {contas
                                 .slice(0)
-                                .map((account,index)=>(<li>
+                                .map((account,index)=>(<li key={index}>
                                     <div>
                                         <div className="flex items-center justify-between">
                                             <div className="rounded-full p-3 bg-gray-200 my-2">

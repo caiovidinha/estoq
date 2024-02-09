@@ -77,7 +77,7 @@ const SeeCreditCards = () => {
                             <ul>
                                 {cartoes
                                 .slice(0)
-                                .map((card,index)=>(<li>
+                                .map((card,index)=>(<li key={index}>
                                     <Popover placement="top-start" showArrow={true}>
                                     <Popover.Trigger>
                                     <div>
