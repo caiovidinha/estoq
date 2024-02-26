@@ -395,8 +395,8 @@ const apagar = () => {
                                         <div
                                             className={
                                                 mov.tipo === 'RECEITA'
-                                                    ? 'bg-green-200 rounded-lg p-3'
-                                                    : 'bg-red-200 rounded-lg p-3'
+                                                    ? 'bg-green-200 rounded-lg p-3 h-[50%] my-auto'
+                                                    : 'bg-red-200 rounded-lg p-3 h-[50%] my-auto'
                                             }
                                         >
                                             {mov.descritivo ===
@@ -526,7 +526,7 @@ const apagar = () => {
                                                     .toFixed(2)
                                                     .replace('.', ',')}
                                             </p>
-                                            <p className="text-gray-800 text-sm lg:hidden">
+                                            <p className="text-gray-800 text-xs lg:hidden">
                                                 {mov.detalhes.length >= 15
                                                     ? mov.detalhes.slice(
                                                           0,
@@ -537,6 +537,7 @@ const apagar = () => {
                                             <p className="text-gray-800 text-sm hidden lg:block">
                                                 {mov.detalhes}
                                             </p>
+                                            <p className="text-gray-500 text-xs">{mov.conta}</p>
                                         </div>
                                     </div>
                                     <div className="flex text-gray-600 sm:text-left text-left justify-between">
