@@ -363,6 +363,7 @@ const apagar = () => {
 
                         </select></div>
                     </div>
+                        <div className="w-full items-end justify-end flex"></div>
                     <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
                         <span>Movimentação</span>
                         <span className="sm:text-left text-right">Status</span>

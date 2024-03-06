@@ -14,7 +14,7 @@ import SeeAccounts from './SeeAccounts';
 const TopCards = () => {
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
     let SHEET_TITLE = 'API'
-    let SHEET_RANGE = 'A1:H2'
+    let SHEET_RANGE = 'A1:M'
 
     let FULL_URL =
         'https://docs.google.com/spreadsheets/d/' +
@@ -28,9 +28,11 @@ const TopCards = () => {
     const [limiteNuCaio, setLimiteNuCaio] = useState([])
     const [limiteNuJulia, setLimiteNuJulia] = useState([])
     const [limiteNeonJulia, setLimiteNeonJulia] = useState([])
+    const [limitePicPayCaio, setLimitePicPayCaio] = useState([])
     const [faturaNuCaio, setFaturaNuCaio] = useState([])
     const [faturaNuJulia, setFaturaNuJulia] = useState([])
     const [faturaNeonJulia, setFaturaNeonJulia] = useState([])
+    const [faturaPicPayCaio, setFaturaPicPayCaio] = useState([])
     const [saldoBU, setSaldoBU] = useState([])
 
     const getSaldo = () =>{
@@ -42,9 +44,11 @@ const TopCards = () => {
             setLimiteNuCaio(data.table.rows[0].c[1].v.toFixed(2))
             setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
             setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
+            setLimitePicPayCaio(data.table.rows[3].c[12].v.toFixed(2))
             setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
             setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
             setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
+            setFaturaPicPayCaio(data.table.rows[3].c[11].v.toFixed(2))
             setSaldoBU(data.table.rows[0].c[7].v.toFixed(2))
         })
     }
@@ -84,9 +88,11 @@ const TopCards = () => {
                         {'R$ '}
                         {(parseFloat(limiteNeonJulia) +
                             parseFloat(limiteNuJulia) +
+                            parseFloat(limitePicPayCaio) +
                             parseFloat(limiteNuCaio) -
                             parseFloat(faturaNuCaio) -
                             parseFloat (faturaNeonJulia) - 
+                            parseFloat (faturaPicPayCaio) - 
                             parseFloat (faturaNuJulia)
                             ).toFixed(2).toString().replace('.',',')}
                     </p>
