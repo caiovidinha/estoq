@@ -293,6 +293,9 @@ const AddExpenseModalCrédito = () => {
                             <Dropdown.Item key="Neon Julia">
                                 Neon Julia
                             </Dropdown.Item>
+                            <Dropdown.Item key="PicPay Caio">
+                                PicPay Caio
+                            </Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                     <div className="w-full flex justify-center">
