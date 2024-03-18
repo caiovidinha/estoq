@@ -173,6 +173,7 @@ const AddExpenseModalConta = () => {
                             <Dropdown.Item key="Serviços">Serviços</Dropdown.Item>
                             <Dropdown.Item key="Vestuário">Vestuário</Dropdown.Item>
                             <Dropdown.Item key="Viagem">Viagem</Dropdown.Item>
+                            <Dropdown.Item key="Investimento">Investimento</Dropdown.Item>
                             <Dropdown.Item key="Outros">Outros</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>

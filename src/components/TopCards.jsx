@@ -10,6 +10,7 @@ import AddIncomeModalBus from './AddIncomeModalBus'
 import AddExpenseModalBus from './AddExpenseModalBus'
 import SeeCreditCards from './SeeCreditCards'
 import SeeAccounts from './SeeAccounts';
+import AddInvestimento from './AddInvestimento';
 
 const TopCards = () => {
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
