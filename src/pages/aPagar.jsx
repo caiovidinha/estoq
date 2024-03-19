@@ -308,7 +308,7 @@ const apagar = () => {
                         pag += parseFloat(movimentacao[i].valor.toString().replace(',','.'))
                     }
                 }
-                console.log(rec,pag)
+                // console.log(rec,pag)
             }
     })
     return (
