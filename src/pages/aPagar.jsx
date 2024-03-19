@@ -299,7 +299,7 @@ const apagar = () => {
             }
             let rec =  0
             let pag = 0
-            if(!sum && movimentacao.length != 0){
+            if(movimentacao.length != 0){
                 for(let i = 0; i<movimentacao.length;i++) {
                     if (movimentacao[i].tipo == 'RECEITA') {
                         rec += parseFloat(movimentacao[i].valor.toString().replace(',','.'))
@@ -309,7 +309,6 @@ const apagar = () => {
                     }
                 }
                 console.log(rec,pag)
-                setSum(true)
             }
     })
     return (
