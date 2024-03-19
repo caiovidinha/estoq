@@ -39,6 +39,10 @@ const apagar = () => {
     const[filterMes, setFilterMes] = useState([])
     const[filterAno, setFilterAno] = useState([])
     const[update, setUpdate] = useState(false)
+    const[sum, setSum] = useState(false)
+    const[receber,setReceber] = useState([])
+    const[pagar,setPagar] = useState([])
+    
     let hoje = new Date().toISOString()
     let hojeMes = hoje.slice(5, 7)
     let hojeAno = hoje.slice(0, 4)
@@ -209,6 +213,7 @@ const apagar = () => {
                 break                                                               
         }
         setFilterMes(mes)
+        setSum(false)
         
     }
 
@@ -291,6 +296,20 @@ const apagar = () => {
                     setLoading(false)
                     setExcluido(true)
                 }, 1000)
+            }
+            let rec =  0
+            let pag = 0
+            if(!sum && movimentacao.length != 0){
+                for(let i = 0; i<movimentacao.length;i++) {
+                    if (movimentacao[i].tipo == 'RECEITA') {
+                        rec += parseFloat(movimentacao[i].valor.toString().replace(',','.'))
+                    }
+                    if (movimentacao[i].tipo == 'DESPESA') {
+                        pag += parseFloat(movimentacao[i].valor.toString().replace(',','.'))
+                    }
+                }
+                console.log(rec,pag)
+                setSum(true)
             }
     })
     return (
