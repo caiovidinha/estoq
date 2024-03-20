@@ -97,7 +97,9 @@ const SeeCreditCards = () => {
                                             <Text>{card.cartao}</Text>
                                             <div className="w-28">
                                                 <Progress
-                                                    color="secondary"
+                                                    color={(((card.limite-card.fatura) * 100) /card.limite) < 30 ? "error" 
+                                                    : (((card.limite-card.fatura) * 100) /card.limite) < 50 ? "warning" 
+                                                    : "success"}
                                                     value={(
                                                         ((card.limite-card.fatura) * 100) /
                                                         card.limite
