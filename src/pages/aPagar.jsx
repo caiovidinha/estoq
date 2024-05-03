@@ -382,11 +382,7 @@ const apagar = () => {
 
                         </select></div>
                     </div>
-                        <div className="w-full items-end md:justify-end justify-around flex my-2 p-3 bg-gray-200 rounded-lg">
-                            <p className='font-bold'>A receber:&nbsp;</p>R${receber ? receber.toString().replace('.',',') : '0,00'}
-                            &nbsp;|&nbsp;<p className='font-bold'>A pagar:&nbsp;</p>R${pagar ? (-pagar).toString().replace('.',','): '0,00'}
-                            &nbsp;|&nbsp;<p className='font-bold'>Saldo:&nbsp;</p>R${(receber+pagar).toString().replace('.',',')} 
-                            </div>
+                        
                     <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
                         <span>Movimentação</span>
                         <span className="sm:text-left text-right">Status</span>
