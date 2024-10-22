@@ -5,10 +5,10 @@ import { Cards } from './Cards'
 
 const SeeCreditCards = () => {
     //API
-
     let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
     let SHEET_TITLE = 'API'
     let SHEET_RANGE = 'J:M'
+
     const [cartoes, setCartoes] = useState([])
 
     let FULL_URL =

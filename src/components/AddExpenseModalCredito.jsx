@@ -1,4 +1,4 @@
-import { React, useState, useMemo } from 'react'
+import { React, useState, useMemo, useEffect } from 'react'
 import {
     Switch,
     Modal,
@@ -11,17 +11,23 @@ import {
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { AiFillCheckCircle } from 'react-icons/ai'
+import { Cards } from './Cards'
 
 const AddExpenseModalCrédito = () => {
     const [invalid, setInvalid] = useState(false)
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [cartoes, setCartoesOK] = useState([])
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
 
     const closeHandler = () => {
         setVisible(false)
+    }
+
+    const setCartoes = (list) => {
+        setCartoesOK(list)
     }
 
     const formatarMoeda = () => {
@@ -132,6 +138,41 @@ const AddExpenseModalCrédito = () => {
         [selectedMes]
     )
 
+    useEffect(() => {
+        const fetchCartoes = async () => {
+            //API
+            let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
+            let SHEET_TITLE = 'API'
+            let SHEET_RANGE = 'J:M'
+            let FULL_URL =
+                'https://docs.google.com/spreadsheets/d/' +
+                SHEET_ID +
+                '/gviz/tq?sheet=' +
+                SHEET_TITLE +
+                '&range=' +
+                SHEET_RANGE
+                    try {
+                        const res = await fetch(FULL_URL)
+                        const rep = await res.text()
+                        let data = JSON.parse(rep.substr(47).slice(0, -2))
+                        let cartao = new Cards()
+                        for(let i=0;i<data.table.rows.length;i++){
+                            cartao.salvar(
+                            i,
+                            data.table.rows[i].c[0].v,
+                            data.table.rows[i].c[1].v,
+                            data.table.rows[i].c[2].v.toFixed(2),
+                            data.table.rows[i].c[3].v.toFixed(2)
+                            )
+                        }
+                        setCartoes(cartao.arrayCard)
+                    } catch (error) {
+                        console.error('Erro ao buscar cartões: ', error)
+                    }
+                }
+                fetchCartoes()
+            }, [])
+
     return (
         <div>
             <Button
@@ -153,7 +194,7 @@ const AddExpenseModalCrédito = () => {
                     <Text id="modal-title" size={18}>
                         Adicionar despesa&nbsp;
                         <Text b size={18}>
-                            no crédito Nubank
+                            no crédito
                         </Text>
                     </Text>
                 </Modal.Header>
@@ -284,18 +325,9 @@ const AddExpenseModalCrédito = () => {
                             onSelectionChange={setSelectedCard}
                             id="cartao"
                         >
-                            <Dropdown.Item key="Nubank Caio">
-                                Nubank Caio
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Nubank Julia">
-                                Nubank Julia
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Neon Julia">
-                                Neon Julia
-                            </Dropdown.Item>
-                            <Dropdown.Item key="PicPay Caio">
-                                PicPay Caio
-                            </Dropdown.Item>
+                            {cartoes.map((card) => (
+                                <Dropdown.Item key={card.cartao}>{card.cartao}</Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
                     <div className="w-full flex justify-center">

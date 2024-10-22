@@ -62,7 +62,7 @@ const AddExpenseModalConta = () => {
             mes: mes,
             descricao: descricao,
             status: status,
-            conta: 'Conta Nubank',
+            conta: 'Conta BTG',
         }
 
         setLoading(true)
