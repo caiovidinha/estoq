@@ -143,7 +143,7 @@ const AddExpenseModalConta = () => {
                     <Text id="modal-title" size={18}>
                         Adicionar despesa&nbsp;
                         <Text b size={18}>
-                            na conta Nubank
+                            na conta
                         </Text>
                     </Text>
                 </Modal.Header>

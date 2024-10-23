@@ -153,7 +153,7 @@ const AddIncomeModalCrédito = () => {
                     <Text id="modal-title" size={18}>
                         Adicionar receita&nbsp;
                         <Text b size={18}>
-                            no crédito Nubank
+                            no crédito
                         </Text>
                     </Text>
                 </Modal.Header>
