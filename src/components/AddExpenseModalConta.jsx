@@ -1,4 +1,4 @@
-import { React, useState, useMemo } from 'react'
+import { React, useState, useMemo, useEffect } from 'react'
 import {
     Switch,
     Modal,
@@ -11,10 +11,12 @@ import {
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { AiFillCheckCircle } from 'react-icons/ai'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
+import { Accounts } from './Accounts'
 
 const AddExpenseModalConta = () => {
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [contas, setContas] = useState([])
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -48,6 +50,7 @@ const AddExpenseModalConta = () => {
 
         const data = document.getElementById('data').value
         const descricao = document.getElementById('descricao').value
+        const conta  = selectedValueAccount
         const status =
             document.getElementById('status').getAttribute('data-state') ===
             'checked'
@@ -62,7 +65,7 @@ const AddExpenseModalConta = () => {
             mes: mes,
             descricao: descricao,
             status: status,
-            conta: 'Conta BTG',
+            conta: conta,
         }
 
         setLoading(true)
@@ -111,6 +114,8 @@ const AddExpenseModalConta = () => {
 
     const [selected, setSelected] = useState(new Set(['Categoria']))
 
+    const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
+
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
 
     const selectedValue = useMemo(
@@ -121,6 +126,43 @@ const AddExpenseModalConta = () => {
         () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
         [selectedMes]
     )
+    const selectedValueAccount = useMemo(
+        () => Array.from(selectedAccount).join(', ').replaceAll('_', ' '),
+        [selectedAccount]
+    )
+
+    useEffect(() => {
+            const fetchContas = async () => {
+                //API
+                let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
+                let SHEET_TITLE = 'API'
+                let SHEET_RANGE = 'O:P'
+                let FULL_URL =
+                    'https://docs.google.com/spreadsheets/d/' +
+                    SHEET_ID +
+                    '/gviz/tq?sheet=' +
+                    SHEET_TITLE +
+                    '&range=' +
+                    SHEET_RANGE
+                        try {
+                            const res = await fetch(FULL_URL)
+                            const rep = await res.text()
+                            let data = JSON.parse(rep.substr(47).slice(0, -2))
+                            let conta = new Accounts()
+                            for(let i=0;i<data.table.rows.length;i++){
+                                conta.salvar(
+                                i,
+                                data.table.rows[i].c[0].v,
+                                data.table.rows[i].c[1].v.toFixed(2)
+                                )
+                            }
+                            setContas(conta.arrayAccounts)
+                        } catch (error) {
+                            console.error('Erro ao buscar contas: ', error)
+                        }
+                    }
+                    fetchContas()
+                }, [])
     return (
         <div>
             <Button
@@ -269,6 +311,22 @@ const AddExpenseModalConta = () => {
                         id="descricao"
                         placeholder="Descrição"
                     />
+                    <Dropdown>
+                        <Dropdown.Button flat css={{ tt: 'capitalize' }}>
+                            {selectedValueAccount}
+                        </Dropdown.Button>
+                        <Dropdown.Menu
+                            aria-label="Single selection actions"
+                            selectionMode="single"
+                            selectedKeys={selectedAccount}
+                            onSelectionChange={setSelectedAccount}
+                            id="conta"
+                        >
+                            {contas.map((account) => (
+                                <Dropdown.Item key={account.conta}>{account.conta}</Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
 
                     <div className="w-full flex justify-center">
                         <div className="bg-gray-300 rounded-full w-48 h- flex items-center justify-left">
