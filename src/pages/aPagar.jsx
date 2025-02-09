@@ -326,12 +326,10 @@ const apagar = () => {
                             onChange={changeData}
                             defaultValue={hojeAno}
                         >
-                            <option key="2023">
-                                2023
-                            </option>
-                            <option key="2024">
-                                2024
-                            </option>
+                            {Array.from({ length: new Date().getFullYear() - 2022 }, (_, i) => {
+                                const year = 2023 + i;
+                                return <option key={year} value={year}>{year}</option>;
+                            })}
                             
 
                         </select>
