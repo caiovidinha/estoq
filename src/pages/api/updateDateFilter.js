@@ -1,4 +1,4 @@
-import { GOOGLE_SERVICE_ACCOUNT_CREDENTIALS, SPREADSHEET_ID } from '@/data/data'
+import { GOOGLE_SERVICE_ACCOUNT_CREDENTIALS, SPREADSHEET_ID } from './settings'
 import { google } from 'googleapis';
 
 export default async function handler(req, res) {
