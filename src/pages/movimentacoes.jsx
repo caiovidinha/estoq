@@ -30,8 +30,6 @@ const movimentacoes = () => {
     const [situacao, setSituacao] = useState([])
     const [conta, setConta] = useState([])
     const [post, setPost] = useState([])
-    const zap = 'https://hooks.zapier.com/hooks/catch/11052334/38vxzm2/'
-    const zapDelete = 'https://hooks.zapier.com/hooks/catch/11052334/3zy3cd0/'
 	const[exc,setExc] = useState(false)
 	const[confirmarExc,setConfirmarExc] = useState(false)
 	const[excluido,setExcluido] = useState(false)
@@ -71,60 +69,67 @@ const movimentacoes = () => {
 		setExcluido(false)
     }
 
-	const confirmaExcFinal = () => {
-		setExc(true)
-	}
+    const confirmaExcFinal = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch('/api/deleteRow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ index: post.index }), // Certifique-se de que "index" seja a linha correta da planilha
+          });
+      
+          if (res.ok) {
+            setLoading(false);
+            setExcluido(true);
+            // Dá um refresh na página para atualizar a listagem
+            window.location.reload();
+          } else {
+            console.error('Erro ao excluir a movimentação.');
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Erro na requisição:', error);
+          setLoading(false);
+        }
+      };
+      
 
     const changeStatus = async (
-        tipo,
-        descritivo,
-        valor,
-        data,
-        mes,
-        detalhes,
-        conta,
         index,
         id
-    ) => {
-        setTipo(tipo)
-        seteDescritivo(descritivo)
-        valor = valor.replace('.', ',')
-        setValor(valor)
-        setData(data)
-        setMes(mes)
-        setDetalhes(detalhes)
-        let ident = 'status' + index
-        let statusMov = document.getElementById(ident).value
-        setConta(conta)
+      ) => {
+        // (Mantém a montagem dos dados conforme necessário)
+        let ident = 'status' + index;
+        let statusMov = document.getElementById(ident).options[document.getElementById(ident).selectedIndex].value
+        
+        // Cria o objeto apenas com os dados necessários para atualizar o status
         const post = {
-            tipo: tipo,
-            descritivo: descritivo,
-            valor: valor,
-            data: data,
-            mes: mes,
-            detalhes: detalhes,
-            situacao: statusMov,
-            conta: conta,
-            index: id
+          situacao: statusMov,
+          index: id, // ou use "index" se for esse o número da linha na planilha
+        };
+      
+        const res = await fetch('/api/updateStatus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(post),
+        });
+      
+        if (!res.ok) {
+          console.error('Erro ao atualizar o status na planilha.');
         }
-        const res = await fetch(zap, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-        })
-    }
+        else{
+            window.location.reload();
+        }
 
-    const deleteRow = async (
-        id
-    ) => {
-        setPost({
-            index: id
-        })
-		openConf()
-	}
+        
+      };
+      
+
+      const deleteRow = (id) => {
+        setPost({ index: id });
+        openConf();
+      };
+      
 
     const [movimentacao, setMovimentacao] = useState([])
 
@@ -159,25 +164,6 @@ const movimentacoes = () => {
             }
             setMovimentacao(produto.arrayMov)
         })
-
-    useEffect(() => {
-        if(exc){
-        fetch(zapDelete, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(post),
-                })
-                setExc(false)
-                setLoading(true)
-                setTimeout(() => {
-                    setLoading(false)
-                    setExcluido(true)
-                }, 1000)
-            }
-    })
     return (
         <div className="bg-gray-100 min-h-screen">
             <title>Movimentações - CF</title>
@@ -375,13 +361,6 @@ const movimentacoes = () => {
                                             }
                                             onChange={() =>
                                                 changeStatus(
-                                                    mov.tipo,
-                                                    mov.descritivo,
-                                                    mov.valor,
-                                                    mov.data,
-                                                    mov.mes,
-                                                    mov.detalhes,
-                                                    mov.conta,
                                                     index,
                                                     mov.id
                                                 )

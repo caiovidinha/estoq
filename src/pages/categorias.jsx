@@ -28,7 +28,6 @@ const categorias = () => {
     const [mesModal, setMesModal] = useState([])
     const [catModal, setCatModal] = useState([])
 
-    let zapier = 'https://hooks.zapier.com/hooks/catch/11052334/3kuysos/'
     let hoje = new Date().toISOString()
     let hojeMes = hoje.slice(5, 7)
     let hojeAno = hoje.slice(0, 4)
@@ -99,58 +98,67 @@ const categorias = () => {
     }
 
     const changeData = async () => {
-        let ano = document.getElementById('ano').value
-        let mes = document.getElementById('mes').value
+        let ano = document.getElementById('ano').value;
+        let mes = document.getElementById('mes').value;
+      
+        // Converte o nome do mês para número (meses com 2 dígitos)
         switch(mes){
             case "Janeiro":
-                mes = '01'
-                break
+                mes = '01';
+                break;
             case "Fevereiro":
-                mes = '02'
-                break
+                mes = '02';
+                break;
             case "Março":
-                mes = '03'
-                break
+                mes = '03';
+                break;
             case "Abril":
-                mes = '04'
-                break
+                mes = '04';
+                break;
             case "Maio":
-                mes = '05'
-                break
+                mes = '05';
+                break;
             case "Junho":
-                mes = '06'
-                break
+                mes = '06';
+                break;
             case "Julho":
-                mes = '07'
-                break
+                mes = '07';
+                break;
             case "Agosto":
-                mes = '08'
-                break
+                mes = '08';
+                break;
             case "Setembro":
-                mes = '09'
-                break  
+                mes = '09';
+                break;  
             case "Outubro":
-                mes = '10'
-                break  
+                mes = '10';
+                break;  
             case "Novembro":
-                mes = '11'
-                break  
+                mes = '11';
+                break;  
             case "Dezembro":
-                mes = '12'
-                break                                                               
+                mes = '12';
+                break;                                                               
         }
+      
         const post = {
-            data: mes + '/' + ano
-        }
-        const res = await fetch(zapier, {
+            data: mes + '/' + ano,
+        };
+      
+        const res = await fetch('/api/updateDateFilter', { 
             method: 'POST',
-            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(post),
-        })
-    }
+        });
+      
+        // (Opcional) Você pode verificar a resposta e tratar erros.
+        if (!res.ok) {
+            console.error('Erro ao enviar dados para a planilha.');
+        }
+      };
+      
     
     fetch(FULL_URL)
     .then((res) => res.text())
