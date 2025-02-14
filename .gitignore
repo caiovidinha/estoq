@@ -4,7 +4,6 @@
 /node_modules
 /.pnp
 .pnp.js
-
 # testing
 /coverage
 .env
@@ -26,6 +25,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+refreshing-well-450717-i3-df6ef5e83fd5.json
 
 # vercel
 .vercel
