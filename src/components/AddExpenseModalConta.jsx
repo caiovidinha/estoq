@@ -20,10 +20,7 @@ const AddExpenseModalConta = () => {
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
-
-    const closeHandler = () => {
-        setVisible(false)
-    }
+    const closeHandler = () => setVisible(false)
 
     const formatarMoeda = () => {
         var elemento = document.getElementById('valor')
@@ -35,7 +32,7 @@ const AddExpenseModalConta = () => {
         valor = valor.replace(/([0-9]{2})$/g, '.$1')
 
         elemento.value = valor
-        if (valor == 'NaN') elemento.value = ''
+        if (valor === 'NaN') elemento.value = ''
     }
 
     const getForm = async () => {
@@ -50,10 +47,9 @@ const AddExpenseModalConta = () => {
 
         const data = document.getElementById('data').value
         const descricao = document.getElementById('descricao').value
-        const conta  = selectedValueAccount
+        const conta = selectedValueAccount
         const status =
-            document.getElementById('status').getAttribute('data-state') ===
-            'checked'
+            document.getElementById('status').getAttribute('data-state') === 'checked'
                 ? 'Pago'
                 : 'A pagar'
 
@@ -69,17 +65,13 @@ const AddExpenseModalConta = () => {
         }
 
         setLoading(true)
-        const res = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
+        const res = await fetch('/api/createTransaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+        })
 
         setTimeout(() => {
             setLoading(false)
@@ -88,8 +80,8 @@ const AddExpenseModalConta = () => {
 
         setTimeout(() => {
             setCreated(false)
-            setSelected(['Categoria'])
-            setSelectedMes(['Mês'])
+            setSelected(new Set(['Categoria']))
+            setSelectedMes(new Set(['Mês']))
             if (
                 document.getElementById('valor').value !== null &&
                 document.getElementById('data').value !== null &&
@@ -113,9 +105,7 @@ const AddExpenseModalConta = () => {
     }
 
     const [selected, setSelected] = useState(new Set(['Categoria']))
-
     const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
-
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
 
     const selectedValue = useMemo(
@@ -132,37 +122,38 @@ const AddExpenseModalConta = () => {
     )
 
     useEffect(() => {
-            const fetchContas = async () => {
-                //API
-                let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-                let SHEET_TITLE = 'API'
-                let SHEET_RANGE = 'O:P'
-                let FULL_URL =
-                    'https://docs.google.com/spreadsheets/d/' +
-                    SHEET_ID +
-                    '/gviz/tq?sheet=' +
-                    SHEET_TITLE +
-                    '&range=' +
-                    SHEET_RANGE
-                        try {
-                            const res = await fetch(FULL_URL)
-                            const rep = await res.text()
-                            let data = JSON.parse(rep.substr(47).slice(0, -2))
-                            let conta = new Accounts()
-                            for(let i=0;i<data.table.rows.length;i++){
-                                conta.salvar(
-                                i,
-                                data.table.rows[i].c[0].v,
-                                data.table.rows[i].c[1].v.toFixed(2)
-                                )
-                            }
-                            setContas(conta.arrayAccounts)
-                        } catch (error) {
-                            console.error('Erro ao buscar contas: ', error)
-                        }
-                    }
-                    fetchContas()
-                }, [])
+        const fetchContas = async () => {
+            // API para buscar contas
+            let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
+            let SHEET_TITLE = 'API'
+            let SHEET_RANGE = 'O:P'
+            let FULL_URL =
+                'https://docs.google.com/spreadsheets/d/' +
+                SHEET_ID +
+                '/gviz/tq?sheet=' +
+                SHEET_TITLE +
+                '&range=' +
+                SHEET_RANGE
+            try {
+                const res = await fetch(FULL_URL)
+                const rep = await res.text()
+                let data = JSON.parse(rep.substr(47).slice(0, -2))
+                let conta = new Accounts()
+                for (let i = 0; i < data.table.rows.length; i++) {
+                    conta.salvar(
+                        i,
+                        data.table.rows[i].c[0].v,
+                        data.table.rows[i].c[1].v.toFixed(2)
+                    )
+                }
+                setContas(conta.arrayAccounts)
+            } catch (error) {
+                console.error('Erro ao buscar contas: ', error)
+            }
+        }
+        fetchContas()
+    }, [])
+
     return (
         <div>
             <Button
@@ -179,7 +170,6 @@ const AddExpenseModalConta = () => {
                 aria-labelledby="modal-title"
                 open={visible}
                 onClose={closeHandler}
-                
             >
                 <Modal.Header>
                     <Text id="modal-title" size={18}>
@@ -191,11 +181,7 @@ const AddExpenseModalConta = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Dropdown>
-                        <Dropdown.Button
-                            flat
-                            color="error"
-                            css={{ tt: 'capitalize' }}
-                        >
+                        <Dropdown.Button flat color="error" css={{ tt: 'capitalize' }}>
                             {selectedValue}
                         </Dropdown.Button>
                         <Dropdown.Menu
@@ -244,15 +230,10 @@ const AddExpenseModalConta = () => {
                         placeholder="Data"
                         onFocus={fillDate}
                     />
-                    <Dropdown type='listbox'>
-                        <Dropdown.Button
-                            bordered
-                            color="error"
-                            css={{ tt: 'capitalize' }}
-                        >
+                    <Dropdown type="listbox">
+                        <Dropdown.Button bordered color="error" css={{ tt: 'capitalize' }}>
                             {selectedValueMes}
                         </Dropdown.Button>
-                        
                         <Dropdown.Menu
                             aria-label="Single selection actions"
                             color="error"
@@ -260,7 +241,7 @@ const AddExpenseModalConta = () => {
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
                             id="mes"
-                            className='h-72'
+                            className="h-72"
                         >
                             <Dropdown.Item key="01 - JANEIRO">
                                 01 - JANEIRO
@@ -298,7 +279,6 @@ const AddExpenseModalConta = () => {
                             <Dropdown.Item key="12 - DEZEMBRO">
                                 12 - DEZEMBRO
                             </Dropdown.Item>
-                            
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input
@@ -323,13 +303,15 @@ const AddExpenseModalConta = () => {
                             id="conta"
                         >
                             {contas.map((account) => (
-                                <Dropdown.Item key={account.conta}>{account.conta}</Dropdown.Item>
+                                <Dropdown.Item key={account.conta}>
+                                    {account.conta}
+                                </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
 
                     <div className="w-full flex justify-center">
-                        <div className="bg-gray-300 rounded-full w-48 h- flex items-center justify-left">
+                        <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
                             <Switch
                                 checked={true}
                                 size="xl"

@@ -25,10 +25,7 @@ const AddIncomeModalConta = () => {
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
-
-    const closeHandler = () => {
-        setVisible(false)
-    }
+    const closeHandler = () => setVisible(false)
 
     const formatarMoeda = () => {
         var elemento = document.getElementById('valor')
@@ -40,7 +37,7 @@ const AddIncomeModalConta = () => {
         valor = valor.replace(/([0-9]{2})$/g, '.$1')
 
         elemento.value = valor
-        if (valor == 'NaN') elemento.value = ''
+        if (valor === 'NaN') elemento.value = ''
     }
 
     const getForm = async () => {
@@ -57,8 +54,7 @@ const AddIncomeModalConta = () => {
         const descricao = document.getElementById('descricao').value
         const conta = selectedValueAccount
         const status =
-            document.getElementById('status').getAttribute('data-state') ===
-            'checked'
+            document.getElementById('status').getAttribute('data-state') === 'checked'
                 ? 'Recebido'
                 : 'A receber'
 
@@ -74,17 +70,13 @@ const AddIncomeModalConta = () => {
         }
 
         setLoading(true)
-        const res = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
+        const res = await fetch('/api/createTransaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+        })
 
         setTimeout(() => {
             setLoading(false)
@@ -93,8 +85,8 @@ const AddIncomeModalConta = () => {
 
         setTimeout(() => {
             setCreated(false)
-            setSelected(['Categoria'])
-            setSelectedMes(['Mês'])
+            setSelected(new Set(['Categoria']))
+            setSelectedMes(new Set(['Mês']))
             if (
                 document.getElementById('valor').value !== null &&
                 document.getElementById('data').value !== null &&
@@ -106,6 +98,7 @@ const AddIncomeModalConta = () => {
             }
         }, 1300)
     }
+
     const fillDate = () => {
         const dataInput = document.querySelector('#data')
         var data = new Date()
@@ -117,9 +110,7 @@ const AddIncomeModalConta = () => {
     }
 
     const [selected, setSelected] = useState(new Set(['Categoria']))
-
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
-
     const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
 
     const selectedValue = useMemo(
@@ -136,38 +127,38 @@ const AddIncomeModalConta = () => {
     )
 
     useEffect(() => {
-    const fetchContas = async () => {
-        //API
-        let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-        let SHEET_TITLE = 'API'
-        let SHEET_RANGE = 'O:P'
-        let FULL_URL =
-            'https://docs.google.com/spreadsheets/d/' +
-            SHEET_ID +
-            '/gviz/tq?sheet=' +
-            SHEET_TITLE +
-            '&range=' +
-            SHEET_RANGE
-                try {
-                    const res = await fetch(FULL_URL)
-                    const rep = await res.text()
-                    let data = JSON.parse(rep.substr(47).slice(0, -2))
-                    let conta = new Accounts()
-                    for(let i=0;i<data.table.rows.length;i++){
-                        conta.salvar(
+        const fetchContas = async () => {
+            // API para buscar contas
+            let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
+            let SHEET_TITLE = 'API'
+            let SHEET_RANGE = 'O:P'
+            let FULL_URL =
+                'https://docs.google.com/spreadsheets/d/' +
+                SHEET_ID +
+                '/gviz/tq?sheet=' +
+                SHEET_TITLE +
+                '&range=' +
+                SHEET_RANGE
+            try {
+                const res = await fetch(FULL_URL)
+                const rep = await res.text()
+                let data = JSON.parse(rep.substr(47).slice(0, -2))
+                let conta = new Accounts()
+                for (let i = 0; i < data.table.rows.length; i++) {
+                    conta.salvar(
                         i,
                         data.table.rows[i].c[0].v,
                         data.table.rows[i].c[1].v.toFixed(2)
-                        )
-                    }
-                    setContas(conta.arrayAccounts)
-                } catch (error) {
-                    console.error('Erro ao buscar contas: ', error)
+                    )
                 }
+                setContas(conta.arrayAccounts)
+            } catch (error) {
+                console.error('Erro ao buscar contas: ', error)
             }
-            fetchContas()
-            console.log(contas[1])
-        }, [])
+        }
+        fetchContas()
+        console.log(contas[1])
+    }, [])
 
     return (
         <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
@@ -196,11 +187,7 @@ const AddIncomeModalConta = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Dropdown>
-                        <Dropdown.Button
-                            flat
-                            color="success"
-                            css={{ tt: 'capitalize' }}
-                        >
+                        <Dropdown.Button flat color="success" css={{ tt: 'capitalize' }}>
                             {selectedValue}
                         </Dropdown.Button>
                         <Dropdown.Menu
@@ -212,15 +199,9 @@ const AddIncomeModalConta = () => {
                             id="categoria"
                         >
                             <Dropdown.Item key="Salário">Salário</Dropdown.Item>
-                            <Dropdown.Item key="Freelance">
-                                Freelance
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Investimento">
-                                Investimento
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Limite Cartão">
-                                Limite Cartão
-                            </Dropdown.Item>
+                            <Dropdown.Item key="Freelance">Freelance</Dropdown.Item>
+                            <Dropdown.Item key="Investimento">Investimento</Dropdown.Item>
+                            <Dropdown.Item key="Limite Cartão">Limite Cartão</Dropdown.Item>
                             <Dropdown.Item key="Outros">Outros</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
@@ -249,12 +230,8 @@ const AddIncomeModalConta = () => {
                         placeholder="Data"
                         onFocus={fillDate}
                     />
-                    <Dropdown type='listbox'>
-                        <Dropdown.Button
-                            bordered
-                            color="success"
-                            css={{ tt: 'capitalize' }}
-                        >
+                    <Dropdown type="listbox">
+                        <Dropdown.Button bordered color="success" css={{ tt: 'capitalize' }}>
                             {selectedValueMes}
                         </Dropdown.Button>
                         <Dropdown.Menu
@@ -264,44 +241,20 @@ const AddIncomeModalConta = () => {
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
                             id="mes"
-                            className='h-72'
+                            className="h-72"
                         >
-                            <Dropdown.Item key="01 - JANEIRO">
-                                01 - JANEIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="02 - FEVEREIRO">
-                                02 - FEVEREIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="03 - MARÇO">
-                                03 - MARÇO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="04 - ABRIL">
-                                04 - ABRIL
-                            </Dropdown.Item>
-                            <Dropdown.Item key="05 - MAIO">
-                                05 - MAIO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="06 - JUNHO">
-                                06 - JUNHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="07 - JULHO">
-                                07 - JULHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="08 - AGOSTO">
-                                08 - AGOSTO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="09 - SETEMBRO">
-                                09 - SETEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="10 - OUTUBRO">
-                                10 - OUTUBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="11 - NOVEMBRO">
-                                11 - NOVEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="12 - DEZEMBRO">
-                                12 - DEZEMBRO
-                            </Dropdown.Item>
+                            <Dropdown.Item key="01 - JANEIRO">01 - JANEIRO</Dropdown.Item>
+                            <Dropdown.Item key="02 - FEVEREIRO">02 - FEVEREIRO</Dropdown.Item>
+                            <Dropdown.Item key="03 - MARÇO">03 - MARÇO</Dropdown.Item>
+                            <Dropdown.Item key="04 - ABRIL">04 - ABRIL</Dropdown.Item>
+                            <Dropdown.Item key="05 - MAIO">05 - MAIO</Dropdown.Item>
+                            <Dropdown.Item key="06 - JUNHO">06 - JUNHO</Dropdown.Item>
+                            <Dropdown.Item key="07 - JULHO">07 - JULHO</Dropdown.Item>
+                            <Dropdown.Item key="08 - AGOSTO">08 - AGOSTO</Dropdown.Item>
+                            <Dropdown.Item key="09 - SETEMBRO">09 - SETEMBRO</Dropdown.Item>
+                            <Dropdown.Item key="10 - OUTUBRO">10 - OUTUBRO</Dropdown.Item>
+                            <Dropdown.Item key="11 - NOVEMBRO">11 - NOVEMBRO</Dropdown.Item>
+                            <Dropdown.Item key="12 - DEZEMBRO">12 - DEZEMBRO</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input
@@ -331,7 +284,7 @@ const AddIncomeModalConta = () => {
                         </Dropdown.Menu>
                     </Dropdown>
                     <div className="w-full flex justify-center">
-                        <div className="bg-gray-300 rounded-full w-48 h- flex items-center justify-left">
+                        <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
                             <Switch
                                 checked={true}
                                 size="xl"
@@ -351,11 +304,7 @@ const AddIncomeModalConta = () => {
                     <Button auto flat color="error" onPress={closeHandler}>
                         Fechar
                     </Button>
-                    <Button
-                        auto
-                        color={invalid ? 'warning' : 'success'}
-                        onPress={getForm}
-                    >
+                    <Button auto color={invalid ? 'warning' : 'success'} onPress={getForm}>
                         {created ? (
                             <AiFillCheckCircle size={20} />
                         ) : loading ? (
@@ -366,13 +315,7 @@ const AddIncomeModalConta = () => {
                             'Enviar'
                         )}
                     </Button>
-                    <p
-                        className={
-                            invalid
-                                ? 'flex text-red-800 items-center'
-                                : 'hidden'
-                        }
-                    >
+                    <p className={invalid ? 'flex text-red-800 items-center' : 'hidden'}>
                         <AiFillCloseCircle className="mr-1" />
                         Preencha todos os campos corretamente
                     </p>

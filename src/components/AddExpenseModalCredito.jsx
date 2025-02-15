@@ -21,10 +21,7 @@ const AddExpenseModalCrédito = () => {
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
-
-    const closeHandler = () => {
-        setVisible(false)
-    }
+    const closeHandler = () => setVisible(false)
 
     const setCartoes = (list) => {
         setCartoesOK(list)
@@ -40,7 +37,7 @@ const AddExpenseModalCrédito = () => {
         valor = valor.replace(/([0-9]{2})$/g, '.$1')
 
         elemento.value = valor
-        if (valor == 'NaN') elemento.value = ''
+        if (valor === 'NaN') elemento.value = ''
     }
 
     const getForm = async () => {
@@ -57,8 +54,7 @@ const AddExpenseModalCrédito = () => {
         const data = document.getElementById('data').value
         const descricao = document.getElementById('descricao').value
         const status =
-            document.getElementById('status').getAttribute('data-state') ===
-            'checked'
+            document.getElementById('status').getAttribute('data-state') === 'checked'
                 ? 'Pago'
                 : 'A pagar'
 
@@ -74,17 +70,16 @@ const AddExpenseModalCrédito = () => {
         }
 
         setLoading(true)
-        const res = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
+        // Substitua o endpoint do Zapier pelo seu endpoint interno
+        const res = await fetch('/api/createTransaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(post),
+        })
+
+        // Se necessário, você pode tratar a resposta aqui
 
         setTimeout(() => {
             setLoading(false)
@@ -93,8 +88,9 @@ const AddExpenseModalCrédito = () => {
 
         setTimeout(() => {
             setCreated(false)
-            setSelected(['Categoria'])
-            setSelectedMes(['Mês'])
+            setSelected(new Set(['Categoria']))
+            setSelectedMes(new Set(['Mês']))
+            // Limpa os campos do formulário
             if (
                 document.getElementById('valor').value !== null &&
                 document.getElementById('data').value !== null &&
@@ -118,21 +114,18 @@ const AddExpenseModalCrédito = () => {
     }
 
     const [selected, setSelected] = useState(new Set(['Categoria']))
-
     const selectedValue = useMemo(
         () => Array.from(selected).join(', ').replaceAll('_', ' '),
         [selected]
     )
 
     const [selectedCard, setSelectedCard] = useState(new Set(['Cartão']))
-
     const selectedValueCard = useMemo(
         () => Array.from(selectedCard).join(', ').replaceAll('_', ' '),
         [selectedCard]
     )
 
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
-
     const selectedValueMes = useMemo(
         () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
         [selectedMes]
@@ -140,7 +133,7 @@ const AddExpenseModalCrédito = () => {
 
     useEffect(() => {
         const fetchCartoes = async () => {
-            //API
+            // Configurações da planilha
             let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
             let SHEET_TITLE = 'API'
             let SHEET_RANGE = 'J:M'
@@ -151,27 +144,27 @@ const AddExpenseModalCrédito = () => {
                 SHEET_TITLE +
                 '&range=' +
                 SHEET_RANGE
-                    try {
-                        const res = await fetch(FULL_URL)
-                        const rep = await res.text()
-                        let data = JSON.parse(rep.substr(47).slice(0, -2))
-                        let cartao = new Cards()
-                        for(let i=0;i<data.table.rows.length;i++){
-                            cartao.salvar(
-                            i,
-                            data.table.rows[i].c[0].v,
-                            data.table.rows[i].c[1].v,
-                            data.table.rows[i].c[2].v.toFixed(2),
-                            data.table.rows[i].c[3].v.toFixed(2)
-                            )
-                        }
-                        setCartoes(cartao.arrayCard)
-                    } catch (error) {
-                        console.error('Erro ao buscar cartões: ', error)
-                    }
+            try {
+                const res = await fetch(FULL_URL)
+                const rep = await res.text()
+                let data = JSON.parse(rep.substr(47).slice(0, -2))
+                let cartao = new Cards()
+                for (let i = 0; i < data.table.rows.length; i++) {
+                    cartao.salvar(
+                        i,
+                        data.table.rows[i].c[0].v,
+                        data.table.rows[i].c[1].v,
+                        data.table.rows[i].c[2].v.toFixed(2),
+                        data.table.rows[i].c[3].v.toFixed(2)
+                    )
                 }
-                fetchCartoes()
-            }, [])
+                setCartoes(cartao.arrayCard)
+            } catch (error) {
+                console.error('Erro ao buscar cartões: ', error)
+            }
+        }
+        fetchCartoes()
+    }, [])
 
     return (
         <div>
@@ -200,11 +193,7 @@ const AddExpenseModalCrédito = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Dropdown>
-                        <Dropdown.Button
-                            flat
-                            color="error"
-                            css={{ tt: 'capitalize' }}
-                        >
+                        <Dropdown.Button flat color="error" css={{ tt: 'capitalize' }}>
                             {selectedValue}
                         </Dropdown.Button>
                         <Dropdown.Menu
@@ -251,11 +240,7 @@ const AddExpenseModalCrédito = () => {
                         onFocus={fillDate}
                     />
                     <Dropdown type='listbox'>
-                        <Dropdown.Button
-                            bordered
-                            color="error"
-                            css={{ tt: 'capitalize' }}
-                        >
+                        <Dropdown.Button bordered color="error" css={{ tt: 'capitalize' }}>
                             {selectedValueMes}
                         </Dropdown.Button>
                         <Dropdown.Menu
@@ -326,12 +311,14 @@ const AddExpenseModalCrédito = () => {
                             id="cartao"
                         >
                             {cartoes.map((card) => (
-                                <Dropdown.Item key={card.cartao}>{card.cartao}</Dropdown.Item>
+                                <Dropdown.Item key={card.cartao}>
+                                    {card.cartao}
+                                </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
                     <div className="w-full flex justify-center">
-                        <div className="bg-gray-300 rounded-full w-48 h- flex items-center justify-left">
+                        <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
                             <Switch
                                 checked={true}
                                 size="xl"
