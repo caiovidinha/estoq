@@ -3,10 +3,6 @@ import { google } from 'googleapis';
 import { GOOGLE_SERVICE_ACCOUNT_CREDENTIALS, SPREADSHEET_ID } from './settings';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
 
   try {
     // Extrai os dados enviados pelo formulário
