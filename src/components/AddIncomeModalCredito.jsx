@@ -1,342 +1,178 @@
-import { React, useState, useMemo } from 'react'
+import { React, useState, useMemo, useEffect } from 'react';
 import {
-    Modal,
-    Button,
-    Text,
-    Input,
-    Dropdown,
-    Switch,
-    Loading,
-} from '@nextui-org/react'
+  Modal,
+  Button,
+  Text,
+  Input,
+  Dropdown,
+  Loading,
+} from '@nextui-org/react';
 import { GiReceiveMoney } from 'react-icons/gi'
-import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
-import { AiFillCheckCircle } from 'react-icons/ai'
 
-const AddIncomeModalCrédito = () => {
-    const [invalid, setInvalid] = useState(false)
-    const [created, setCreated] = useState(false)
-    const [loading, setLoading] = useState(false)
+const AddIncomeModalCredito = () => {
+  const [loading, setLoading] = useState(false);
+  const [updated, setUpdated] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [visible, setVisible] = useState(false);
 
-    const [visible, setVisible] = useState(false)
-    const handler = () => setVisible(true)
+  // Estado para seleção do cartão e novo limite
+  const [selectedAccount, setSelectedAccount] = useState(new Set(['Selecionar']));
+  const selectedValueAccount = useMemo(
+    () => Array.from(selectedAccount).join(', ').replaceAll('_', ' '),
+    [selectedAccount]
+  );
+  const [newLimit, setNewLimit] = useState('');
 
-    const closeHandler = () => {
-        setVisible(false)
-    }
+  const openModal = () => setVisible(true);
+  const closeModal = () => setVisible(false);
 
-    const formatarMoeda = () => {
-        var elemento = document.getElementById('valor')
-        var valor = elemento.value
+  // Função para formatar o valor no input
+  const formatarMoeda = () => {
+    var elemento = document.getElementById('newLimit')
+    var valor = elemento.value
 
-        valor = valor + ''
-        valor = parseFloat(valor.replace(/[\D]+/g, ''))
-        valor = valor + ''
-        valor = valor.replace(/([0-9]{2})$/g, '.$1')
+    valor = valor + ''
+    valor = parseFloat(valor.replace(/[\D]+/g, ''))
+    valor = valor + ''
+    valor = valor.replace(/([0-9]{2})$/g, '.$1')
 
-        elemento.value = valor
-        if (valor == 'NaN') elemento.value = ''
-    }
-
-    const getForm = async () => {
-        const categoria = selectedValue
-        const mes = selectedValueMes
-        const cartao = selectedValueCard
-
-        let valor = document.getElementById('valor').value
-        valor = valor + ''
-        valor = parseFloat(valor.replace(/[\D]+/g, ''))
-        valor = valor + ''
-        valor = valor.replace(/([0-9]{2})$/g, ',$1')
-
-        const data = document.getElementById('data').value
-        const descricao = document.getElementById('descricao').value
-        const status =
-            document.getElementById('status').getAttribute('data-state') ===
-            'checked'
-                ? 'Recebido'
-                : 'A receber'
-
-        const post = {
-            tipo: 'RECEITA',
-            categoria: categoria,
-            valor: valor,
-            data: data,
-            mes: mes,
-            descricao: descricao,
-            status: status,
-            conta: cartao,
-        }
-
-        setLoading(true)
-        const res = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
-            }
-        )
-
-        setTimeout(() => {
-            setLoading(false)
-            setCreated(true)
-        }, 700)
-
-        setTimeout(() => {
-            setCreated(false)
-            setSelected(['Categoria'])
-            setSelectedMes(['Mês'])
-            if (
-                document.getElementById('valor').value !== null &&
-                document.getElementById('data').value !== null &&
-                document.getElementById('descricao').value !== null
-            ) {
-                document.getElementById('valor').value = ''
-                document.getElementById('data').value = ''
-                document.getElementById('descricao').value = ''
-            }
-        }, 1300)
-    }
-
-    const fillDate = () => {
-        const dataInput = document.querySelector('#data')
-        var data = new Date()
-        var dia = String(data.getDate()).padStart(2, '0')
-        var mes = String(data.getMonth() + 1).padStart(2, '0')
-        var ano = data.getFullYear()
-        const dataAtual = ano + '-' + mes + '-' + dia
-        if (!dataInput.value) dataInput.value = dataAtual
-    }
-
-    const [selected, setSelected] = useState(new Set(['Categoria']))
-
-    const selectedValue = useMemo(
-        () => Array.from(selected).join(', ').replaceAll('_', ' '),
-        [selected]
-    )
-
-    const [selectedCard, setSelectedCard] = useState(new Set(['Cartão']))
-
-    const selectedValueCard = useMemo(
-        () => Array.from(selectedCard).join(', ').replaceAll('_', ' '),
-        [selectedCard]
-    )
-
-    const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
-
-    const selectedValueMes = useMemo(
-        () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
-        [selectedMes]
-    )
-
-    return (
-        <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
-            <Button
-                className="bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5"
-                auto
-                rounded
-                shadow
-                color="green"
-                onPress={handler}
-                icon={<GiReceiveMoney className="text-green-800" size={20} />}
-            ></Button>
-            <Modal
-                closeButton
-                aria-labelledby="modal-title"
-                open={visible}
-                onClose={closeHandler}
-            >
-                <Modal.Header>
-                    <Text id="modal-title" size={18}>
-                        Adicionar receita&nbsp;
-                        <Text b size={18}>
-                            no crédito
-                        </Text>
-                    </Text>
-                </Modal.Header>
-                <Modal.Body>
-                    <Dropdown>
-                        <Dropdown.Button
-                            flat
-                            color="success"
-                            css={{ tt: 'capitalize' }}
-                        >
-                            {selectedValue}
-                        </Dropdown.Button>
-                        <Dropdown.Menu
-                            aria-label="Single selection actions"
-                            color="success"
-                            selectionMode="single"
-                            selectedKeys={selected}
-                            onSelectionChange={setSelected}
-                            id="categoria"
-                        >
-                            <Dropdown.Item key="Salário - V4">
-                                Salário - V4
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Freelance">
-                                Freelance
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Investimento">
-                                Investimento
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Limite Cartão">
-                                Limite Cartão
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Outros">Outros</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    <Input
-                        bordered
-                        maxLength={9}
-                        onKeyUp={formatarMoeda}
-                        labelLeft="R$"
-                        fullWidth
-                        color="primary"
-                        size="lg"
-                        id="valor"
-                        type="float"
-                        placeholder="Valor"
-                        className="mb-2"
-                    />
-                    <Input
-                        bordered
-                        fullWidth
-                        color="primary"
-                        size="lg"
-                        type="date"
-                        id="data"
-                        placeholder="Data"
-                        onFocus={fillDate}
-                    />
-                    <Dropdown type='listbox'>
-                        <Dropdown.Button
-                            bordered
-                            color="success"
-                            css={{ tt: 'capitalize' }}
-                        >
-                            {selectedValueMes}
-                        </Dropdown.Button>
-                        <Dropdown.Menu
-                            aria-label="Single selection actions"
-                            color="success"
-                            selectionMode="single"
-                            selectedKeys={selectedMes}
-                            onSelectionChange={setSelectedMes}
-                            id="mes"
-                            className='h-72'
-                        >
-                            <Dropdown.Item key="01 - JANEIRO">
-                                01 - JANEIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="02 - FEVEREIRO">
-                                02 - FEVEREIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="03 - MARÇO">
-                                03 - MARÇO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="04 - ABRIL">
-                                04 - ABRIL
-                            </Dropdown.Item>
-                            <Dropdown.Item key="05 - MAIO">
-                                05 - MAIO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="06 - JUNHO">
-                                06 - JUNHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="07 - JULHO">
-                                07 - JULHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="08 - AGOSTO">
-                                08 - AGOSTO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="09 - SETEMBRO">
-                                09 - SETEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="10 - OUTUBRO">
-                                10 - OUTUBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="11 - NOVEMBRO">
-                                11 - NOVEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="12 - DEZEMBRO">
-                                12 - DEZEMBRO
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    <Input
-                        bordered
-                        fullWidth
-                        color="primary"
-                        size="lg"
-                        type="text"
-                        id="descricao"
-                        placeholder="Descrição"
-                    />
-                    <Dropdown>
-                        <Dropdown.Button flat css={{ tt: 'capitalize' }}>
-                            {selectedValueCard}
-                        </Dropdown.Button>
-                        <Dropdown.Menu
-                            aria-label="Single selection actions"
-                            selectionMode="single"
-                            selectedKeys={selectedCard}
-                            onSelectionChange={setSelectedCard}
-                            id="cartao"
-                        >
-                            <Dropdown.Item key="Nubank Caio">
-                                Nubank Caio
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Nubank Julia">
-                                Nubank Julia
-                            </Dropdown.Item>
-                            <Dropdown.Item key="Neon Julia">
-                                Neon Julia
-                            </Dropdown.Item>
-                            <Dropdown.Item key="PicPay Caio">
-                                PicPay Caio
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    <div className="w-full flex justify-center">
-                        <div className="bg-gray-300 rounded-full w-48 h- flex items-center justify-left">
-                            <Switch
-                                checked={true}
-                                size="xl"
-                                color="success"
-                                iconOn={<MdAttachMoney className="ml-0.5" />}
-                                iconOff={<MdMoneyOffCsred />}
-                                className="mb-1 ml-0.5"
-                                id="status"
-                            />
-                            <p className="ml-6 text-gray-500 font-bold">
-                                Recebido
-                            </p>
-                        </div>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button auto flat color="error" onPress={closeHandler}>
-                        Fechar
-                    </Button>
-                    <Button auto color={'success'} onPress={getForm}>
-                        {created ? (
-                            <AiFillCheckCircle size={20} />
-                        ) : loading ? (
-                            <Loading type="spinner" color="white" size="sm" />
-                        ) : invalid ? (
-                            <AiFillCheckCircle size={20} />
-                        ) : (
-                            'Enviar'
-                        )}
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </div>
-    )
+    elemento.value = valor
+    if (valor === 'NaN') elemento.value = ''
 }
 
-export default AddIncomeModalCrédito
+  // Buscar lista de cartões (accounts) da folha "API", intervalo J:M
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
+      let SHEET_TITLE = 'API';
+      let SHEET_RANGE = 'J:M';
+      let FULL_URL =
+        'https://docs.google.com/spreadsheets/d/' +
+        SHEET_ID +
+        '/gviz/tq?sheet=' +
+        SHEET_TITLE +
+        '&range=' +
+        SHEET_RANGE;
+      try {
+        const res = await fetch(FULL_URL);
+        const rep = await res.text();
+        let data = JSON.parse(rep.substr(47).slice(0, -2));
+        let accountsArray = [];
+        // Supondo que cada linha contenha:
+        // Coluna J: Cartão, K: Tipo, L: Fatura, M: Limite.
+        // Se houver cabeçalho, os dados começam na linha 2.
+        for (let i = 0; i < data.table.rows.length; i++) {
+          let rowNumber = i + 2; // ajuste se necessário
+          let cartao = data.table.rows[i].c[0] ? data.table.rows[i].c[0].v : '';
+          let limite = data.table.rows[i].c[3] ? data.table.rows[i].c[3].v : '';
+          accountsArray.push({ id: rowNumber, cartao, limite });
+        }
+        setAccounts(accountsArray);
+      } catch (error) {
+        console.error('Erro ao buscar contas para limite: ', error);
+      }
+    };
+    fetchAccounts();
+  }, []);
+
+  // Função para enviar a atualização do limite via endpoint interno
+  const updateLimit = async () => {
+    if (selectedValueAccount === 'Selecionar') {
+      return;
+    }
+    setNewLimit(parseFloat(document.getElementById("newLimit").value.replace(".",",")))
+    setLoading(true);
+    const payload = {
+      id: selectedValueAccount, // esse valor corresponde à linha (row number) na planilha
+      newLimit: newLimit,
+    };
+    try {
+      const res = await fetch('/api/updateCardLimit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setUpdated(true);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar o limite: ', error);
+    }
+    setLoading(false);
+    // Opcional: reset do formulário ou refetch dos dados
+  };
+
+  return (
+    <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
+      {/* Botão circular com ícone, mantendo o mesmo estilo original */}
+      <Button
+                      className="bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5"
+                      auto
+                      rounded
+                      shadow
+                      color="green"
+                      onPress={openModal}
+                      icon={<GiReceiveMoney className="text-green-800" size={20} />}
+                  ></Button>
+      <Modal closeButton open={visible} onClose={closeModal}>
+        <Modal.Header>
+          <Text id="modal-title" size={18}>
+            Atualizar Limite do Cartão
+          </Text>
+        </Modal.Header>
+        <Modal.Body>
+          <Dropdown>
+            <Dropdown.Button flat css={{ tt: 'capitalize' }}>
+              {selectedValueAccount === 'Selecionar'
+                ? 'Selecionar Cartão'
+                : accounts.find(acc => acc.id.toString() === selectedValueAccount)?.cartao}
+            </Dropdown.Button>
+            <Dropdown.Menu
+              aria-label="Selecione o Cartão"
+              selectionMode="single"
+              selectedKeys={selectedAccount}
+              onSelectionChange={(keys) => setSelectedAccount(keys)}
+            >
+              {accounts.map((account) => (
+                <Dropdown.Item key={account.id.toString()}>
+                  {account.cartao} (Limite Atual: {account.limite})
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+          <Input
+            bordered
+            fullWidth
+            labelLeft="R$"
+            color="primary"
+            size="lg"
+            id="newLimit"
+            placeholder="Novo Limite (ex: 500,00)"
+            onKeyUp={formatarMoeda}
+
+            className="mt-2"
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button auto flat color="error" onPress={closeModal}>
+            Fechar
+          </Button>
+          <Button auto color="success" onPress={updateLimit}>
+            {loading ? (
+              <Loading type="spinner" color="white" size="sm" />
+            ) : (
+              'Atualizar'
+            )}
+          </Button>
+          {updated && (
+            <Text color="success" className="ml-2">
+              Limite atualizado!
+            </Text>
+          )}
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
+};
+
+export default AddIncomeModalCredito;
