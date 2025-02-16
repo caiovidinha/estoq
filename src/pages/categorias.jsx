@@ -1,526 +1,384 @@
-import React, { useState, useEffect } from 'react'
-import { Modal, Progress, Popover, Text} from '@nextui-org/react'
-import { BsThreeDots } from 'react-icons/bs'
+import React, { useState, useEffect } from 'react';
+import AddCategoryModal from '@/components/AddCategoryModal';
+import { Modal, Progress, Text, Button } from '@nextui-org/react';
+import { CiCirclePlus } from "react-icons/ci";
+import { BsThreeDots } from 'react-icons/bs';
 import {
-    BiRestaurant,
-    BiCar,
-    BiPhone,
-    BiSolidTShirt,
-    BiBomb,
-    BiSmile,
-    BiGift,
-    BiMoneyWithdraw,
-} from 'react-icons/bi'
-import { MdMoneyOff } from 'react-icons/md'
-import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi'
-import { SiBetfair, SiFreelancer, SiYourtraveldottv  } from 'react-icons/si'
-import { AiOutlineTool } from 'react-icons/ai'
-import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri'
-import { Categorias } from '@/components/Categorias'
-import { Mov } from '@/components/Mov'
+  BiRestaurant,
+  BiCar,
+  BiPhone,
+  BiSolidTShirt,
+  BiBomb,
+  BiSmile,
+  BiGift,
+  BiMoneyWithdraw,
+} from 'react-icons/bi';
+import { MdMoneyOff } from 'react-icons/md';
+import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi';
+import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si';
+import { AiOutlineTool } from 'react-icons/ai';
+import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri';
+
+// Mapeamento dos ícones conforme o valor gravado na planilha
+const ICON_MAP = {
+  BiRestaurant: <BiRestaurant size={20} className="text-blue-800" />,
+  BiCar: <BiCar size={20} className="text-blue-800" />,
+  GiWeightLiftingUp: <GiWeightLiftingUp size={20} className="text-blue-800" />,
+  BiPhone: <BiPhone size={20} className="text-blue-800" />,
+  BiSolidTShirt: <BiSolidTShirt size={20} className="text-blue-800" />,
+  BiBomb: <BiBomb size={20} className="text-blue-800" />,
+  BiSmile: <BiSmile size={20} className="text-blue-800" />,
+  GiHealthNormal: <GiHealthNormal size={20} className="text-blue-800" />,
+  SiBetfair: <SiBetfair size={20} className="text-blue-800" />,
+  BiGift: <BiGift size={20} className="text-blue-800" />,
+  AiOutlineTool: <AiOutlineTool size={20} className="text-blue-800" />,
+  RiFundsBoxLine: <RiFundsBoxLine size={20} className="text-green-800" />,
+  RiBillLine: <RiBillLine size={20} className="text-blue-800" />,
+  BiMoneyWithdraw: <BiMoneyWithdraw size={20} className="text-green-800" />,
+  SiFreelancer: <SiFreelancer size={20} className="text-green-800" />,
+  MdMoneyOff: <MdMoneyOff size={20} className="text-green-800" />,
+  SiYourtraveldottv: <SiYourtraveldottv size={20} className="text-blue-800" />,
+  BsThreeDots: <BsThreeDots size={20} className="text-blue-800" />,
+};
 
 const categorias = () => {
+  // Estados para filtro de data e de tipo (receita/despesa)
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, '0'));
+  const [selectedTransactionType, setSelectedTransactionType] = useState('DESPESA'); // ou "RECEITA"
+  const [showAddModal, setShowAddModal] = useState(false);
+  
+  const [categorias, setCategorias] = useState([]); // Ex: [{ nome, tipo, icone, soma }]
+  const [total, setTotal] = useState(0);
+  const [detalhes, setDetalhes] = useState([]); // Detalhes das transações filtradas
+  const [visible, setVisible] = useState(false);
+  const [catModal, setCatModal] = useState('');
 
-    const [categorias, setCategorias] = useState([])
-    const [total, setTotal] = useState([])
-    const [det, setDetalhes] = useState([])
-    const [visible, setVisible] = useState(false)
-    const [mesModal, setMesModal] = useState([])
-    const [catModal, setCatModal] = useState([])
+  // IDs e ranges da planilha
+  const SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
+  const FULL_URL_CATEGORIAS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=Categories&range=A2:C`;
+  const FULL_URL_EXTRATO = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=Extrato&range=A:H`;
 
-    let hoje = new Date().toISOString()
-    let hojeMes = hoje.slice(5, 7)
-    let hojeAno = hoje.slice(0, 4)
-    switch(hojeMes){
-        case "01":
-            hojeMes = 'Janeiro'
-            break
-        case "02":
-            hojeMes = 'Fevereiro'
-            break
-        case "03":
-            hojeMes = 'Março'
-            break
-        case "04":
-            hojeMes = 'Abril'
-            break
-        case "05":
-            hojeMes = 'Maio'
-            break
-        case "06":
-            hojeMes = 'Junho'
-            break
-        case "07":
-            hojeMes = 'Julho'
-            break
-        case "08":
-            hojeMes = 'Agosto'
-            break
-        case "09":
-            hojeMes = 'Setembro'
-            break  
-        case "10":
-            hojeMes = 'Outubro'
-            break  
-        case "11":
-            hojeMes = 'Novembro'
-            break  
-        case "12":
-            hojeMes = 'Dezembro'
-            break                                                               
+  // Converte número do mês para nome
+  const monthName = (m) => {
+    const names = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return names[parseInt(m, 10) - 1] || '';
+  };
+
+  // Converte nome do mês para número (formato "01", etc.)
+  const convertMonthNameToNumber = (name) => {
+    const names = {
+      'Janeiro': '01',
+      'Fevereiro': '02',
+      'Março': '03',
+      'Abril': '04',
+      'Maio': '05',
+      'Junho': '06',
+      'Julho': '07',
+      'Agosto': '08',
+      'Setembro': '09',
+      'Outubro': '10',
+      'Novembro': '11',
+      'Dezembro': '12'
+    };
+    return names[name] || '01';
+  };
+
+  function parseSheetValue(rawValue) {
+    // Se não vier nada, assume '0'
+    let valorStr = rawValue?.toString() || '0';
+  
+    // Logs para depuração
+    console.log('Valor bruto da planilha:', valorStr);
+  
+    // Remove "R$" e possíveis espaços
+    valorStr = valorStr.replace(/R\$\s?/, '');
+    // Remove pontos de milhar
+    valorStr = valorStr.replace(/\./g, '');
+    // Troca a vírgula decimal por ponto
+    valorStr = valorStr.replace(',', '.');
+  
+    console.log('Valor após remover pontuação:', valorStr);
+  
+    const valorNum = parseFloat(valorStr) || 0;
+    console.log('Valor parseado:', valorNum);
+  
+    return valorNum;
+  }
+  
+
+  // Busca categorias da aba "Categorias"
+  const fetchCategorias = async () => {
+    try {
+      const res = await fetch(FULL_URL_CATEGORIAS);
+      const text = await res.text();
+      const data = JSON.parse(text.substr(47).slice(0, -2));
+      let catList = [];
+      for (let i = 0; i < data.table.rows.length; i++) {
+        const nome = data.table.rows[i].c[0]?.v || '';
+        const tipo = data.table.rows[i].c[1]?.v || '';
+        const icone = data.table.rows[i].c[2]?.v || 'BsThreeDots';
+        catList.push({ nome, tipo, icone, soma: 0 });
+      }
+      return catList;
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+      return [];
     }
+  };
 
-    
-    let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-    let SHEET_TITLE = 'Categorias'
-    let SHEET_RANGE = 'A2:B'
-    let FULL_URL =
-    'https://docs.google.com/spreadsheets/d/' +
-    SHEET_ID +
-    '/gviz/tq?sheet=' +
-    SHEET_TITLE +
-    '&range=' +
-    SHEET_RANGE
-    
-    let SHEET_TITLE_MOV = 'Extrato'
-    let SHEET_RANGE_MOV = 'A:H'
-    let FULL_URL_MOV =
-        'https://docs.google.com/spreadsheets/d/' +
-        SHEET_ID +
-        '/gviz/tq?sheet=' +
-        SHEET_TITLE_MOV +
-        '&range=' +
-        SHEET_RANGE_MOV
-
-
-    const closeHandler = () => {
-        setVisible(false)
-    }
-
-    const changeData = async () => {
-        let ano = document.getElementById('ano').value;
-        let mes = document.getElementById('mes').value;
-      
-        // Converte o nome do mês para número (meses com 2 dígitos)
-        switch(mes){
-            case "Janeiro":
-                mes = '01';
-                break;
-            case "Fevereiro":
-                mes = '02';
-                break;
-            case "Março":
-                mes = '03';
-                break;
-            case "Abril":
-                mes = '04';
-                break;
-            case "Maio":
-                mes = '05';
-                break;
-            case "Junho":
-                mes = '06';
-                break;
-            case "Julho":
-                mes = '07';
-                break;
-            case "Agosto":
-                mes = '08';
-                break;
-            case "Setembro":
-                mes = '09';
-                break;  
-            case "Outubro":
-                mes = '10';
-                break;  
-            case "Novembro":
-                mes = '11';
-                break;  
-            case "Dezembro":
-                mes = '12';
-                break;                                                               
-        }
-      
-        const post = {
-            data: mes + '/' + ano,
-        };
-      
-        const res = await fetch('/api/updateDateFilter', { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-        });
-      
-        // (Opcional) Você pode verificar a resposta e tratar erros.
-        if (!res.ok) {
-            console.error('Erro ao enviar dados para a planilha.');
-        }
-      };
-      
-    
-    fetch(FULL_URL)
-    .then((res) => res.text())
-    .then((rep) => {
-        let data = JSON.parse(rep.substr(47).slice(0, -2))
-        let totals = 0
-        let categorias = new Categorias()
-        for (let i = 0; i < data.table.rows.length; i++) {
-            let valor = data.table.rows[i].c[1].v.toFixed(2)
-            totals += parseFloat(valor)
-            valor = valor + ''
-            valor = parseFloat(valor.replace(/[\D]+/g, ''))
-            valor = valor + ''
-            valor = valor.replace(/([0-9]{2})$/g, ',$1')
-            
-            categorias.salvar(
-                data.table.rows[i].c[0].v,
-                valor,
-            )
-        }
-        setTotal(totals)
-        setCategorias(categorias.arrayCat)
-    })
-
-    const detailCategory = async (categoria) => {
-        let mes = document.getElementById('mes').value
-        setMesModal(mes)
-        setCatModal(categoria)
-        switch(mes){
-            case "Janeiro":
-                mes = '1'
-                break
-            case "Fevereiro":
-                mes = '2'
-                break
-            case "Março":
-                mes = '3'
-                break
-            case "Abril":
-                mes = '4'
-                break
-            case "Maio":
-                mes = '5'
-                break
-            case "Junho":
-                mes = '6'
-                break
-            case "Julho":
-                mes = '7'
-                break
-            case "Agosto":
-                mes = '8'
-                break
-            case "Setembro":
-                mes = '9'
-                break  
-            case "Outubro":
-                mes = '10'
-                break  
-            case "Novembro":
-                mes = '11'
-                break  
-            case "Dezembro":
-                mes = '12'
-                break                                                               
-        }
-        fetch(FULL_URL_MOV)
-        .then((res) => res.text())
-        .then((rep) => {
-            let data = JSON.parse(rep.substr(47).slice(0, -2))
-            let produto = new Mov()
-            for (let i = 0; i < data.table.rows.length; i++) {
-                let date = data.table.rows[i].c[3].v
-                date = date.replace(/[^0-9,]/g, '')
-                if (date[6] === ',') {
-                    date = date.slice(0, 5) + '0' + date.slice(5)
-                }
-                let month = parseInt(date.slice(5, 7)) + 1
-                if(data.table.rows[i].c[1].v===categoria && month==mes){
-                produto.salvar(
-                    data.table.rows[i].c[0].v,
-                    data.table.rows[i].c[1].v,
-                    data.table.rows[i].c[2].v.toFixed(2),
-                    data.table.rows[i].c[3].v,
-                    data.table.rows[i].c[4].v,
-                    data.table.rows[i].c[5].v,
-                    data.table.rows[i].c[6].v,
-                    data.table.rows[i].c[7].v
-                )
+  // Busca o extrato e agrupa por categoria filtrando por data e pelo tipo (receita/despesa)
+  const fetchExtrato = async () => {
+    try {
+      const res = await fetch(FULL_URL_EXTRATO);
+      const text = await res.text();
+      const data = JSON.parse(text.substr(47).slice(0, -2));
+      let agrupado = {};
+      let totalSoma = 0;
+  
+      // row[0] = tipo (DESPESA/RECEITA)
+      // row[1] = categoria
+      // row[2] = valor (ex: "R$ 620.547,00")
+      // row[3] = data (ex: "Date(2025,0,30)")
+      for (let i = 0; i < data.table.rows.length; i++) {
+        const row = data.table.rows[i].c;
+        const tipoRow = row[0]?.v || '';
+        const categoria = row[1]?.v || '';
+  
+        // Converte o valor usando a função parseSheetValue
+        const valor = row[2]?.v > 0 ? row[2]?.v : (row[2]?.v * -1);
+  
+        // Lida com a data no formato "Date(2025,0,30)"
+        const dataStr = row[3]?.v || '';
+        const match = dataStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+        if (match) {
+          const anoData = match[1]; // "2025"
+          const mesData = String(Number(match[2]) + 1).padStart(2, '0'); // 0 => "01"
+          // Compare com os filtros
+          if (
+            anoData === String(year) &&
+            mesData === month &&
+            tipoRow.toUpperCase() === selectedTransactionType
+          ) {
+            if (!agrupado[categoria]) {
+              agrupado[categoria] = 0;
             }
-            }
-            setDetalhes(produto.arrayMov)
-        }).then((ret) => {
-            setVisible(true)
-        })
+            agrupado[categoria] += valor;
+            totalSoma += valor;
+          }
+        }
+      }
+      return { agrupado, totalSoma };
+    } catch (error) {
+      console.error('Erro ao carregar extrato:', error);
+      return { agrupado: {}, totalSoma: 0 };
     }
+  }
+  
+  
 
-    useEffect(() => {
-        changeData();
-      },[]);
+  // Junta categorias e extrato
+  const loadData = async () => {
+    const catList = await fetchCategorias();
+    const { agrupado, totalSoma } = await fetchExtrato();
+    const finalList = catList
+  // filtra apenas as categorias cujo tipo (coluna B) bate com o tipo selecionado
+  .filter(cat => cat.tipo.toUpperCase() === selectedTransactionType)
+  .map(cat => ({
+    ...cat,
+    soma: agrupado[cat.nome] ? agrupado[cat.nome] : 0
+  }));
 
+setCategorias(finalList);
+setTotal(totalSoma);
+  };
 
-    return (
-        <div className="bg-gray-100 min-h-screen">
-            <title>Categorias - CF</title>
-            <div className="p-4">
-                <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
-                    <div className="grid grid-cols-3 font-bold text-lg">
-                        <span>Categorias</span>
-                        <select
-                            id="ano"
-                            key="ano"
-                            className="ml-3 w-20 bg-blue-800 p-1 rounded-lg hover:bg-blue-400 text-blue-200 font-semibold outline-none hover:cursor-pointer"
-                            onChange={changeData}
-                            defaultValue={hojeAno}
-                        >
-                            {Array.from({ length: new Date().getFullYear() - 2022 }, (_, i) => {
-                                const year = 2023 + i;
-                                return <option key={year} value={year}>{year}</option>;
-                            })}
-                            
+  // Chama loadData ao mudar filtros
+  useEffect(() => {
+    loadData();
+  }, [year, month, selectedTransactionType]);
 
-                        </select>
+  // Atualiza detalhes quando uma categoria é clicada
+  const detailCategory = async (categoria) => {
+    try {
+      const res = await fetch(FULL_URL_EXTRATO);
+      const text = await res.text();
+      const data = JSON.parse(text.substr(47).slice(0, -2));
+      let detalhesList = [];
+      // Supondo:
+      // row[0]: tipo
+      // row[1]: categoria
+      // row[2]: valor
+      // row[3]: data ("Date(2025,0,30)")
+      // row[5]: detalhes (descrição)
+      for (let i = 0; i < data.table.rows.length; i++) {
+        const row = data.table.rows[i].c;
+        const tipoRow = row[0]?.v || '';
+        const catRow = row[1]?.v || '';
+        
+        // Processa o valor
+        const valor = row[2]?.v > 0 ? row[2]?.v : (row[2]?.v * -1);
+        
+        // Processa a data no formato "Date(2025,0,30)"
+        const dataStr = row[3]?.v || '';
+        const match = dataStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+        if (match) {
+          const anoData = match[1];
+          const mesData = String(Number(match[2]) + 1).padStart(2, '0');
+          const diaData = String(match[3]).padStart(2, '0');
+          if (
+            anoData === String(year) &&
+            mesData === month &&
+            catRow === categoria &&
+            tipoRow.toUpperCase() === selectedTransactionType
+          ) {
+            detalhesList.push({
+              id: i,
+              detalhes: row[5]?.v || '',
+              valor,
+              data: `${diaData}/${mesData}/${anoData}`,
+            });
+          }
+        }
+      }
+      setDetalhes(detalhesList);
+      setCatModal(categoria);
+      setVisible(true);
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da categoria:', error);
+    }
+  };
+  
 
-                        <select
-                            id="mes"
-                            key="mes"
-                            className="w-32 -ml-3 bg-blue-200 p-1 rounded-lg hover:bg-blue-400 text-blue-800 outline-none font-semibold hover:cursor-pointer"
-                            onChange={changeData}
-                            defaultValue={hojeMes}
-                        >
-                            <option value="Janeiro">
-                                Janeiro
-                            </option>
-                            <option value="Fevereiro">
-                                Fevereiro
-                            </option>
-                            <option value="Março">
-                                Março
-                            </option>
-                            <option value="Abril">
-                                Abril
-                            </option>
-                            <option value="Maio">
-                                Maio
-                            </option>
-                            <option value="Junho">
-                                Junho
-                            </option>
-                            <option value="Julho">
-                                Julho
-                            </option>
-                            <option value="Agosto">
-                                Agosto
-                            </option>
-                            <option value="Setembro">
-                                Setembro
-                            </option>
-                            <option value="Outubro">
-                                Outubro
-                            </option>
-                            <option  value="Novembro">
-                                Novembro
-                            </option>
-                            <option value="Dezembro">
-                                Dezembro
-                            </option>
-
-                        </select>
-                          </div>
-                    <ul>
-                        {categorias.map((cat, index) => (
-                            <li
-                                key={index}
-                                className="bg-gray-50 rounded-lg my-3 p-3 sm:p-8 grid grid-cols-2 items-center justify-between cursor-pointer"
-                            >
-                                <div className="w-full grid grid-cols-3">
-                                <Popover placement="bottom" showArrow={true}>
-                                    <Popover.Trigger>
-                                    <div
-                                    className='rounded-full p-3 bg-blue-200 mr-16 inline-block w-11 ml-6'
-                                    >
-                                        {cat.categoria ===
-                                            'Alimentação' ? (
-                                                <BiRestaurant
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Locomoção' ? (
-                                                <BiCar
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Academia' ? (
-                                                <GiWeightLiftingUp
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria === 'Celular' ? (
-                                                <BiPhone
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Vestuário' ? (
-                                                <BiSolidTShirt
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria === 'Dívida' ? (
-                                                <BiBomb
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria === 'Lazer' ? (
-                                                <BiSmile
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria === 'Saúde' ? (
-                                                <GiHealthNormal
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria === 'Bet' ? (
-                                                <SiBetfair
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Presente' ? (
-                                                <BiGift
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Serviços' ? (
-                                                <AiOutlineTool
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Investimento' ? (
-                                                <RiFundsBoxLine
-                                                    size={20}
-                                                    className={
-                                                        cat.tipo === 'Receita'
-                                                            ? 'text-green-800'
-                                                            : 'text-blue-800'
-                                                    }
-                                                />
-                                            ) : cat.categoria === 'Fatura' ? (
-                                                <RiBillLine
-                                                    size={20}
-                                                    className="text-blue-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Salário - V4' ? (
-                                                <BiMoneyWithdraw
-                                                    size={20}
-                                                    className="text-green-800"
-                                                />
-                                            ) : cat.categoria ===
-                                              'Freelance' ? (
-                                                <SiFreelancer
-                                                    size={20}
-                                                    className="text-green-800"
-                                                />
-                                            ): cat.categoria === 'Reembolso' ? (
-                                                <MdMoneyOff
-                                                    size={20}
-                                                    className="text-green-800"
-                                                    />
-                                            ) : cat.categoria === 'Viagem' ? (
-                                                <SiYourtraveldottv size={20}
-                                                className="text-blue-800"
-                                                /> 
-                                            ) 
-                                            : (
-                                                <BsThreeDots
-                                                    size={20}
-                                                    className={
-                                                        cat.tipo === 'RECEITA'
-                                                            ? 'text-green-800'
-                                                            : 'text-blue-800'
-                                                    }
-                                                />
-                                            )}
-                                        
-                                    </div>
-                                    </Popover.Trigger>
-                                    <Popover.Content>
-                                        <div className="text-small font-bold p-4">{cat.categoria}</div>
-                                    </Popover.Content>
-                                    </Popover>
-    
-                                </div>
-                           
-
-                                <div className="-ml-16 sm:-ml-96 flex w-64 sm:w-full">
-                                    <div className="sm:ml-10 mr-3 sm:mr-10 mt-1 sm:mt-1.5 w-24 sm:w-9/12">
-                                        <Progress
-                                            className="w-full sm:w-96"
-                                            color={'primary'}
-                                            value={(
-                                                (parseFloat(cat.valor) *
-                                                    100) /
-                                                    parseFloat(total)
-                                            ).toFixed(1)}
-                                        />
-                                    </div>
-                                    <div
-                                        className='text-blue-700 font-bold'
-                                        onClick={() => detailCategory(cat.categoria)}
-                                    >
-                                        {'R$ ' + cat.valor}
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-
-
-                </div>
-            </div>
-            <Modal
-                    closeButton
-                    aria-labelledby="modal-title"
-                    open={visible}
-                    onClose={closeHandler}
-                >
-                    <Modal.Header>
-                        <Text id="modal-title" size={18}>
-                            <Text b size={18}>
-                                {catModal + ' - ' + mesModal}
-                            </Text>
-                        </Text>
-                    </Modal.Header>
-                    <Modal.Body className="text-center">
-                        <ul>{det
-                            .slice(0)
-                            .reverse()
-                            .map((mov,index) => (
-                            <li
-                            key={index}
-                            className="bg-gray-50 rounded-lg my-3 p-2 w-full flex justify-between cursor-pointer"
-                            >
-                                <div className="grid grid-cols-1 w-2/3">
-                                <div className='font-bold'>{mov.detalhes}</div>
-                                <div className='text-red-700'>{'R$ '+(parseFloat(-mov.valor).toFixed(2).replace('.', ','))}</div>
-                                </div>
-                                <div className='self-center'>{mov.data}</div>
-                            </li>
-                            ))
-                            }
-                        </ul>
-                    </Modal.Body>
-            </Modal>
+  return (
+    <div className="bg-gray-100 min-h-screen">
+      <title>Categorias - CF</title>
+      <div className="p-4">
+        {/* Filtros: Ano, Mês e Tipo (Receita/Despesa) */}
+        <div className="flex gap-4 mb-4 items-center">
+          <select
+            id="ano"
+            className="w-20 bg-blue-800 p-1 rounded-lg text-blue-200 font-semibold"
+            onChange={(e) => setYear(e.target.value)}
+            value={year}
+          >
+            {Array.from({ length: new Date().getFullYear() - 2022 }, (_, i) => {
+              const y = 2023 + i;
+              return (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              );
+            })}
+          </select>
+          <select
+            id="mes"
+            className="w-32 bg-blue-200 p-1 rounded-lg text-blue-800 font-semibold"
+            onChange={(e) => setMonth(convertMonthNameToNumber(e.target.value))}
+            value={monthName(month)}
+          >
+            <option>Janeiro</option>
+            <option>Fevereiro</option>
+            <option>Março</option>
+            <option>Abril</option>
+            <option>Maio</option>
+            <option>Junho</option>
+            <option>Julho</option>
+            <option>Agosto</option>
+            <option>Setembro</option>
+            <option>Outubro</option>
+            <option>Novembro</option>
+            <option>Dezembro</option>
+          </select>
+          <select
+            id="tipo"
+            className="w-32 bg-blue-200 p-1 rounded-lg text-blue-800 font-semibold"
+            onChange={(e) => setSelectedTransactionType(e.target.value.toUpperCase())}
+            value={selectedTransactionType}
+          >
+            <option value="DESPESA">Despesas</option>
+            <option value="RECEITA">Receitas</option>
+          </select>
         </div>
-    )
-}
 
-export default categorias
+        {/* Lista de Categorias */}
+        <ul>
+          {categorias.map((cat, index) => {
+            const somaFormatada = cat.soma.toFixed(2).replace('.', ',');
+            const perc = total ? ((cat.soma / total) * 100).toFixed(1) : 0;
+            return (
+              <li
+                key={index}
+                className="bg-gray-50 rounded-lg my-3 p-3 grid grid-cols-2 items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className="rounded-full p-3 bg-blue-200 mr-4 w-11 h-11 flex justify-center items-center">
+                    {ICON_MAP[cat.icone] || ICON_MAP['BsThreeDots']}
+                  </div>
+                  <Text b>{cat.nome}</Text>
+                </div>
+                <div className="flex items-center">
+                  <div className="mr-3">
+                    <Progress className="w-40" color="primary" value={Number(perc)} />
+                  </div>
+                  <div
+                    className="text-blue-700 font-bold"
+                    onClick={() => detailCategory(cat.nome)}
+                  >
+                    R$ {somaFormatada} ({perc}%)
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Modal com detalhes das transações da categoria */}
+      <Modal closeButton open={visible} onClose={() => setVisible(false)}>
+        <Modal.Header>
+          <Text id="modal-title" size={18}>
+            <Text b>
+              {catModal} - {monthName(month)}/{year}
+            </Text>
+          </Text>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <ul>
+            {detalhes
+              .slice(0)
+              .reverse()
+              .map((mov, index) => (
+                <li
+                  key={index}
+                  className="bg-gray-50 rounded-lg my-3 p-2 flex justify-between items-center"
+                >
+                  <div className="flex flex-col">
+                    <Text b>{mov.detalhes}</Text>
+                    <Text className="text-red-700">
+                      R$ {mov.valor.toFixed(2).replace('.', ',')}
+                    </Text>
+                  </div>
+                  <Text>{mov.data}</Text>
+                </li>
+              ))}
+          </ul>
+        </Modal.Body>
+      </Modal>
+      <div className="fixed bottom-4 right-4">
+        <Button
+          className="bg-green-500 rounded-full h-12 w-12 flex justify-center items-center"
+          auto
+          onPress={() => setShowAddModal(true)}
+        >
+          <CiCirclePlus size={26}/>
+        </Button>
+        {showAddModal && (
+        <AddCategoryModal onClose={() => setShowAddModal(false)} />
+      )}
+      </div>
+    </div>
+  );
+};
+
+export default categorias;
