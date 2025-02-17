@@ -27,10 +27,10 @@ const mes = () => {
             let balanco = new Balanco()
             for (let i = 0; i < data.table.rows.length; i++) {
                 let valor = data.table.rows[i].c[2].v.toFixed(2)
-                valor = valor + ''
-                valor = parseFloat(valor.replace(/[\D]+/g, ''))
-                valor = valor + ''
-                valor = valor.replace(/([0-9]{2})$/g, ',$1')
+                // valor = valor + ''
+                // valor = parseFloat(valor.replace(/[\D]+/g, ''))
+                // valor = valor + ''
+                // valor = valor.replace(/([0-9]{2})$/g, ',$1')
                 
                 balanco.salvar(
                     data.table.rows[i].c[0].v,
@@ -104,7 +104,7 @@ const mes = () => {
                                                 : 'text-red-700 font-bold'
                                         }
                                     >
-                                        {'R$ ' + bal.valor}
+                                        {'R$ ' + bal.valor.toString().replace('.',',')}
                                     </div>
                                 </div>
                             </li>
