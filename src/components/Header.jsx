@@ -20,8 +20,8 @@ const Header = ({ children }) => {
     <div>
       {/* Cabeçalho fixo com botão de menu para mobile */}
       <header className="flex items-center justify-between p-4 bg-gray-100">
-        <div>
-          <h1 className="text-xl font-bold hidden">CF</h1>
+        <div className='md:hidden'>
+          <h1 className="text-xl font-bold">Controle Finaneiro</h1>
         </div>
         <div className="sm:hidden">
           <button onClick={toggleMenu} className="p-2">
@@ -36,7 +36,11 @@ const Header = ({ children }) => {
     menuOpen ? 'translate-x-0' : '-translate-x-full'
   }`}
 >
-  <ul className="mt-20 space-y-4 px-4">
+
+  <ul className="mt-5 space-y-4 px-4">
+    <li><div className='md:hidden mb-10'>
+          <h1 className="text-xl font-bold">Controle Finaneiro</h1>
+    </div></li>
     <li onClick={() => { setMenuOpen(false); router.push('/'); }}>
       <div className={router.pathname === "/" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
         <BiSolidDashboard size={25} />
