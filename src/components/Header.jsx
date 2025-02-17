@@ -6,6 +6,8 @@ import { BiSolidDashboard, BiTransferAlt, BiSolidBarChartAlt2 } from 'react-icon
 import { RiBillFill } from 'react-icons/ri';
 import { FaChartPie } from 'react-icons/fa';
 import { HiOutlineMenuAlt3, HiX } from 'react-icons/hi';
+import { FaChartLine } from 'react-icons/fa';
+
 
 const Header = ({ children }) => {
   const router = useRouter();
@@ -71,12 +73,18 @@ const Header = ({ children }) => {
         <span className="ml-2">A pagar/A receber</span>
       </div>
     </li>
+    <li onClick={() => { setMenuOpen(false); router.push('/graficos'); }}>
+      <div className={router.pathname === "/graficos" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+        <FaChartLine size={25} />
+        <span className="ml-2">Gráficos</span>
+      </div>
+    </li>
   </ul>
 </nav>
 
 
       {/* Menu fixo para desktop */}
-      <nav className="hidden sm:grid grid-cols-5 gap-8 px-4 pt-4 bg-gray-100">
+      <nav className="hidden sm:grid grid-cols-6 gap-8 px-4 pt-4 bg-gray-100">
         <Link href="/">
           <div className={router.pathname === "/" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BiSolidDashboard size={25} />
@@ -105,6 +113,12 @@ const Header = ({ children }) => {
           <div className={router.pathname === "/aPagar" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <RiBillFill size={25} />
             <p className="hidden sm:block font-bold">A pagar/A receber</p>
+          </div>
+        </Link>
+        <Link href="/graficos">
+          <div className={router.pathname === "/graficos" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+            <FaChartLine size={25} />
+            <p className="hidden sm:block font-bold">Gráficos</p>
           </div>
         </Link>
       </nav>
