@@ -163,7 +163,7 @@ const AddIncomeModalConta = () => {
     return (
         <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
             <Button
-                className="bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5"
+                className="bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5 z-10"
                 auto
                 rounded
                 shadow
