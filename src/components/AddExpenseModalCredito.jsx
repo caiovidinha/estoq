@@ -8,12 +8,14 @@ import {
     Dropdown,
     Loading,
 } from '@nextui-org/react'
+import CategoryDropdown from '@/components/CategoryDropdown';
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { AiFillCheckCircle } from 'react-icons/ai'
 import { Cards } from './Cards'
 
 const AddExpenseModalCrédito = () => {
+    const [selectedValue, setSelectedValue] = useState('Categoria');
     const [invalid, setInvalid] = useState(false)
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -113,11 +115,11 @@ const AddExpenseModalCrédito = () => {
         if (!dataInput.value) dataInput.value = dataAtual
     }
 
-    const [selected, setSelected] = useState(new Set(['Categoria']))
-    const selectedValue = useMemo(
-        () => Array.from(selected).join(', ').replaceAll('_', ' '),
-        [selected]
-    )
+    // const [selected, setSelected] = useState(new Set(['Categoria']))
+    // const selectedValue = useMemo(
+    //     () => Array.from(selected).join(', ').replaceAll('_', ' '),
+    //     [selected]
+    // )
 
     const [selectedCard, setSelectedCard] = useState(new Set(['Cartão']))
     const selectedValueCard = useMemo(
@@ -192,30 +194,12 @@ const AddExpenseModalCrédito = () => {
                     </Text>
                 </Modal.Header>
                 <Modal.Body>
-                    <Dropdown>
-                        <Dropdown.Button flat color="error" css={{ tt: 'capitalize' }}>
-                            {selectedValue}
-                        </Dropdown.Button>
-                        <Dropdown.Menu
-                            aria-label="Single selection actions"
-                            color="error"
-                            selectionMode="single"
-                            selectedKeys={selected}
-                            onSelectionChange={setSelected}
-                            id="categoria"
-                        >
-                            <Dropdown.Item key="Alimentação">Alimentação</Dropdown.Item>
-                            <Dropdown.Item key="Dívida">Dívida</Dropdown.Item>
-                            <Dropdown.Item key="Lazer">Lazer</Dropdown.Item>
-                            <Dropdown.Item key="Locomoção">Locomoção</Dropdown.Item>
-                            <Dropdown.Item key="Presente">Presente</Dropdown.Item>
-                            <Dropdown.Item key="Saúde">Saúde</Dropdown.Item>
-                            <Dropdown.Item key="Serviços">Serviços</Dropdown.Item>
-                            <Dropdown.Item key="Vestuário">Vestuário</Dropdown.Item>
-                            <Dropdown.Item key="Viagem">Viagem</Dropdown.Item>
-                            <Dropdown.Item key="Outros">Outros</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    <CategoryDropdown
+                    selectedValue={selectedValue}
+                    onSelect={(cat) => setSelectedValue(cat)}
+                    categoryType={"DESPESA"}
+                    />
+
                     <Input
                         bordered
                         maxLength={9}

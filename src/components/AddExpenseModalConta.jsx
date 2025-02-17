@@ -9,11 +9,13 @@ import {
     Loading,
 } from '@nextui-org/react'
 import { GiTakeMyMoney } from 'react-icons/gi'
+import CategoryDropdown from '@/components/CategoryDropdown';
 import { AiFillCheckCircle } from 'react-icons/ai'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { Accounts } from './Accounts'
 
 const AddExpenseModalConta = () => {
+    const [selectedValue, setSelectedValue] = useState('Categoria');
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
     const [contas, setContas] = useState([])
@@ -104,14 +106,14 @@ const AddExpenseModalConta = () => {
         if (!dataInput.value) dataInput.value = dataAtual
     }
 
-    const [selected, setSelected] = useState(new Set(['Categoria']))
+    // const [selected, setSelected] = useState(new Set(['Categoria']))
     const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
 
-    const selectedValue = useMemo(
-        () => Array.from(selected).join(', ').replaceAll('_', ' '),
-        [selected]
-    )
+    // const selectedValue = useMemo(
+    //     () => Array.from(selected).join(', ').replaceAll('_', ' '),
+    //     [selected]
+    // )
     const selectedValueMes = useMemo(
         () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
         [selectedMes]
@@ -180,31 +182,12 @@ const AddExpenseModalConta = () => {
                     </Text>
                 </Modal.Header>
                 <Modal.Body>
-                    <Dropdown>
-                        <Dropdown.Button flat color="error" css={{ tt: 'capitalize' }}>
-                            {selectedValue}
-                        </Dropdown.Button>
-                        <Dropdown.Menu
-                            aria-label="Single selection actions"
-                            color="error"
-                            selectionMode="single"
-                            selectedKeys={selected}
-                            onSelectionChange={setSelected}
-                            id="categoria"
-                        >
-                            <Dropdown.Item key="Alimentação">Alimentação</Dropdown.Item>
-                            <Dropdown.Item key="Dívida">Dívida</Dropdown.Item>
-                            <Dropdown.Item key="Lazer">Lazer</Dropdown.Item>
-                            <Dropdown.Item key="Locomoção">Locomoção</Dropdown.Item>
-                            <Dropdown.Item key="Presente">Presente</Dropdown.Item>
-                            <Dropdown.Item key="Saúde">Saúde</Dropdown.Item>
-                            <Dropdown.Item key="Serviços">Serviços</Dropdown.Item>
-                            <Dropdown.Item key="Vestuário">Vestuário</Dropdown.Item>
-                            <Dropdown.Item key="Viagem">Viagem</Dropdown.Item>
-                            <Dropdown.Item key="Investimento">Investimento</Dropdown.Item>
-                            <Dropdown.Item key="Outros">Outros</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    <CategoryDropdown
+                    selectedValue={selectedValue}
+                    onSelect={(cat) => setSelectedValue(cat)}
+                    categoryType={"DESPESA"}
+                    />
+
                     <Input
                         disabled={loading || created ? true : false}
                         bordered
