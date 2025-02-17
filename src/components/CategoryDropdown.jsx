@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import React from 'react';
 import { Dropdown } from '@nextui-org/react';
 import { fetchCategories } from '@/utils/getCategories'; // Função centralizada para buscar categorias
 
