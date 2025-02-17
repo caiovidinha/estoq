@@ -182,15 +182,16 @@ const categorias = () => {
     const catList = await fetchCategorias();
     const { agrupado, totalSoma } = await fetchExtrato();
     const finalList = catList
-  // filtra apenas as categorias cujo tipo (coluna B) bate com o tipo selecionado
-  .filter(cat => cat.tipo.toUpperCase() === selectedTransactionType)
-  .map(cat => ({
-    ...cat,
-    soma: agrupado[cat.nome] ? agrupado[cat.nome] : 0
-  }));
-
-setCategorias(finalList);
-setTotal(totalSoma);
+      // Filtra apenas as categorias cujo tipo bate com o selecionado
+      .filter(cat => cat.tipo.toUpperCase() === selectedTransactionType)
+      .map(cat => ({
+        ...cat,
+        soma: agrupado[cat.nome] ? agrupado[cat.nome] : 0
+      }));
+    // Recalcula o total com base na lista final
+    const finalTotal = finalList.reduce((acc, cat) => acc + cat.soma, 0);
+    setCategorias(finalList);
+    setTotal(finalTotal);
   };
 
   // Chama loadData ao mudar filtros
@@ -305,7 +306,7 @@ setTotal(totalSoma);
         <ul>
           {categorias.map((cat, index) => {
             const somaFormatada = cat.soma.toFixed(2).replace('.', ',');
-            const perc = total ? ((cat.soma / total) * 100).toFixed(1) : 0;
+            const perc = total ? ((cat.soma / total) * 100).toFixed(2) : 0;
             return (
               <li
                 key={index}
@@ -325,7 +326,7 @@ setTotal(totalSoma);
                     className="text-blue-700 font-bold"
                     onClick={() => detailCategory(cat.nome)}
                   >
-                    R$ {somaFormatada} ({perc}%)
+                    R$ {somaFormatada} ({perc.toString().replace(".",",")}%)
                   </div>
                 </div>
               </li>
