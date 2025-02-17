@@ -87,7 +87,7 @@ const AddIncomeModalConta = () => {
 
         setTimeout(() => {
             setCreated(false)
-            setSelected(new Set(['Categoria']))
+            // setSelected(new Set(['Categoria']))
             setSelectedMes(new Set(['Mês']))
             if (
                 document.getElementById('valor').value !== null &&

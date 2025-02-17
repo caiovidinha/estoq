@@ -90,7 +90,7 @@ const AddExpenseModalCrédito = () => {
 
         setTimeout(() => {
             setCreated(false)
-            setSelected(new Set(['Categoria']))
+            // setSelected(new Set(['Categoria']))
             setSelectedMes(new Set(['Mês']))
             // Limpa os campos do formulário
             if (
