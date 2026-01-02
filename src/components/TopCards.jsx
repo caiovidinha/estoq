@@ -11,52 +11,25 @@ import AddExpenseModalBus from './AddExpenseModalBus'
 import SeeCreditCards from './SeeCreditCards'
 import SeeAccounts from './SeeAccounts';
 import AddInvestimento from './AddInvestimento';
+import { getSaldos } from '@/services/api';
 
 const TopCards = () => {
-    let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-    let SHEET_TITLE = 'API'
-    let SHEET_RANGE = 'A1:M'
+    const [saldoGeral, setSaldoGeral] = useState(0)
+    const [saldoBU, setSaldoBU] = useState(0)
 
-    let FULL_URL =
-        'https://docs.google.com/spreadsheets/d/' +
-        SHEET_ID +
-        '/gviz/tq?sheet=' +
-        SHEET_TITLE +
-        '&range=' +
-        SHEET_RANGE
-
-    const [saldoNu, setSaldoNu] = useState([])
-    const [limiteNuCaio, setLimiteNuCaio] = useState([])
-    const [limiteNuJulia, setLimiteNuJulia] = useState([])
-    const [limiteNeonJulia, setLimiteNeonJulia] = useState([])
-    const [limitePicPayCaio, setLimitePicPayCaio] = useState([])
-    const [faturaNuCaio, setFaturaNuCaio] = useState([])
-    const [faturaNuJulia, setFaturaNuJulia] = useState([])
-    const [faturaNeonJulia, setFaturaNeonJulia] = useState([])
-    const [faturaPicPayCaio, setFaturaPicPayCaio] = useState([])
-    const [saldoBU, setSaldoBU] = useState([])
-
-    const getSaldo = () =>{
-        fetch(FULL_URL)
-        .then((res) => res.text())
-        .then((rep) => {
-            let data = JSON.parse(rep.substr(47).slice(0, -2))
-            setSaldoNu(data.table.rows[0].c[0].v.toFixed(2))
-            setLimiteNuCaio(data.table.rows[0].c[1].v.toFixed(2))
-            setLimiteNuJulia(data.table.rows[0].c[2].v.toFixed(2))
-            setLimiteNeonJulia(data.table.rows[0].c[3].v.toFixed(2))
-            setLimitePicPayCaio(data.table.rows[3].c[12].v.toFixed(2))
-            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
-            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
-            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
-            setFaturaPicPayCaio(data.table.rows[3].c[11].v.toFixed(2))
-            setSaldoBU(data.table.rows[0].c[7].v.toFixed(2))
-        })
-    }
-
-        useEffect(() => {
-            getSaldo()
-        })
+    useEffect(() => {
+        const fetchSaldos = async () => {
+            try {
+                const data = await getSaldos()
+                // API retorna { valor: "R$ 1.234,56" }
+                setSaldoGeral(data.valor || 'R$ 0,00')
+                setSaldoBU(data.saldo_bu || 'R$ 0,00')
+            } catch (error) {
+                console.error('Erro ao carregar saldos:', error)
+            }
+        }
+        fetchSaldos()
+    }, [])
 
     return (
         <div className="grid lg:grid-cols-6 gap-4 p-4">
@@ -66,8 +39,7 @@ const TopCards = () => {
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
-                        {'R$ '}
-                        {parseFloat(saldoNu).toFixed(2).toString().replace('.',',')}
+                        {saldoGeral}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
                         Saldo em Conta
@@ -84,36 +56,43 @@ const TopCards = () => {
                 <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
                     <BiLogoMastercard size={30} />
                 </div>
+                {/* TODO: Reimplementar valores de crédito usando endpoint da API REST
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
                         {'R$ '}
-                        {(parseFloat(limiteNeonJulia) +
-                            parseFloat(limiteNuJulia) +
-                            parseFloat(limitePicPayCaio) +
-                            parseFloat(limiteNuCaio) -
-                            parseFloat(faturaNuCaio) -
-                            parseFloat (faturaNeonJulia) - 
-                            parseFloat (faturaPicPayCaio) - 
-                            parseFloat (faturaNuJulia)
-                            ).toFixed(2).toString().replace('.',',')}
+                        {(
+                            Number(limiteNeonJulia || 0) +
+                            Number(limiteNuJulia || 0) +
+                            Number(limitePicPayCaio || 0) +
+                            Number(limiteNuCaio || 0) -
+                            Number(faturaNuCaio || 0) -
+                            Number(faturaNeonJulia || 0) - 
+                            Number(faturaPicPayCaio || 0) - 
+                            Number(faturaNuJulia || 0)
+                        ).toFixed(2).replace('.',',')}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
                 </div>
-                <div className="flex w-[130px] justify-between">
+                */}
+                <div className="flex flex-col w-full pb-4 mt-2">
+                    <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
+                </div>
+                <div className="flex w-[90px] justify-between">
                     <AddIncomeModalCredito />
                     <AddExpenseModalCredito />
+                    {/* TODO: Descomentar quando houver endpoint de saldos de cartões
                     <SeeCreditCards />
+                    */}
                 </div>
             </div>
 
-            <div className=" hidden lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
+            <div className="hidden lg:flex lg:col-span-2 col-span-1 bg-white justify-between w-full border p-4 rounded-lg">
                 <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
                     <BsBusFrontFill size={30} />
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
-                        {'R$ '}
-                        {parseFloat(saldoBU).toFixed(2).toString().replace('.',',')}
+                        {saldoBU}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
                         Bilhete Único

@@ -1,56 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
-import {
-  BiRestaurant,
-  BiCar,
-  BiPhone,
-  BiSolidTShirt,
-  BiCreditCardAlt,
-  BiBomb,
-  BiSmile,
-  BiGift,
-  BiMoneyWithdraw,
-} from 'react-icons/bi';
-import { MdMoneyOff } from 'react-icons/md';
-import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi';
-import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si';
-import { AiOutlineTool, AiFillCheckCircle } from 'react-icons/ai';
-import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri';
+import { AiFillCheckCircle } from 'react-icons/ai';
+import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
-import { Mov } from '@/components/Mov';
+import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
 
-// Objeto que mapeia a string do ícone para o componente real
-const IconComponents = {
-  BiRestaurant,
-  BiCar,
-  BiPhone,
-  BiSolidTShirt,
-  BiCreditCardAlt,
-  BiBomb,
-  BiSmile,
-  BiGift,
-  BiMoneyWithdraw,
-  MdMoneyOff,
-  GiWeightLiftingUp,
-  GiHealthNormal,
-  SiBetfair,
-  SiFreelancer,
-  SiYourtraveldottv,
-  AiOutlineTool,
-  RiFundsBoxLine,
-  RiBillLine,
-  BsThreeDots,
-};
-
-// Função que, dado uma movimentação e o array de categorias carregadas, retorna o ícone apropriado
-function getIconForMovimentacao(mov, categoriesMapping) {
-  // Procura na lista de categorias (pela propriedade "nome") a categoria correspondente ao mov.descritivo
-  const catFound = categoriesMapping.find(cat => cat.nome === mov.descritivo);
-  const iconName = catFound ? catFound.icone : 'BsThreeDots';
-  const IconComponent = IconComponents[iconName] || BsThreeDots;
-  // Define a cor: receitas em verde, despesas em vermelho
+// Função que retorna o ícone padrão para todas as movimentações
+function getIconForMovimentacao(mov) {
+// Função que retorna o ícone padrão para todas as movimentações
+function getIconForMovimentacao(mov) {
   const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
-  return <IconComponent size={20} className={colorClass} />;
+  return <BsThreeDots size={20} className={colorClass} />;
 }
 
 const movimentacoes = () => {
@@ -64,79 +24,29 @@ const movimentacoes = () => {
   const [detalhes, setDetalhes] = useState('');
   const [situacao, setSituacao] = useState('');
   const [conta, setConta] = useState('');
-  const [post, setPost] = useState({});
-  const [exc, setExc] = useState(false);
+  const [rowIndex, setRowIndex] = useState(null);
   const [confirmarExc, setConfirmarExc] = useState(false);
   const [excluido, setExcluido] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [movimentacao, setMovimentacao] = useState([]);
-  const [categoriesMapping, setCategoriesMapping] = useState([]);
 
-  // IDs e ranges
-  const SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
-  const SHEET_TITLE_MOV = 'Extrato';
-  const SHEET_RANGE = 'A:H';
-  const FULL_URL_MOV =
-    'https://docs.google.com/spreadsheets/d/' +
-    SHEET_ID +
-    '/gviz/tq?sheet=' +
-    SHEET_TITLE_MOV +
-    '&range=' +
-    SHEET_RANGE;
-  // URL da aba de categorias (dinâmicas)
-  const FULL_URL_CATEGORIAS =
-    'https://docs.google.com/spreadsheets/d/' +
-    SHEET_ID +
-    '/gviz/tq?sheet=Categories&range=A2:C';
-
-  // Função para buscar categorias (dinâmico)
-  const fetchCategorias = async () => {
+  // Função para carregar movimentações
+  const fetchMovimentacoes = async () => {
     try {
-      const res = await fetch(FULL_URL_CATEGORIAS);
-      const text = await res.text();
-      const data = JSON.parse(text.substr(47).slice(0, -2));
-      let catList = [];
-      for (let i = 0; i < data.table.rows.length; i++) {
-        const nome = data.table.rows[i].c[0]?.v || '';
-        const tipo = data.table.rows[i].c[1]?.v || '';
-        const icone = data.table.rows[i].c[2]?.v || 'BsThreeDots';
-        catList.push({ nome, tipo, icone });
-      }
-      return catList;
+      setLoading(true)
+      const response = await getTransacoes({ page_size: 1000 }) // Busca todas as transações
+      setMovimentacao(response.items || [])
+      setLoading(false)
     } catch (error) {
-      console.error('Erro ao carregar categorias:', error);
-      return [];
+      console.error('Erro ao buscar movimentações:', error)
+      setLoading(false)
     }
-  };
+  }
 
-  // Busca as movimentações do extrato
+  // Carrega dados apenas na montagem inicial
   useEffect(() => {
-    fetch(FULL_URL_MOV)
-      .then((res) => res.text())
-      .then((rep) => {
-        let data = JSON.parse(rep.substr(47).slice(0, -2));
-        let produto = new Mov();
-        for (let i = 0; i < data.table.rows.length; i++) {
-          produto.salvar(
-            i + 3,
-            data.table.rows[i].c[0].v, // tipo
-            data.table.rows[i].c[1].v, // descritivo
-            data.table.rows[i].c[2].v.toFixed(2), // valor
-            data.table.rows[i].c[3].v, // data
-            data.table.rows[i].c[4].v, // mes
-            data.table.rows[i].c[5].v, // detalhes
-            data.table.rows[i].c[6].v, // situacao
-            data.table.rows[i].c[7].v  // conta
-          );
-        }
-        setMovimentacao(produto.arrayMov);
-      });
-  }, []);
-
-  // Busca a lista de categorias para mapeamento dinâmico
-  useEffect(() => {
-    fetchCategorias().then((cats) => setCategoriesMapping(cats));
+    fetchMovimentacoes()
   }, []);
 
   const handler = (
@@ -147,7 +57,8 @@ const movimentacoes = () => {
     mes,
     detalhes,
     situacao,
-    conta
+    conta,
+    index
   ) => {
     setTipo(tipo);
     seteDescritivo(descritivo);
@@ -157,6 +68,7 @@ const movimentacoes = () => {
     setDetalhes(detalhes);
     setSituacao(situacao);
     setConta(conta);
+    setRowIndex(index);
     setVisible(true);
   };
 
@@ -173,49 +85,51 @@ const movimentacoes = () => {
     setExcluido(false);
   };
 
-  const deleteRow = (id) => {
-    setPost({ index: id });
+  const deleteRow = (index) => {
+    setRowIndex(index);
     openConf();
   };
 
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/deleteRow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index: post.index }),
-      });
-      if (res.ok) {
-        setLoading(false);
-        setExcluido(true);
-        window.location.reload();
-      } else {
-        console.error('Erro ao excluir a movimentação.');
-        setLoading(false);
-      }
+      await deleteTransacao(rowIndex)
+      setLoading(false);
+      setExcluido(true);
+      // Recarrega as movimentações após exclusão
+      const response = await getTransacoes({ page_size: 1000 })
+      setMovimentacao(response.items || [])
+      setTimeout(() => {
+        setConfirmarExc(false)
+        setExcluido(false)
+      }, 1500)
     } catch (error) {
-      console.error('Erro na requisição:', error);
+      console.error('Erro ao excluir movimentação:', error);
       setLoading(false);
     }
   };
 
-  const changeStatus = async (index, id) => {
-    let ident = 'status' + index;
-    let statusMov = document.getElementById(ident).value;
-    const post = {
-      situacao: statusMov,
-      index: id,
-    };
-    const res = await fetch('/api/updateStatus', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(post),
-    });
-    if (!res.ok) {
-      console.error('Erro ao atualizar o status na planilha.');
-    } else {
-      window.location.reload();
+  const changeStatus = async (mov) => {
+    try {
+      setLoading(true)
+      // Alterna o status
+      const novoStatus = mov.situacao === 'Pago' 
+        ? 'A pagar' 
+        : mov.situacao === 'A pagar'
+        ? 'Pago'
+        : mov.situacao === 'Recebido'
+        ? 'A receber'
+        : 'Recebido'
+
+      await updateTransacao(mov.row_index, { situacao: novoStatus })
+      
+      // Atualiza lista local
+      const response = await getTransacoes({ page_size: 1000 })
+      setMovimentacao(response.items || [])
+      setLoading(false)
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error)
+      setLoading(false)
     }
   };
 
@@ -236,7 +150,7 @@ const movimentacoes = () => {
               .reverse()
               .map((mov, index) => (
                 <li
-                  key={mov.id}
+                  key={mov.row_index}
                   className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                 >
                   <div
@@ -250,7 +164,8 @@ const movimentacoes = () => {
                         mov.mes,
                         mov.detalhes,
                         mov.situacao,
-                        mov.conta
+                        mov.conta,
+                        mov.row_index
                       )
                     }
                   >
@@ -261,11 +176,11 @@ const movimentacoes = () => {
                           : 'bg-red-200 rounded-lg p-3'
                       }
                     >
-                      {getIconForMovimentacao(mov, categoriesMapping)}
+                      {getIconForMovimentacao(mov)}
                     </div>
                     <div className="pl-2 w-32">
                       <p className="text-gray-800 font-bold text-xs">
-                        R$ {parseFloat(mov.valor).toFixed(2).replace('.', ',')}
+                        {mov.valor}
                       </p>
                       <p className="text-gray-800 text-sm lg:hidden">
                         {mov.detalhes.length >= 15
@@ -278,39 +193,18 @@ const movimentacoes = () => {
                     </div>
                   </div>
                   <div className="flex text-gray-600 sm:text-left text-left justify-between">
-                    <select
-                      id={'status' + index}
-                      key={index}
+                    <button
                       className={
                         mov.situacao === 'Recebido' || mov.situacao === 'A receber'
                           ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                           : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                       }
-                      onChange={() => changeStatus(index, mov.id)}
+                      onClick={() => changeStatus(mov)}
                     >
-                      <option value={mov.situacao}>{mov.situacao}</option>
-                      <option
-                        value={
-                          mov.situacao === 'Recebido'
-                            ? 'A receber'
-                            : mov.situacao === 'A receber'
-                            ? 'Recebido'
-                            : mov.situacao === 'Pago'
-                            ? 'A pagar'
-                            : 'Pago'
-                        }
-                      >
-                        {mov.situacao === 'Recebido'
-                          ? 'A receber'
-                          : mov.situacao === 'A receber'
-                          ? 'Recebido'
-                          : mov.situacao === 'Pago'
-                          ? 'A pagar'
-                          : 'Pago'}
-                      </option>
-                    </select>
+                      {mov.situacao}
+                    </button>
                     <div
-                      onClick={() => deleteRow(mov.id)}
+                      onClick={() => deleteRow(mov.row_index)}
                       className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
                     >
                       <RiDeleteBin2Fill className="text-black" size={20} />
@@ -320,7 +214,7 @@ const movimentacoes = () => {
                   <div className="flex justify-between items-center">
                     <p className="sm:flex hidden">{mov.conta}</p>
                     <div
-                      onClick={() => deleteRow(mov.id)}
+                      onClick={() => deleteRow(mov.row_index)}
                       className="bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950"
                     >
                       <RiDeleteBin2Fill className="text-black" size={20} />

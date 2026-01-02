@@ -2,32 +2,11 @@ import { React, useState, useMemo, useEffect } from 'react'
 import { Modal, Button, Text, Input, Dropdown } from '@nextui-org/react'
 
 const AddFatura = () => {
-    let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-    let SHEET_TITLE = 'API'
-    let SHEET_RANGE = 'A1:H2'
-
-    let FULL_URL =
-        'https://docs.google.com/spreadsheets/d/' +
-        SHEET_ID +
-        '/gviz/tq?sheet=' +
-        SHEET_TITLE +
-        '&range=' +
-        SHEET_RANGE
-
-    fetch(FULL_URL)
-        .then((res) => res.text())
-        .then((rep) => {
-            let data = JSON.parse(rep.substr(47).slice(0, -2))
-            setFaturaNuCaio(data.table.rows[0].c[4].v.toFixed(2))
-            setFaturaNuJulia(data.table.rows[0].c[5].v.toFixed(2))
-            setFaturaNeonJulia(data.table.rows[0].c[6].v.toFixed(2))
-        })
-
     let valores = 0
     const [fatura, setFatura] = useState([])
-    const [faturaNuCaio, setFaturaNuCaio] = useState([])
-    const [faturaNuJulia, setFaturaNuJulia] = useState([])
-    const [faturaNeonJulia, setFaturaNeonJulia] = useState([])
+    const [faturaNuCaio, setFaturaNuCaio] = useState(0)
+    const [faturaNuJulia, setFaturaNuJulia] = useState(0)
+    const [faturaNeonJulia, setFaturaNeonJulia] = useState(0)
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
@@ -35,6 +14,19 @@ const AddFatura = () => {
     const closeHandler = () => {
         setVisible(false)
     }
+
+    // TODO: Migrar para API REST quando houver endpoint de faturas
+    // Por enquanto, comentado para evitar requisições ao Sheets
+    // useEffect(() => {
+    //     const fetchFaturas = async () => {
+    //         try {
+    //             // Chamar API REST aqui quando endpoint estiver disponível
+    //         } catch (error) {
+    //             console.error('Erro ao buscar faturas:', error)
+    //         }
+    //     }
+    //     fetchFaturas()
+    // }, [])
 
     const formatarMoeda = () => {
         var elemento = document.getElementById('valor')

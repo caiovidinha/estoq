@@ -1,4 +1,4 @@
-import { React, useState, useMemo, useEffect } from 'react'
+import { React, useState, useMemo } from 'react'
 import {
     Switch,
     Modal,
@@ -11,26 +11,31 @@ import {
 import CategoryDropdown from '@/components/CategoryDropdown';
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
-import { AiFillCheckCircle } from 'react-icons/ai'
-import { Cards } from './Cards'
+import { AiFillCheckCircle, AiFillExclamationCircle, AiFillCloseCircle } from 'react-icons/ai'
+import { useMeses, useCartoes } from '@/hooks/useFormOptions'
+import { createTransacaoCredito } from '@/services/api'
 
 const AddExpenseModalCrédito = () => {
     const [selectedValue, setSelectedValue] = useState('Categoria');
     const [invalid, setInvalid] = useState(false)
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [cartoes, setCartoesOK] = useState([])
+    const [error, setError] = useState(null)
+
+    // Hooks para buscar dados da API
+    const { meses } = useMeses()
+    const { cartoes } = useCartoes()
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
-    const closeHandler = () => setVisible(false)
-
-    const setCartoes = (list) => {
-        setCartoesOK(list)
+    const closeHandler = () => {
+        setVisible(false)
+        setError(null)
+        setInvalid(false)
     }
 
     const formatarMoeda = () => {
-        var elemento = document.getElementById('valor')
+        var elemento = document.getElementById('valor-despesa-credito')
         var valor = elemento.value
 
         valor = valor + ''
@@ -43,70 +48,70 @@ const AddExpenseModalCrédito = () => {
     }
 
     const getForm = async () => {
-        const categoria = selectedValue
-        const mes = selectedValueMes
-        const cartao = selectedValueCard
+        try {
+            const categoria = selectedValue
+            const mes = selectedValueMes
+            const cartao = selectedValueCard
+            const valorInput = document.getElementById('valor-despesa-credito').value
+            const dataInput = document.getElementById('data-despesa-credito').value
+            const descricao = document.getElementById('descricao-despesa-credito').value
 
-        let valor = document.getElementById('valor').value
-        valor = valor + ''
-        valor = parseFloat(valor.replace(/[\D]+/g, ''))
-        valor = valor + ''
-        valor = valor.replace(/([0-9]{2})$/g, ',$1')
+            if (!categoria || categoria === 'Categoria' || !mes || mes === 'Mês' || 
+                !valorInput || !dataInput || !descricao || !cartao || cartao === 'Cartão') {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+                return
+            }
 
-        const data = document.getElementById('data').value
-        const descricao = document.getElementById('descricao').value
-        const status =
-            document.getElementById('status').getAttribute('data-state') === 'checked'
+            let valorNumerico = valorInput.replace(/[\D]+/g, '')
+            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+
+            const [ano, mesNum, dia] = dataInput.split('-')
+            const dataFormatada = `${dia}/${mesNum}/${ano}`
+
+            const status = document.getElementById('status-despesa-credito').getAttribute('data-state') === 'checked'
                 ? 'Pago'
                 : 'A pagar'
 
-        const post = {
-            tipo: 'DESPESA',
-            categoria: categoria,
-            valor: `-${valor}`,
-            data: data,
-            mes: mes,
-            descricao: descricao,
-            status: status,
-            conta: cartao,
-        }
+            const transacao = {
+                tipo: 'Despesa',
+                descritivo: categoria,
+                valor: valorFormatado,
+                data: dataFormatada,
+                mes: mes,
+                detalhes: descricao,
+                situacao: status,
+                cartao: cartao,
+            }
 
-        setLoading(true)
-        // Substitua o endpoint do Zapier pelo seu endpoint interno
-        const res = await fetch('/api/createTransaction', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-        })
+            setLoading(true)
+            setError(null)
 
-        // Se necessário, você pode tratar a resposta aqui
+            await createTransacaoCredito(transacao)
 
-        setTimeout(() => {
             setLoading(false)
             setCreated(true)
-        }, 700)
 
-        setTimeout(() => {
-            setCreated(false)
-            // setSelected(new Set(['Categoria']))
-            setSelectedMes(new Set(['Mês']))
-            // Limpa os campos do formulário
-            if (
-                document.getElementById('valor').value !== null &&
-                document.getElementById('data').value !== null &&
-                document.getElementById('descricao').value !== null
-            ) {
-                document.getElementById('valor').value = ''
-                document.getElementById('data').value = ''
-                document.getElementById('descricao').value = ''
-            }
-        }, 1300)
+            setTimeout(() => {
+                setCreated(false)
+                setSelectedMes(new Set(['Mês']))
+                setSelectedCard(new Set(['Cartão']))
+                setSelectedValue('Categoria')
+                document.getElementById('valor-despesa-credito').value = ''
+                document.getElementById('data-despesa-credito').value = ''
+                document.getElementById('descricao-despesa-credito').value = ''
+            }, 1300)
+
+        } catch (err) {
+            console.error('Erro ao criar despesa:', err)
+            setLoading(false)
+            setError(err.message || 'Erro ao criar despesa')
+            setTimeout(() => setError(null), 5000)
+        }
     }
 
     const fillDate = () => {
-        const dataInput = document.querySelector('#data')
+        const dataInput = document.querySelector('#data-despesa-credito')
         var data = new Date()
         var dia = String(data.getDate()).padStart(2, '0')
         var mes = String(data.getMonth() + 1).padStart(2, '0')
@@ -114,12 +119,6 @@ const AddExpenseModalCrédito = () => {
         const dataAtual = ano + '-' + mes + '-' + dia
         if (!dataInput.value) dataInput.value = dataAtual
     }
-
-    // const [selected, setSelected] = useState(new Set(['Categoria']))
-    // const selectedValue = useMemo(
-    //     () => Array.from(selected).join(', ').replaceAll('_', ' '),
-    //     [selected]
-    // )
 
     const [selectedCard, setSelectedCard] = useState(new Set(['Cartão']))
     const selectedValueCard = useMemo(
@@ -132,41 +131,6 @@ const AddExpenseModalCrédito = () => {
         () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
         [selectedMes]
     )
-
-    useEffect(() => {
-        const fetchCartoes = async () => {
-            // Configurações da planilha
-            let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-            let SHEET_TITLE = 'API'
-            let SHEET_RANGE = 'J:M'
-            let FULL_URL =
-                'https://docs.google.com/spreadsheets/d/' +
-                SHEET_ID +
-                '/gviz/tq?sheet=' +
-                SHEET_TITLE +
-                '&range=' +
-                SHEET_RANGE
-            try {
-                const res = await fetch(FULL_URL)
-                const rep = await res.text()
-                let data = JSON.parse(rep.substr(47).slice(0, -2))
-                let cartao = new Cards()
-                for (let i = 0; i < data.table.rows.length; i++) {
-                    cartao.salvar(
-                        i,
-                        data.table.rows[i].c[0].v,
-                        data.table.rows[i].c[1].v,
-                        data.table.rows[i].c[2].v.toFixed(2),
-                        data.table.rows[i].c[3].v.toFixed(2)
-                    )
-                }
-                setCartoes(cartao.arrayCard)
-            } catch (error) {
-                console.error('Erro ao buscar cartões: ', error)
-            }
-        }
-        fetchCartoes()
-    }, [])
 
     return (
         <div>
@@ -201,6 +165,7 @@ const AddExpenseModalCrédito = () => {
                     />
 
                     <Input
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         maxLength={9}
                         onKeyUp={formatarMoeda}
@@ -208,18 +173,19 @@ const AddExpenseModalCrédito = () => {
                         fullWidth
                         color="primary"
                         size="lg"
-                        id="valor"
+                        id="valor-despesa-credito"
                         type="float"
                         placeholder="Valor"
                         className="mb-2"
                     />
                     <Input
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         fullWidth
                         color="primary"
                         size="lg"
                         type="date"
-                        id="data"
+                        id="data-despesa-credito"
                         placeholder="Data"
                         onFocus={fillDate}
                     />
@@ -236,51 +202,19 @@ const AddExpenseModalCrédito = () => {
                             id="mes"
                             className='h-72'
                         >
-                            <Dropdown.Item key="01 - JANEIRO">
-                                01 - JANEIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="02 - FEVEREIRO">
-                                02 - FEVEREIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="03 - MARÇO">
-                                03 - MARÇO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="04 - ABRIL">
-                                04 - ABRIL
-                            </Dropdown.Item>
-                            <Dropdown.Item key="05 - MAIO">
-                                05 - MAIO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="06 - JUNHO">
-                                06 - JUNHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="07 - JULHO">
-                                07 - JULHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="08 - AGOSTO">
-                                08 - AGOSTO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="09 - SETEMBRO">
-                                09 - SETEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="10 - OUTUBRO">
-                                10 - OUTUBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="11 - NOVEMBRO">
-                                11 - NOVEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="12 - DEZEMBRO">
-                                12 - DEZEMBRO
-                            </Dropdown.Item>
+                            {meses.map((mes) => (
+                                <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         fullWidth
                         color="primary"
                         size="lg"
                         type="text"
-                        id="descricao"
+                        id="descricao-despesa-credito"
                         placeholder="Descrição"
                     />
                     <Dropdown>
@@ -294,10 +228,8 @@ const AddExpenseModalCrédito = () => {
                             onSelectionChange={setSelectedCard}
                             id="cartao"
                         >
-                            {cartoes.map((card) => (
-                                <Dropdown.Item key={card.cartao}>
-                                    {card.cartao}
-                                </Dropdown.Item>
+                            {cartoes.map((cartao) => (
+                                <Dropdown.Item key={cartao}>{cartao}</Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
@@ -310,7 +242,7 @@ const AddExpenseModalCrédito = () => {
                                 iconOn={<MdAttachMoney className="ml-0.5" />}
                                 iconOff={<MdMoneyOffCsred />}
                                 className="mb-1 ml-0.5"
-                                id="status"
+                                id="status-despesa-credito"
                             />
                             <p className="ml-6 text-gray-500 font-bold">Pago</p>
                         </div>

@@ -1,59 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
-import {
-  BiRestaurant,
-  BiCar,
-  BiPhone,
-  BiSolidTShirt,
-  BiCreditCardAlt,
-  BiBomb,
-  BiSmile,
-  BiGift,
-  BiMoneyWithdraw,
-} from 'react-icons/bi';
-import { MdMoneyOff } from 'react-icons/md';
-import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi';
-import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si';
-import { AiOutlineTool, AiFillCheckCircle } from 'react-icons/ai';
-import { RiFundsBoxLine, RiBillLine, RiDeleteBin2Fill } from 'react-icons/ri';
+import { AiFillCheckCircle } from 'react-icons/ai';
+import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
-import { Mov } from '@/components/Mov';
+import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
 
-// Mapeamento dos ícones (string → componente)
-const IconComponents = {
-  BiRestaurant,
-  BiCar,
-  BiPhone,
-  BiSolidTShirt,
-  BiCreditCardAlt,
-  BiBomb,
-  BiSmile,
-  BiGift,
-  BiMoneyWithdraw,
-  MdMoneyOff,
-  GiWeightLiftingUp,
-  GiHealthNormal,
-  SiBetfair,
-  SiFreelancer,
-  SiYourtraveldottv,
-  AiOutlineTool,
-  RiFundsBoxLine,
-  RiBillLine,
-  BsThreeDots,
-};
-
-// Função que retorna o ícone para uma movimentação com base na categoria dinâmica  
-function getIconForMovimentacao(mov, categoriesMapping) {
-  // Compara de forma case-insensitive, removendo espaços
-  const catFound = categoriesMapping.find(
-    (c) =>
-      c.nome.trim().toLowerCase() === mov.descritivo.trim().toLowerCase()
-  );
-  const iconName = catFound ? catFound.icone : 'BsThreeDots';
-  const IconComponent = IconComponents[iconName] || BsThreeDots;
-  const colorClass =
-    mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
-  return <IconComponent size={20} className={colorClass} />;
+// Função que retorna o ícone padrão para todas as movimentações
+function getIconForMovimentacao(mov) {
+// Função que retorna o ícone padrão para todas as movimentações
+function getIconForMovimentacao(mov) {
+  const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
+  return <BsThreeDots size={20} className={colorClass} />;
 }
 
 const Apagar = () => {
@@ -62,7 +19,6 @@ const Apagar = () => {
   const [filterAno, setFilterAno] = useState('');
   const [update, setUpdate] = useState(false);
   const [movimentacao, setMovimentacao] = useState([]);
-  const [categoriesMapping, setCategoriesMapping] = useState([]);
   
   // Estados dos totais (opcional)
   const [receber, setReceber] = useState(0);
@@ -78,23 +34,12 @@ const Apagar = () => {
   const [detalhes, setDetalhes] = useState('');
   const [situacao, setSituacao] = useState('');
   const [conta, setConta] = useState('');
+  const [rowIndex, setRowIndex] = useState(null);
   
   // Estados para exclusão
-  const [post, setPost] = useState({});
   const [confirmarExc, setConfirmarExc] = useState(false);
   const [excluido, setExcluido] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // URLs da planilha
-  const SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
-  const FULL_URL_MOV =
-    'https://docs.google.com/spreadsheets/d/' +
-    SHEET_ID +
-    '/gviz/tq?sheet=Extrato&range=A:H';
-  const FULL_URL_CATS =
-    'https://docs.google.com/spreadsheets/d/' +
-    SHEET_ID +
-    '/gviz/tq?sheet=Categories&range=A2:C';
 
   // Configura o filtro inicial de data
   useEffect(() => {
@@ -130,79 +75,49 @@ const Apagar = () => {
     return names[parseInt(m, 10) - 1] || '';
   };
 
-  // Função para converter valores monetários
-  function parseSheetValue(rawValue) {
-    let valorStr = rawValue?.toString() || '0';
-    console.log('Valor bruto da planilha:', valorStr);
-    valorStr = valorStr.replace(/R\$\s?/, '').replace(/\./g, '').replace(',', '.');
-    console.log('Valor após remover pontuação:', valorStr);
-    const valorNum = parseFloat(valorStr) || 0;
-    console.log('Valor parseado:', valorNum);
-    return valorNum;
+  // Função para carregar movimentações filtradas
+  const fetchMovimentacoes = async () => {
+    if (!filterMes || !filterAno) return
+    
+    try {
+      setLoading(true)
+      const response = await getTransacoes({ page_size: 1000 })
+      const todasTransacoes = response.items || []
+      
+      // Filtra por mês/ano e situação
+      const filtered = todasTransacoes.filter(mov => {
+        // Extrai mês e ano da data (formato: dd/mm/yyyy)
+        const [dia, mes, ano] = mov.data.split('/')
+        const mesData = mes.padStart(2, '0')
+        const anoData = ano
+        
+        // Filtra apenas movimentações pendentes
+        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
+        
+        return mesData === filterMes && anoData === filterAno && isPendente
+      })
+      
+      // Ordena por data crescente
+      const sorted = filtered.sort((a, b) => {
+        const [dayA, monthA, yearA] = a.data.split('/')
+        const [dayB, monthB, yearB] = b.data.split('/')
+        return new Date(+yearA, +monthA - 1, +dayA) - new Date(+yearB, +monthB - 1, +dayB)
+      })
+      
+      setMovimentacao(sorted)
+      setLoading(false)
+    } catch (error) {
+      console.error('Erro ao buscar movimentações:', error)
+      setLoading(false)
+    }
   }
 
-  // Carrega as movimentações da aba "Extrato" filtrando por mês/ano e por situação ("A pagar" ou "A receber")
+  // Carrega as movimentações quando mês/ano mudam
   useEffect(() => {
-    fetch(FULL_URL_MOV)
-      .then((res) => res.text())
-      .then((rep) => {
-        let data = JSON.parse(rep.substr(47).slice(0, -2));
-        let produto = new Mov();
-        for (let i = 0; i < data.table.rows.length; i++) {
-          let date = data.table.rows[i].c[3].v;
-          // Remove caracteres indesejados e formata a data
-          date = date.replace(/[^0-9,]/g, '');
-          if (date[6] === ',') {
-            date = date.slice(0, 5) + '0' + date.slice(5);
-          }
-          let mesData = parseInt(date.slice(5, 7)) + 1;
-          if (mesData < 10) mesData = '0' + mesData.toString();
-          let anoData = date.slice(0, 4);
-          if (filterMes === mesData && filterAno === anoData) {
-            // Filtra movimentações com situação "A pagar" ou "A receber"
-            if (data.table.rows[i].c[6].v === 'A pagar' || data.table.rows[i].c[6].v === 'A receber') {
-              produto.salvar(
-                i + 3,
-                data.table.rows[i].c[0].v, // tipo
-                data.table.rows[i].c[1].v, // descritivo (aqui usamos como categoria)
-                data.table.rows[i].c[2].v.toFixed(2), // valor
-                data.table.rows[i].c[3].v, // data
-                data.table.rows[i].c[4].v, // mês/fatura
-                data.table.rows[i].c[5].v, // detalhes
-                data.table.rows[i].c[6].v, // situação
-                data.table.rows[i].c[7].v  // conta
-              );
-            }
-          }
-        }
-        // Ordena as movimentações por data (crescentes)
-        produto.arrayMov = produto.arrayMov.sort((a, b) => {
-          let [dayA, monthA, yearA] = a.data.split('/');
-          let [dayB, monthB, yearB] = b.data.split('/');
-          return new Date(+yearA, +monthA - 1, +dayA) - new Date(+yearB, +monthB - 1, +dayB);
-        });
-        setMovimentacao(produto.arrayMov);
-      });
+    if (filterMes && filterAno) {
+      fetchMovimentacoes()
+    }
   }, [filterMes, filterAno]);
-
-  // Carrega o mapeamento dinâmico de categorias
-  useEffect(() => {
-    fetch(FULL_URL_CATS)
-      .then((res) => res.text())
-      .then((rep) => {
-        const data = JSON.parse(rep.substr(47).slice(0, -2));
-        let catList = [];
-        for (let i = 0; i < data.table.rows.length; i++) {
-          const row = data.table.rows[i].c;
-          const nome = row[0]?.v || '';
-          const tipo = row[1]?.v || '';
-          const icone = row[2]?.v || 'BsThreeDots';
-          catList.push({ nome, tipo, icone });
-        }
-        setCategoriesMapping(catList);
-      })
-      .catch(err => console.error('Erro ao buscar categorias:', err));
-  }, []);
 
   // Handler do modal de detalhes
   const handler = (
@@ -213,7 +128,8 @@ const Apagar = () => {
     mes,
     detalhes,
     situacao,
-    conta
+    conta,
+    index
   ) => {
     setTipo(tipo);
     seteDescritivo(descritivo);
@@ -223,6 +139,7 @@ const Apagar = () => {
     setDetalhes(detalhes);
     setSituacao(situacao);
     setConta(conta);
+    setRowIndex(index);
     setVisible(true);
   };
 
@@ -240,69 +157,98 @@ const Apagar = () => {
     setExcluido(false);
   };
 
-  const deleteRow = (id) => {
-    setPost({ index: id });
+  const deleteRow = (index) => {
+    setRowIndex(index);
     openConf();
   };
 
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/deleteRow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index: post.index }),
-      });
-      if (res.ok) {
-        setLoading(false);
-        setExcluido(true);
-        window.location.reload();
-      } else {
-        console.error('Erro ao excluir a movimentação.');
-        setLoading(false);
-      }
+      await deleteTransacao(rowIndex)
+      setLoading(false);
+      setExcluido(true);
+      
+      // Recarrega as movimentações após exclusão
+      const response = await getTransacoes({ page_size: 1000 })
+      const todasTransacoes = response.items || []
+      const filtered = todasTransacoes.filter(mov => {
+        const [dia, mes, ano] = mov.data.split('/')
+        const mesData = mes.padStart(2, '0')
+        const anoData = ano
+        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
+        return mesData === filterMes && anoData === filterAno && isPendente
+      })
+      setMovimentacao(filtered)
+      
+      setTimeout(() => {
+        setConfirmarExc(false)
+        setExcluido(false)
+      }, 1500)
     } catch (error) {
-      console.error('Erro na requisição:', error);
+      console.error('Erro ao excluir movimentação:', error);
       setLoading(false);
     }
   };
 
-  const changeStatus = async (tipo, descritivo, valor, data, mes, detalhes, conta, index, id) => {
-    let ident = 'status' + index;
-    let statusMov = document.getElementById(ident).value;
-    const postData = {
-      situacao: statusMov,
-      index: id,
-    };
-    const res = await fetch('/api/updateStatus', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(postData),
-    });
-    if (!res.ok) {
-      console.error('Erro ao atualizar o status na planilha.');
-    } else {
-      window.location.reload();
+  const changeStatus = async (mov) => {
+    try {
+      setLoading(true)
+      
+      // Alterna o status
+      const novoStatus = mov.situacao === 'Pago' 
+        ? 'A pagar' 
+        : mov.situacao === 'A pagar'
+        ? 'Pago'
+        : mov.situacao === 'Recebido'
+        ? 'A receber'
+        : 'Recebido'
+
+      await updateTransacao(mov.row_index, { situacao: novoStatus })
+      
+      // Recarrega lista filtrada
+      const response = await getTransacoes({ page_size: 1000 })
+      const todasTransacoes = response.items || []
+      const filtered = todasTransacoes.filter(mov => {
+        const [dia, mes, ano] = mov.data.split('/')
+        const mesData = mes.padStart(2, '0')
+        const anoData = ano
+        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
+        return mesData === filterMes && anoData === filterAno && isPendente
+      })
+      setMovimentacao(filtered)
+      setLoading(false)
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error)
+      setLoading(false)
     }
   };
 
-  // Atualiza totais de RECEITA e DESPESA (opcional)
+  // Atualiza totais de RECEITA e DESPESA
   useEffect(() => {
     let rec = 0;
     let pag = 0;
     if (movimentacao.length !== 0) {
       for (let i = 0; i < movimentacao.length; i++) {
+        // Extrai o valor numérico do formato "R$ 1.234,56"
+        const valorStr = movimentacao[i].valor
+          .replace('R$', '')
+          .trim()
+          .replace(/\./g, '')
+          .replace(',', '.')
+        const valorNum = parseFloat(valorStr) || 0
+        
         if (movimentacao[i].tipo === 'RECEITA') {
-          rec += parseFloat(movimentacao[i].valor.toString().replace(',', '.'));
+          rec += valorNum
         }
         if (movimentacao[i].tipo === 'DESPESA') {
-          pag += parseFloat(movimentacao[i].valor.toString().replace(',', '.'));
+          pag += valorNum
         }
       }
       setReceber(rec);
       setPagar(pag);
     }
-  });
+  }, [movimentacao]);
 
   const changeData = async () => {
     let ano = document.getElementById('ano').value;
@@ -401,7 +347,7 @@ const Apagar = () => {
         <ul>
           {movimentacao.slice(0).map((mov, index) => (
             <li
-              key={index}
+              key={mov.row_index}
               className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
             >
               <div
@@ -409,13 +355,14 @@ const Apagar = () => {
                 onClick={() =>
                   handler(
                     mov.tipo,
-                    mov.descritivo, // assume que aqui o "descritivo" é a categoria
+                    mov.descritivo,
                     mov.valor,
                     mov.data,
                     mov.mes,
                     mov.detalhes,
                     mov.situacao,
-                    mov.conta
+                    mov.conta,
+                    mov.row_index
                   )
                 }
               >
@@ -426,11 +373,11 @@ const Apagar = () => {
                       : 'bg-red-200 rounded-lg p-3 h-[50%] my-auto'
                   }
                 >
-                  {getIconForMovimentacao(mov, categoriesMapping)}
+                  {getIconForMovimentacao(mov)}
                 </div>
                 <div className="pl-2 w-32">
                   <p className="text-gray-800 font-bold text-xs">
-                    R$ {parseFloat(mov.valor).toFixed(2).replace('.', ',')}
+                    {mov.valor}
                   </p>
                   <p className="text-gray-800 text-xs lg:hidden">
                     {mov.detalhes.length >= 15
@@ -444,39 +391,18 @@ const Apagar = () => {
                 </div>
               </div>
               <div className="flex text-gray-600 sm:text-left text-left justify-between">
-                <select
-                  id={'status' + index}
-                  key={index}
+                <button
                   className={
                     mov.situacao === 'Recebido' || mov.situacao === 'A receber'
                       ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                       : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                   }
-                  onChange={() => changeStatus(mov.tipo, mov.descritivo, mov.valor, mov.data, mov.mes, mov.detalhes, mov.conta, index, mov.id)}
+                  onClick={() => changeStatus(mov)}
                 >
-                  <option value={mov.situacao}>{mov.situacao}</option>
-                  <option
-                    value={
-                      mov.situacao === 'Recebido'
-                        ? 'A receber'
-                        : mov.situacao === 'A receber'
-                        ? 'Recebido'
-                        : mov.situacao === 'Pago'
-                        ? 'A pagar'
-                        : 'Pago'
-                    }
-                  >
-                    {mov.situacao === 'Recebido'
-                      ? 'A receber'
-                      : mov.situacao === 'A receber'
-                      ? 'Recebido'
-                      : mov.situacao === 'Pago'
-                      ? 'A pagar'
-                      : 'Pago'}
-                  </option>
-                </select>
+                  {mov.situacao}
+                </button>
                 <div
-                  onClick={() => deleteRow(mov.id)}
+                  onClick={() => deleteRow(mov.row_index)}
                   className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />
@@ -486,7 +412,7 @@ const Apagar = () => {
               <div className="flex justify-between items-center">
                 <p className="sm:flex hidden">{mov.conta}</p>
                 <div
-                  onClick={() => deleteRow(mov.id)}
+                  onClick={() => deleteRow(mov.row_index)}
                   className="bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />

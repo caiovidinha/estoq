@@ -7,7 +7,8 @@ import {
   Dropdown,
   Loading,
 } from '@nextui-org/react';
-import { GiReceiveMoney } from 'react-icons/gi'
+import { GiReceiveMoney } from 'react-icons/gi';
+import { updateLimiteCartao, getCartoes } from '@/services/api';
 
 const AddIncomeModalCredito = () => {
   const [loading, setLoading] = useState(false);
@@ -40,36 +41,19 @@ const AddIncomeModalCredito = () => {
     if (valor === 'NaN') elemento.value = ''
 }
 
-  // Buscar lista de cartões (accounts) da folha "API", intervalo J:M
+  // Buscar lista de cartões da API REST
   useEffect(() => {
     const fetchAccounts = async () => {
-      let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
-      let SHEET_TITLE = 'API';
-      let SHEET_RANGE = 'J:M';
-      let FULL_URL =
-        'https://docs.google.com/spreadsheets/d/' +
-        SHEET_ID +
-        '/gviz/tq?sheet=' +
-        SHEET_TITLE +
-        '&range=' +
-        SHEET_RANGE;
       try {
-        const res = await fetch(FULL_URL);
-        const rep = await res.text();
-        let data = JSON.parse(rep.substr(47).slice(0, -2));
-        let accountsArray = [];
-        // Supondo que cada linha contenha:
-        // Coluna J: Cartão, K: Tipo, L: Fatura, M: Limite.
-        // Se houver cabeçalho, os dados começam na linha 2.
-        for (let i = 0; i < data.table.rows.length; i++) {
-          let rowNumber = i + 2; // ajuste se necessário
-          let cartao = data.table.rows[i].c[0] ? data.table.rows[i].c[0].v : '';
-          let limite = data.table.rows[i].c[3] ? data.table.rows[i].c[3].v : '';
-          accountsArray.push({ id: rowNumber, cartao, limite });
-        }
+        const data = await getCartoes()
+        let accountsArray = data.map((cartao, index) => ({
+          id: cartao,
+          cartao: cartao,
+          limite: 0 // TODO: ajustar quando API retornar limite
+        }))
         setAccounts(accountsArray);
       } catch (error) {
-        console.error('Erro ao buscar contas para limite: ', error);
+        console.error('Erro ao buscar cartões:', error);
       }
     };
     fetchAccounts();
@@ -82,21 +66,13 @@ const AddIncomeModalCredito = () => {
     }
     setNewLimit(parseFloat(document.getElementById("newLimit").value.replace(".",",")))
     setLoading(true);
-    const payload = {
-      id: selectedValueAccount, // esse valor corresponde à linha (row number) na planilha
-      newLimit: newLimit,
-    };
+    
     try {
-      const res = await fetch('/api/updateCardLimit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        setUpdated(true);
-      }
+      await updateLimiteCartao(selectedValueAccount, newLimit);
+      setUpdated(true);
     } catch (error) {
-      console.error('Erro ao atualizar o limite: ', error);
+      console.error('Erro ao atualizar o limite:', error);
+      alert('Erro ao atualizar o limite: ' + error.message);
     }
     setLoading(false);
     // Opcional: reset do formulário ou refetch dos dados

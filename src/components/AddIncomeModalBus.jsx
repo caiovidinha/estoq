@@ -8,19 +8,28 @@ import {
     Loading,
 } from '@nextui-org/react'
 import { GiReceiveMoney } from 'react-icons/gi'
-import { AiFillCheckCircle } from 'react-icons/ai'
+import { AiFillCheckCircle, AiFillExclamationCircle } from 'react-icons/ai'
+import { useMeses } from '@/hooks/useFormOptions'
+import { createTransacao } from '@/services/api'
 
 const AddIncomeModalBus = () => {
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
     const [loading, setLoading] = useState(false)
     const [created, setCreated] = useState(false)
+    const [invalid, setInvalid] = useState(false)
+    const [error, setError] = useState(null)
+
+    const { meses } = useMeses()
 
     const closeHandler = () => {
         setVisible(false)
+        setError(null)
+        setInvalid(false)
     }
+    
     const formatarMoeda = () => {
-        var elemento = document.getElementById('valor')
+        var elemento = document.getElementById('valor-receita-bus')
         var valor = elemento.value
 
         valor = valor + ''
@@ -33,75 +42,76 @@ const AddIncomeModalBus = () => {
     }
 
     const getForm = async () => {
-        const mes = selectedValueMes
+        try {
+            const mes = selectedValueMes
+            const valorInput = document.getElementById('valor-receita-bus').value
+            const dataInput = document.getElementById('data-receita-bus').value
 
-        let valor = document.getElementById('valor').value
-        valor = valor + ''
-        valor = parseFloat(valor.replace(/[\D]+/g, ''))
-        valor = valor + ''
-        valor = valor.replace(/([0-9]{2})$/g, ',$1')
-
-        const data = document.getElementById('data').value
-
-        const post = {
-            tipo: 'RECEITA',
-            categoria: 'Limite Cartão',
-            valor: valor,
-            data: data,
-            mes: mes,
-            descricao: 'Recarga RioCard',
-            status: 'Recebido',
-            conta: 'Bilhete Único',
-        }
-        const postConta = {
-            tipo: 'DESPESA',
-            categoria: 'Cartão',
-            valor: `-${valor}`,
-            data: data,
-            mes: mes,
-            descricao: 'Recarga RioCard',
-            status: 'Pago',
-            conta: 'Conta Nubank',
-        }
-
-        setLoading(true)
-        const res = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(post),
+            if (!mes || mes === 'Mês' || !valorInput || !dataInput) {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+                return
             }
-        )
-        const resConta = await fetch(
-            'https://hooks.zapier.com/hooks/catch/11052334/380w6ti/',
-            {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postConta),
+
+            // Formata valor
+            let valorNumerico = valorInput.replace(/[\D]+/g, '')
+            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+
+            // Formata data
+            const [ano, mesNum, dia] = dataInput.split('-')
+            const dataFormatada = `${dia}/${mesNum}/${ano}`
+
+            // Transação de RECEITA (recarga do cartão)
+            const transacaoReceita = {
+                tipo: 'Receita',
+                descritivo: 'Limite Cartão',
+                valor: valorFormatado,
+                data: dataFormatada,
+                mes: mes,
+                detalhes: 'Recarga RioCard',
+                situacao: 'Recebido',
+                conta: 'Bilhete Único',
             }
-        )
-        setTimeout(() => {
+
+            // Transação de DESPESA (débito na conta)
+            const transacaoDespesa = {
+                tipo: 'Despesa',
+                descritivo: 'Cartão',
+                valor: valorFormatado,
+                data: dataFormatada,
+                mes: mes,
+                detalhes: 'Recarga RioCard',
+                situacao: 'Pago',
+                conta: 'Conta Nubank',
+            }
+
+            setLoading(true)
+            setError(null)
+
+            // Cria ambas transações
+            await createTransacao(transacaoReceita)
+            await createTransacao(transacaoDespesa)
+
             setLoading(false)
             setCreated(true)
-        }, 700)
 
-        setTimeout(() => {
-            setCreated(false)
-            setSelectedMes(['Mês'])
-            document.getElementById('valor').value = ''
-            document.getElementById('data').value = ''
-        }, 1300)
+            setTimeout(() => {
+                setCreated(false)
+                setSelectedMes(new Set(['Mês']))
+                document.getElementById('valor-receita-bus').value = ''
+                document.getElementById('data-receita-bus').value = ''
+            }, 1300)
+
+        } catch (err) {
+            console.error('Erro ao criar transações:', err)
+            setLoading(false)
+            setError(err.message || 'Erro ao criar transações')
+            setTimeout(() => setError(null), 5000)
+        }
     }
 
     const fillDate = () => {
-        const dataInput = document.querySelector('#data')
+        const dataInput = document.querySelector('#data-receita-bus')
         var data = new Date()
         var dia = String(data.getDate()).padStart(2, '0')
         var mes = String(data.getMonth() + 1).padStart(2, '0')
@@ -143,6 +153,7 @@ const AddIncomeModalBus = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <Input
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         maxLength={9}
                         onKeyUp={formatarMoeda}
@@ -150,18 +161,19 @@ const AddIncomeModalBus = () => {
                         fullWidth
                         color="primary"
                         size="lg"
-                        id="valor"
+                        id="valor-receita-bus"
                         type="float"
                         placeholder="Valor"
                         className="mb-2"
                     />
                     <Input
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         fullWidth
                         color="primary"
                         size="lg"
                         type="date"
-                        id="data"
+                        id="data-receita-bus"
                         placeholder="Data"
                         onFocus={fillDate}
                     />
@@ -182,42 +194,9 @@ const AddIncomeModalBus = () => {
                             id="mes"
                             className='h-72'
                         >
-                            <Dropdown.Item key="01 - JANEIRO">
-                                01 - JANEIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="02 - FEVEREIRO">
-                                02 - FEVEREIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="03 - MARÇO">
-                                03 - MARÇO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="04 - ABRIL">
-                                04 - ABRIL
-                            </Dropdown.Item>
-                            <Dropdown.Item key="05 - MAIO">
-                                05 - MAIO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="06 - JUNHO">
-                                06 - JUNHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="07 - JULHO">
-                                07 - JULHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="08 - AGOSTO">
-                                08 - AGOSTO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="09 - SETEMBRO">
-                                09 - SETEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="10 - OUTUBRO">
-                                10 - OUTUBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="11 - NOVEMBRO">
-                                11 - NOVEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="12 - DEZEMBRO">
-                                12 - DEZEMBRO
-                            </Dropdown.Item>
+                            {meses.map((mes) => (
+                                <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
                 </Modal.Body>
@@ -225,11 +204,19 @@ const AddIncomeModalBus = () => {
                     <Button auto flat color="error" onPress={closeHandler}>
                         Fechar
                     </Button>
-                    <Button auto color="success" onPress={getForm}>
+                    <Button
+                        auto
+                        color={created ? 'success' : invalid ? 'warning' : error ? 'error' : 'success'}
+                        onPress={getForm}
+                    >
                         {created ? (
                             <AiFillCheckCircle size={20} />
+                        ) : invalid ? (
+                            <AiFillExclamationCircle size={20} />
                         ) : loading ? (
                             <Loading type="spinner" color="white" size="sm" />
+                        ) : error ? (
+                            'Erro'
                         ) : (
                             'Enviar'
                         )}

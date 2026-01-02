@@ -1,4 +1,4 @@
-import { React, useState, useMemo, useEffect } from 'react'
+import { React, useState, useMemo } from 'react'
 import {
     Switch,
     Modal,
@@ -10,22 +10,32 @@ import {
 } from '@nextui-org/react'
 import { GiTakeMyMoney } from 'react-icons/gi'
 import CategoryDropdown from '@/components/CategoryDropdown';
-import { AiFillCheckCircle } from 'react-icons/ai'
+import { AiFillCheckCircle, AiFillExclamationCircle, AiFillCloseCircle } from 'react-icons/ai'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
-import { Accounts } from './Accounts'
+import { useMeses, useContas } from '@/hooks/useFormOptions'
+import { createTransacao } from '@/services/api'
 
 const AddExpenseModalConta = () => {
     const [selectedValue, setSelectedValue] = useState('Categoria');
+    const [invalid, setInvalid] = useState(false)
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [contas, setContas] = useState([])
+    const [error, setError] = useState(null)
+
+    // Hooks para buscar dados da API
+    const { meses } = useMeses()
+    const { contas } = useContas()
 
     const [visible, setVisible] = useState(false)
     const handler = () => setVisible(true)
-    const closeHandler = () => setVisible(false)
+    const closeHandler = () => {
+        setVisible(false)
+        setError(null)
+        setInvalid(false)
+    }
 
     const formatarMoeda = () => {
-        var elemento = document.getElementById('valor')
+        var elemento = document.getElementById('valor-despesa-conta')
         var valor = elemento.value
 
         valor = valor + ''
@@ -38,66 +48,70 @@ const AddExpenseModalConta = () => {
     }
 
     const getForm = async () => {
-        const categoria = selectedValue
-        const mes = selectedValueMes
+        try {
+            const categoria = selectedValue
+            const mes = selectedValueMes
+            const valorInput = document.getElementById('valor-despesa-conta').value
+            const dataInput = document.getElementById('data-despesa-conta').value
+            const descricao = document.getElementById('descricao-despesa-conta').value
+            const conta = selectedValueAccount
 
-        let valor = document.getElementById('valor').value
-        valor = valor + ''
-        valor = parseFloat(valor.replace(/[\D]+/g, ''))
-        valor = valor + ''
-        valor = valor.replace(/([0-9]{2})$/g, ',$1')
+            if (!categoria || categoria === 'Categoria' || !mes || mes === 'Mês' || 
+                !valorInput || !dataInput || !descricao || !conta || conta === 'Conta') {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+                return
+            }
 
-        const data = document.getElementById('data').value
-        const descricao = document.getElementById('descricao').value
-        const conta = selectedValueAccount
-        const status =
-            document.getElementById('status').getAttribute('data-state') === 'checked'
+            let valorNumerico = valorInput.replace(/[\D]+/g, '')
+            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+
+            const [ano, mesNum, dia] = dataInput.split('-')
+            const dataFormatada = `${dia}/${mesNum}/${ano}`
+
+            const status = document.getElementById('status-despesa-conta').getAttribute('data-state') === 'checked'
                 ? 'Pago'
                 : 'A pagar'
 
-        const post = {
-            tipo: 'DESPESA',
-            categoria: categoria,
-            valor: `-${valor}`,
-            data: data,
-            mes: mes,
-            descricao: descricao,
-            status: status,
-            conta: conta,
-        }
+            const transacao = {
+                tipo: 'Despesa',
+                descritivo: categoria,
+                valor: valorFormatado,
+                data: dataFormatada,
+                mes: mes,
+                detalhes: descricao,
+                situacao: status,
+                conta: conta,
+            }
 
-        setLoading(true)
-        const res = await fetch('/api/createTransaction', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(post),
-        })
+            setLoading(true)
+            setError(null)
 
-        setTimeout(() => {
+            await createTransacao(transacao)
+
             setLoading(false)
             setCreated(true)
-        }, 700)
 
-        setTimeout(() => {
-            setCreated(false)
-            // setSelected(new Set(['Categoria']))
-            setSelectedMes(new Set(['Mês']))
-            if (
-                document.getElementById('valor').value !== null &&
-                document.getElementById('data').value !== null &&
-                document.getElementById('descricao').value !== null
-            ) {
-                document.getElementById('valor').value = ''
-                document.getElementById('data').value = ''
-                document.getElementById('descricao').value = ''
-            }
-        }, 1300)
+            setTimeout(() => {
+                setCreated(false)
+                setSelectedMes(new Set(['Mês']))
+                setSelectedAccount(new Set(['Conta']))
+                setSelectedValue('Categoria')
+                document.getElementById('valor-despesa-conta').value = ''
+                document.getElementById('data-despesa-conta').value = ''
+                document.getElementById('descricao-despesa-conta').value = ''
+            }, 1300)
+
+        } catch (err) {
+            console.error('Erro ao criar despesa:', err)
+            setLoading(false)
+            setError(err.message || 'Erro ao criar despesa')
+            setTimeout(() => setError(null), 5000)
+        }
     }
 
     const fillDate = () => {
-        const dataInput = document.querySelector('#data')
+        const dataInput = document.querySelector('#data-despesa-conta')
         var data = new Date()
         var dia = String(data.getDate()).padStart(2, '0')
         var mes = String(data.getMonth() + 1).padStart(2, '0')
@@ -106,14 +120,9 @@ const AddExpenseModalConta = () => {
         if (!dataInput.value) dataInput.value = dataAtual
     }
 
-    // const [selected, setSelected] = useState(new Set(['Categoria']))
     const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
     const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
 
-    // const selectedValue = useMemo(
-    //     () => Array.from(selected).join(', ').replaceAll('_', ' '),
-    //     [selected]
-    // )
     const selectedValueMes = useMemo(
         () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
         [selectedMes]
@@ -122,39 +131,6 @@ const AddExpenseModalConta = () => {
         () => Array.from(selectedAccount).join(', ').replaceAll('_', ' '),
         [selectedAccount]
     )
-
-    useEffect(() => {
-        const fetchContas = async () => {
-            // API para buscar contas
-            let SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE'
-            let SHEET_TITLE = 'API'
-            let SHEET_RANGE = 'O:P'
-            let FULL_URL =
-                'https://docs.google.com/spreadsheets/d/' +
-                SHEET_ID +
-                '/gviz/tq?sheet=' +
-                SHEET_TITLE +
-                '&range=' +
-                SHEET_RANGE
-            try {
-                const res = await fetch(FULL_URL)
-                const rep = await res.text()
-                let data = JSON.parse(rep.substr(47).slice(0, -2))
-                let conta = new Accounts()
-                for (let i = 0; i < data.table.rows.length; i++) {
-                    conta.salvar(
-                        i,
-                        data.table.rows[i].c[0].v,
-                        data.table.rows[i].c[1].v.toFixed(2)
-                    )
-                }
-                setContas(conta.arrayAccounts)
-            } catch (error) {
-                console.error('Erro ao buscar contas: ', error)
-            }
-        }
-        fetchContas()
-    }, [])
 
     return (
         <div>
@@ -189,7 +165,7 @@ const AddExpenseModalConta = () => {
                     />
 
                     <Input
-                        disabled={loading || created ? true : false}
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         maxLength={9}
                         onKeyUp={formatarMoeda}
@@ -197,19 +173,19 @@ const AddExpenseModalConta = () => {
                         fullWidth
                         color="primary"
                         size="lg"
-                        id="valor"
+                        id="valor-despesa-conta"
                         type="float"
                         placeholder="Valor"
                         className="mb-2"
                     />
                     <Input
-                        disabled={loading || created ? true : false}
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         fullWidth
                         color="primary"
                         size="lg"
                         type="date"
-                        id="data"
+                        id="data-despesa-conta"
                         placeholder="Data"
                         onFocus={fillDate}
                     />
@@ -226,52 +202,19 @@ const AddExpenseModalConta = () => {
                             id="mes"
                             className="h-72"
                         >
-                            <Dropdown.Item key="01 - JANEIRO">
-                                01 - JANEIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="02 - FEVEREIRO">
-                                02 - FEVEREIRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="03 - MARÇO">
-                                03 - MARÇO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="04 - ABRIL">
-                                04 - ABRIL
-                            </Dropdown.Item>
-                            <Dropdown.Item key="05 - MAIO">
-                                05 - MAIO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="06 - JUNHO">
-                                06 - JUNHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="07 - JULHO">
-                                07 - JULHO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="08 - AGOSTO">
-                                08 - AGOSTO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="09 - SETEMBRO">
-                                09 - SETEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="10 - OUTUBRO">
-                                10 - OUTUBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="11 - NOVEMBRO">
-                                11 - NOVEMBRO
-                            </Dropdown.Item>
-                            <Dropdown.Item key="12 - DEZEMBRO">
-                                12 - DEZEMBRO
-                            </Dropdown.Item>
+                            {meses.map((mes) => (
+                                <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
+                            ))}
                         </Dropdown.Menu>
                     </Dropdown>
                     <Input
-                        disabled={loading || created ? true : false}
+                        disabled={loading || created || invalid ? true : false}
                         bordered
                         fullWidth
                         color="primary"
                         size="lg"
                         type="text"
-                        id="descricao"
+                        id="descricao-despesa-conta"
                         placeholder="Descrição"
                     />
                     <Dropdown>
@@ -285,10 +228,8 @@ const AddExpenseModalConta = () => {
                             onSelectionChange={setSelectedAccount}
                             id="conta"
                         >
-                            {contas.map((account) => (
-                                <Dropdown.Item key={account.conta}>
-                                    {account.conta}
-                                </Dropdown.Item>
+                            {contas.map((conta) => (
+                                <Dropdown.Item key={conta}>{conta}</Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
@@ -302,7 +243,7 @@ const AddExpenseModalConta = () => {
                                 iconOn={<MdAttachMoney className="ml-0.5" />}
                                 iconOff={<MdMoneyOffCsred />}
                                 className="mb-1 ml-0.5"
-                                id="status"
+                                id="status-despesa-conta"
                             />
                             <p className="ml-6 text-gray-500 font-bold">Pago</p>
                         </div>
@@ -312,15 +253,29 @@ const AddExpenseModalConta = () => {
                     <Button auto flat color="error" onPress={closeHandler}>
                         Fechar
                     </Button>
-                    <Button auto color="success" onPress={getForm}>
+                    <Button auto color={invalid ? 'warning' : 'success'} onPress={getForm}>
                         {created ? (
                             <AiFillCheckCircle size={20} />
                         ) : loading ? (
                             <Loading type="spinner" color="white" size="sm" />
+                        ) : invalid ? (
+                            <AiFillExclamationCircle size={20} />
                         ) : (
                             'Enviar'
                         )}
                     </Button>
+                    {invalid && (
+                        <p className='flex text-red-800 items-center'>
+                            <AiFillCloseCircle className="mr-1" />
+                            Preencha todos os campos corretamente
+                        </p>
+                    )}
+                    {error && (
+                        <p className='flex text-red-800 items-center'>
+                            <AiFillCloseCircle className="mr-1" />
+                            {error}
+                        </p>
+                    )}
                 </Modal.Footer>
             </Modal>
         </div>

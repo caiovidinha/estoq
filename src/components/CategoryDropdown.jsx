@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import React from 'react';
 import { Dropdown } from '@nextui-org/react';
-import { fetchCategories } from '@/utils/getCategories'; // Função centralizada para buscar categorias
+import { getCategorias } from '@/services/api';
 
 const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
   const [categories, setCategories] = useState([]);
@@ -18,13 +18,17 @@ const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
 
   useEffect(() => {
     async function loadCategories() {
-      const cats = await fetchCategories();
-      // Filtra somente categorias de RECEITA (ou modifique para "DESPESA" conforme o contexto)
-      const filtered = cats.filter(cat => cat.tipo.toUpperCase() === categoryType);
-      setCategories(filtered);
+      try {
+        const cats = await getCategorias();
+        // Filtra somente categorias do tipo especificado (RECEITA ou DESPESA)
+        const filtered = cats.filter(cat => cat.tipo.toUpperCase() === categoryType);
+        setCategories(filtered);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error)
+      }
     }
     loadCategories();
-  }, []);
+  }, [categoryType]);
 
   return (
     <Dropdown>

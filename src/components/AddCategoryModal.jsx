@@ -6,6 +6,7 @@ import {
   Input,
   Loading
 } from '@nextui-org/react';
+import { createCategoria } from '@/services/api';
 
 // Ícones disponíveis
 import {
@@ -101,21 +102,14 @@ const AddCategoryModal = ({ onClose }) => {
     };
 
     try {
-      const res = await fetch('/api/createCategory', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        setCreated(true);
-        setCategoryName('');
-        setCategoryType('DESPESA');
-        setSelectedIcon('BsThreeDots');
-      } else {
-        console.error('Erro ao criar categoria');
-      }
+      await createCategoria(payload);
+      setCreated(true);
+      setCategoryName('');
+      setCategoryType('DESPESA');
+      setSelectedIcon('BsThreeDots');
     } catch (error) {
-      console.error('Erro na requisição:', error);
+      console.error('Erro ao criar categoria:', error);
+      alert('Erro ao criar categoria: ' + error.message);
     }
     setLoading(false);
     setTimeout(() => {
