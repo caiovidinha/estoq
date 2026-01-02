@@ -6,7 +6,7 @@ import { Modal, Button, Text, Loading } from '@nextui-org/react';
 import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
 
 // Função que retorna o ícone padrão para todas as movimentações
-function getIconForMovimentacao(mov) {
+// function getIconForMovimentacao(mov) {
 // Função que retorna o ícone padrão para todas as movimentações
 function getIconForMovimentacao(mov) {
   const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
