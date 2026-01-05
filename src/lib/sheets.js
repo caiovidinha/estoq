@@ -251,6 +251,32 @@ export async function getCartoesConfig() {
 }
 
 /**
+ * Busca mapeamento de categorias e ícones de Configurações!A2:F
+ * Retorna objeto { categoria: iconName }
+ * @returns {Object} Objeto com mapeamento categoria → nome do ícone
+ */
+export async function getCategoryIconMapping() {
+  try {
+    const data = await getRange('Configurações!A2:F');
+    
+    const mapping = {};
+    data.forEach(row => {
+      const categoria = row[0]; // Coluna A
+      const iconName = row[5];  // Coluna F (índice 5)
+      
+      if (categoria && iconName) {
+        mapping[categoria] = iconName;
+      }
+    });
+    
+    return mapping;
+  } catch (error) {
+    console.error('Erro ao buscar mapeamento de ícones:', error);
+    return {};
+  }
+}
+
+/**
  * Adiciona uma nova linha em uma planilha
  * @param {string} range - Range da planilha (ex: "Extrato!A:H")
  * @param {Array} values - Array de valores para adicionar (ex: ["RECEITA", "Salário", "R$ 5000,00", ...])
@@ -305,9 +331,10 @@ export async function createTransacao(transacao) {
       transacao.detalhes || '',
       transacao.situacao || '',
       transacao.conta || '',
+      transacao.fixa ? 'TRUE' : 'FALSE', // Coluna I - Fixa (checkbox)
     ];
 
-    const result = await appendRow('Extrato!A:H', row);
+    const result = await appendRow('Extrato!A:I', row);
     console.log('Transação criada com sucesso:', result);
     return result;
   } catch (error) {
@@ -317,7 +344,7 @@ export async function createTransacao(transacao) {
 }
 
 /**
- * Cria uma nova transação de crédito em 'Extrato Crédito'!A:H
+ * Cria uma nova transação de crédito em 'Extrato Crédito'!A:I
  * Formato: TIPO | DESCRITIVO | VALOR | DATA | MÊS | DETALHES | SITUAÇÃO | CARTÃO
  * 
  * @param {Object} transacao - Dados da transação de crédito
@@ -342,9 +369,10 @@ export async function createTransacaoCredito(transacao) {
       transacao.detalhes || '',
       transacao.situacao || '',
       transacao.cartao || '',
+      transacao.fixa ? 'TRUE' : 'FALSE', // Coluna I - Fixa (checkbox)
     ];
 
-    const result = await appendRow('Extrato Crédito!A:H', row);
+    const result = await appendRow('Extrato Crédito!A:I', row);
     console.log('Transação de crédito criada com sucesso:', result);
     return result;
   } catch (error) {
@@ -352,3 +380,87 @@ export async function createTransacaoCredito(transacao) {
     throw error;
   }
 }
+
+/**
+ * Atualiza uma célula específica na planilha
+ * @param {string} range - Range da célula (ex: "Extrato!G5" para atualizar situação)
+ * @param {string} value - Novo valor
+ * @returns {Object} Resposta da API
+ */
+export async function updateCell(range, value) {
+  try {
+    const sheets = await getClient();
+    // eslint-disable-next-line no-undef
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+
+    const result = await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range,
+      valueInputOption: 'USER_ENTERED',
+      resource: {
+        values: [[value]],
+      },
+    });
+
+    console.log('Célula atualizada:', range, '=', value);
+    return result.data;
+  } catch (error) {
+    console.error('Erro ao atualizar célula:', error);
+    throw error;
+  }
+}
+
+/**
+ * Deleta uma linha da planilha
+ * @param {string} sheetName - Nome da aba (ex: "Extrato")
+ * @param {number} rowIndex - Índice da linha (baseado em 0, onde 0 é o cabeçalho)
+ * @returns {Object} Resposta da API
+ */
+export async function deleteRow(sheetName, rowIndex) {
+  try {
+    const sheets = await getClient();
+    // eslint-disable-next-line no-undef
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+
+    // Primeiro, precisa obter o sheetId da aba
+    const spreadsheet = await sheets.spreadsheets.get({
+      spreadsheetId,
+    });
+
+    const sheet = spreadsheet.data.sheets.find(
+      (s) => s.properties.title === sheetName
+    );
+
+    if (!sheet) {
+      throw new Error(`Aba "${sheetName}" não encontrada`);
+    }
+
+    const sheetId = sheet.properties.sheetId;
+
+    // Deleta a linha usando batchUpdate
+    const result = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      resource: {
+        requests: [
+          {
+            deleteDimension: {
+              range: {
+                sheetId: sheetId,
+                dimension: 'ROWS',
+                startIndex: rowIndex,
+                endIndex: rowIndex + 1,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    console.log(`Linha ${rowIndex} deletada da aba ${sheetName}`);
+    return result.data;
+  } catch (error) {
+    console.error('Erro ao deletar linha:', error);
+    throw error;
+  }
+}
+

@@ -64,7 +64,9 @@ const AddExpenseModalCrédito = () => {
             }
 
             let valorNumerico = valorInput.replace(/[\D]+/g, '')
-            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+            let valorDecimal = (parseFloat(valorNumerico) / 100).toFixed(2)
+            // Despesas devem ter valor NEGATIVO
+            let valorFormatado = 'R$ -' + valorDecimal.replace('.', ',')
 
             const [ano, mesNum, dia] = dataInput.split('-')
             const dataFormatada = `${dia}/${mesNum}/${ano}`
@@ -72,6 +74,8 @@ const AddExpenseModalCrédito = () => {
             const status = document.getElementById('status-despesa-credito').getAttribute('data-state') === 'checked'
                 ? 'Pago'
                 : 'A pagar'
+
+            const fixa = document.getElementById('fixa-despesa-credito')?.getAttribute('data-state') === 'checked'
 
             const transacao = {
                 tipo: 'DESPESA',
@@ -82,6 +86,7 @@ const AddExpenseModalCrédito = () => {
                 detalhes: descricao,
                 situacao: status,
                 cartao: cartao,
+                fixa: fixa,
             }
 
             setLoading(true)
@@ -249,7 +254,7 @@ const AddExpenseModalCrédito = () => {
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
-                    <div className="w-full flex justify-center">
+                    <div className="w-full flex justify-center space-x-4">
                         <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
                             <Switch
                                 checked={true}
@@ -261,6 +266,17 @@ const AddExpenseModalCrédito = () => {
                                 id="status-despesa-credito"
                             />
                             <p className="ml-6 text-gray-500 font-bold">Pago</p>
+                        </div>
+                        
+                        <div className="bg-gray-300 rounded-full w-32 flex items-center justify-left">
+                            <Switch
+                                checked={false}
+                                size="lg"
+                                color="primary"
+                                className="mb-1 ml-0.5"
+                                id="fixa-despesa-credito"
+                            />
+                            <p className="ml-2 text-gray-500 font-bold">Fixa</p>
                         </div>
                     </div>
                 </Modal.Body>

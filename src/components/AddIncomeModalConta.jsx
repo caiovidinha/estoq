@@ -81,6 +81,8 @@ const AddIncomeModalConta = () => {
                 ? 'Recebido'
                 : 'A receber'
 
+            const fixa = document.getElementById('fixa-receita-conta')?.getAttribute('data-state') === 'checked'
+
             const transacao = {
                 tipo: 'RECEITA',
                 descritivo: categoria,
@@ -90,6 +92,7 @@ const AddIncomeModalConta = () => {
                 detalhes: descricao,
                 situacao: status,
                 conta: conta,
+                fixa: fixa,
             }
 
             setLoading(true)
@@ -265,7 +268,7 @@ const AddIncomeModalConta = () => {
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
-                    <div className="w-full flex justify-center">
+                    <div className="w-full flex justify-center space-x-4">
                         <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
                             <Switch
                                 checked={true}
@@ -279,6 +282,17 @@ const AddIncomeModalConta = () => {
                             <p className="ml-6 text-gray-500 font-bold">
                                 Recebido
                             </p>
+                        </div>
+                        
+                        <div className="bg-gray-300 rounded-full w-32 flex items-center justify-left">
+                            <Switch
+                                checked={false}
+                                size="lg"
+                                color="primary"
+                                className="mb-1 ml-0.5"
+                                id="fixa-receita-conta"
+                            />
+                            <p className="ml-2 text-gray-500 font-bold">Fixa</p>
                         </div>
                     </div>
                 </Modal.Body>

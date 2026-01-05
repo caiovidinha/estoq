@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { BsThreeDots } from 'react-icons/bs';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
-// REMOVIDO: import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
+import { getCategoryIcon } from '@/utils/categoryIcons';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
-// Função que retorna o ícone padrão para todas as movimentações
-// function getIconForMovimentacao(mov) {
-// Função que retorna o ícone padrão para todas as movimentações
-function getIconForMovimentacao(mov) {
-  const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
-  return <BsThreeDots size={20} className={colorClass} />;
+// Função que retorna o ícone da categoria
+function getIconForMovimentacao(mov, categoryIconMapping = {}) {
+  const { Icon, color } = getCategoryIcon(mov.descritivo, mov.tipo, categoryIconMapping);
+  const bgClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+  
+  return {
+    icon: <Icon size={20} style={{ color }} />,
+    bgClass
+  };
 }
 
 const Apagar = () => {
+  // Busca o mapeamento de ícones do Context
+  const { categoryIconMapping } = useFormOptionsContext();
+  
   // Estados de filtros e modais
   const [filterMes, setFilterMes] = useState('');
   const [filterAno, setFilterAno] = useState('');
@@ -81,40 +87,54 @@ const Apagar = () => {
     
     try {
       setLoading(true)
-      // TODO: Implementar busca com nova API do Google Sheets
-      console.warn('fetchMovimentacoes() precisa ser implementado com nova API')
-      setMovimentacao([])
-      setLoading(false)
       
-      /* CÓDIGO ANTIGO - PRECISA SER REFATORADO
-      const response = await getTransacoes({ page_size: 1000 })
-      const todasTransacoes = response.items || []
+      // Busca movimentações pendentes (A pagar ou A receber)
+      const response = await fetch('/api/movimentacoes?situacao=A pagar,A receber');
+      const result = await response.json();
       
-      // Filtra por mês/ano e situação
-      const filtered = todasTransacoes.filter(mov => {
-        // Extrai mês e ano da data (formato: dd/mm/yyyy)
-        const [dia, mes, ano] = mov.data.split('/')
-        const mesData = mes.padStart(2, '0')
-        const anoData = ano
+      if (result.success) {
+        const todasTransacoes = result.data;
         
-        // Filtra apenas movimentações pendentes
-        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
+        // Filtra por mês/ano
+        const filtered = todasTransacoes.filter(mov => {
+          // Extrai mês e ano da data (formato: dd/mm/yyyy)
+          const [dia, mes, ano] = mov.data.split('/');
+          const mesData = mes.padStart(2, '0');
+          const anoData = ano;
+          
+          return mesData === filterMes && anoData === filterAno;
+        });
         
-        return mesData === filterMes && anoData === filterAno && isPendente
-      })
-      
-      // Ordena por data crescente
-      const sorted = filtered.sort((a, b) => {
-        const [dayA, monthA, yearA] = a.data.split('/')
-        const [dayB, monthB, yearB] = b.data.split('/')
-        return new Date(+yearA, +monthA - 1, +dayA) - new Date(+yearB, +monthB - 1, +dayB)
-      })
-      
-      setMovimentacao(sorted)
-      */
+        // Ordena por data crescente
+        const sorted = filtered.sort((a, b) => {
+          const [dayA, monthA, yearA] = a.data.split('/');
+          const [dayB, monthB, yearB] = b.data.split('/');
+          return new Date(+yearA, +monthA - 1, +dayA) - new Date(+yearB, +monthB - 1, +dayB);
+        });
+        
+        setMovimentacao(sorted);
+        
+        // Calcula totais
+        let totalReceber = 0;
+        let totalPagar = 0;
+        
+        sorted.forEach(mov => {
+          const valorNum = parseFloat(mov.valor.replace('R$', '').replace('.', '').replace(',', '.'));
+          
+          if (mov.situação === 'A receber') {
+            totalReceber += valorNum;
+          } else if (mov.situação === 'A pagar') {
+            totalPagar += Math.abs(valorNum);
+          }
+        });
+        
+        setReceber(totalReceber);
+        setPagar(totalPagar);
+      }
     } catch (error) {
-      console.error('Erro ao buscar movimentações:', error)
-      setLoading(false)
+      console.error('Erro ao buscar movimentações:', error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -171,60 +191,65 @@ const Apagar = () => {
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      // TODO: Implementar delete com nova API do Google Sheets
-      console.warn('deleteTransacao() precisa ser implementado com nova API')
-      // await deleteTransacao(rowIndex)
-      setLoading(false);
-      setExcluido(true);
+      const response = await fetch('/api/deleteRow', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIndex,
+          sheetName: 'Extrato'
+        })
+      });
+
+      const result = await response.json();
       
-      // Recarrega as movimentações após exclusão
-      await fetchMovimentacoes()
-      
-      setTimeout(() => {
-        setConfirmarExc(false)
-        setExcluido(false)
-      }, 1500)
+      if (result.success) {
+        setExcluido(true);
+        
+        // Recarrega as movimentações após exclusão
+        await fetchMovimentacoes();
+        
+        setTimeout(() => {
+          setConfirmarExc(false);
+          setExcluido(false);
+        }, 1500);
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       console.error('Erro ao excluir movimentação:', error);
+      alert('Erro ao excluir movimentação: ' + error.message);
+    } finally {
       setLoading(false);
     }
   };
 
-  const changeStatus = async (mov) => {
+  const changeStatus = async (mov, novoStatus) => {
     try {
-      setLoading(true)
-      
-      // TODO: Implementar update com nova API do Google Sheets
-      console.warn('updateTransacao() precisa ser implementado com nova API')
-      
-      /* CÓDIGO ANTIGO
-      // Alterna o status
-      const novoStatus = mov.situacao === 'Pago' 
-        ? 'A pagar' 
-        : mov.situacao === 'A pagar'
-        ? 'Pago'
-        : mov.situacao === 'Recebido'
-        ? 'A receber'
-        : 'Recebido'
+      setLoading(true);
 
-      await updateTransacao(mov.row_index, { situacao: novoStatus })
+      const response = await fetch('/api/updateStatus', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIndex: mov.rowIndex,
+          novoStatus,
+          sheetName: 'Extrato'
+        })
+      });
+
+      const result = await response.json();
       
-      // Recarrega lista filtrada
-      const response = await getTransacoes({ page_size: 1000 })
-      const todasTransacoes = response.items || []
-      const filtered = todasTransacoes.filter(mov => {
-        const [dia, mes, ano] = mov.data.split('/')
-        const mesData = mes.padStart(2, '0')
-        const anoData = ano
-        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
-        return mesData === filterMes && anoData === filterAno && isPendente
-      })
-      setMovimentacao(filtered)
-      */
-      setLoading(false)
+      if (result.success) {
+        // Recarrega as movimentações após atualização
+        await fetchMovimentacoes();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao atualizar status:', error)
-      setLoading(false)
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar status: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -349,64 +374,77 @@ const Apagar = () => {
           <span className="hidden sm:grid">Conta</span>
         </div>
         <ul>
-          {movimentacao.slice(0).map((mov, index) => (
-            <li
-              key={mov.row_index}
-              className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
-            >
-              <div
-                className="flex"
-                onClick={() =>
-                  handler(
-                    mov.tipo,
-                    mov.descritivo,
-                    mov.valor,
-                    mov.data,
-                    mov.mes,
-                    mov.detalhes,
-                    mov.situacao,
-                    mov.conta,
-                    mov.row_index
-                  )
-                }
+          {movimentacao.slice(0).map((mov, index) => {
+            const { icon, bgClass } = getIconForMovimentacao(mov, categoryIconMapping);
+            
+            return (
+              <li
+                key={mov.rowIndex}
+                className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
               >
                 <div
-                  className={
-                    mov.tipo.toUpperCase() === 'RECEITA'
-                      ? 'bg-green-200 rounded-lg p-3 h-[50%] my-auto'
-                      : 'bg-red-200 rounded-lg p-3 h-[50%] my-auto'
+                  className="flex"
+                  onClick={() =>
+                    handler(
+                      mov.tipo,
+                      mov.descritivo,
+                      mov.valor,
+                      mov.data,
+                      mov.mes,
+                      mov.detalhes,
+                      mov.situação,
+                      mov.conta,
+                      mov.rowIndex
+                    )
                   }
                 >
-                  {getIconForMovimentacao(mov)}
+                  <div className={`${bgClass} rounded-lg p-3 h-[50%] my-auto`}>
+                    {icon}
+                  </div>
+                  <div className="pl-2 w-32">
+                    <p className="text-gray-800 font-bold text-xs">
+                      {mov.valor}
+                    </p>
+                    <p className="text-gray-800 text-xs lg:hidden">
+                      {mov.detalhes.length >= 15
+                        ? mov.detalhes.slice(0, 13) + '...'
+                        : mov.detalhes}
+                    </p>
+                    <p className="text-gray-800 text-sm hidden lg:block">
+                      {mov.detalhes}
+                    </p>
+                    <p className="text-gray-500 text-xs">{mov.conta}</p>
+                  </div>
                 </div>
-                <div className="pl-2 w-32">
-                  <p className="text-gray-800 font-bold text-xs">
-                    {mov.valor}
-                  </p>
-                  <p className="text-gray-800 text-xs lg:hidden">
-                    {mov.detalhes.length >= 15
-                      ? mov.detalhes.slice(0, 13) + '...'
-                      : mov.detalhes}
-                  </p>
-                  <p className="text-gray-800 text-sm hidden lg:block">
-                    {mov.detalhes}
-                  </p>
-                  <p className="text-gray-500 text-xs">{mov.conta}</p>
-                </div>
-              </div>
               <div className="flex text-gray-600 sm:text-left text-left justify-between">
-                <button
+                <select
                   className={
-                    mov.situacao === 'Recebido' || mov.situacao === 'A receber'
-                      ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
-                      : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
+                    mov.situação === 'Recebido' || mov.situação === 'A receber'
+                      ? 'bg-green-200 p-1 rounded-lg text-green-800 font-semibold cursor-pointer border-none outline-none'
+                      : 'bg-red-200 p-1 rounded-lg text-red-800 font-semibold cursor-pointer border-none outline-none'
                   }
-                  onClick={() => changeStatus(mov)}
+                  value={mov.situação}
+                  onChange={(e) => {
+                    const novoStatus = e.target.value;
+                    if (novoStatus !== mov.situação) {
+                      changeStatus(mov, novoStatus);
+                    }
+                  }}
                 >
-                  {mov.situacao}
-                </button>
+                  {mov.tipo === 'RECEITA' ? (
+                    <>
+                      <option value="A receber">A receber</option>
+                      <option value="Recebido">Recebido</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="A pagar">A pagar</option>
+                      <option value="Pago">Pago</option>
+                    </>
+                  )}
+                </select>
                 <div
-                  onClick={() => deleteRow(mov.row_index)}
+                  onClick={() => deleteRow(mov.rowIndex)}
                   className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />
@@ -416,14 +454,15 @@ const Apagar = () => {
               <div className="flex justify-between items-center">
                 <p className="sm:flex hidden">{mov.conta}</p>
                 <div
-                  onClick={() => deleteRow(mov.row_index)}
+                  onClick={() => deleteRow(mov.rowIndex)}
                   className="bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </div>
 

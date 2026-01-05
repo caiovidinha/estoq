@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { BsThreeDots } from 'react-icons/bs';
-
-// Função para retornar o ícone padrão para todas as movimentações
-function getIconForMovimentacao(mov) {
-  const colorClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
-  return <BsThreeDots size={20} className={colorClass} />;
-}
+import { getCategoryIcon } from '@/utils/categoryIcons';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 const RecentOrders = () => {
   const [mov, setMov] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Busca o mapeamento de ícones do Context
+  const { categoryIconMapping } = useFormOptionsContext();
+
+  // Função para retornar o ícone da categoria
+  function getIconForMovimentacao(movItem) {
+    const { Icon, color } = getCategoryIcon(movItem.descritivo, movItem.tipo, categoryIconMapping || {});
+    const bgClass = movItem.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+    
+    return {
+      icon: <Icon size={20} style={{ color }} />,
+      bgClass
+    };
+  }
 
   // Carrega as 20 movimentações mais recentes (Paga/Recebida)
   useEffect(() => {
@@ -51,35 +60,33 @@ const RecentOrders = () => {
       
       {!loading && !error && (
         <ul>
-          {mov.map((movItem, id) => (
-            <li
-              key={movItem.rowIndex || id}
-              className="bg-gray-50 rounded-lg my-3 p-2 flex items-center cursor-pointer"
-            >
-              <div className="flex items-center">
-                <div
-                  className={
-                    movItem.tipo?.toUpperCase() === 'RECEITA'
-                      ? 'bg-green-200 rounded-lg p-3'
-                      : 'bg-red-200 rounded-lg p-3'
-                  }
-                >
-                  {getIconForMovimentacao(movItem)}
+          {mov.map((movItem, id) => {
+            const { icon, bgClass } = getIconForMovimentacao(movItem);
+            
+            return (
+              <li
+                key={movItem.rowIndex || id}
+                className="bg-gray-50 rounded-lg my-3 p-2 flex items-center cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className={`${bgClass} rounded-lg p-3`}>
+                    {icon}
+                  </div>
+                  <div className="pl-4">
+                    <p className="text-gray-800 font-extrabold">
+                      {movItem.valor}
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      {movItem.detalhes ? `${movItem.detalhes} - ` : ''}{movItem.conta}
+                    </p>
+                  </div>
                 </div>
-                <div className="pl-4">
-                  <p className="text-gray-800 font-extrabold">
-                    {movItem.valor}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    {movItem.detalhes ? `${movItem.detalhes} - ` : ''}{movItem.conta}
-                  </p>
-                </div>
-              </div>
-              <p className="lg:flex md:hidden absolute mb-7 right-6 text-sm">
-                {movItem.data}
-              </p>
-            </li>
-          ))}
+                <p className="lg:flex md:hidden absolute mb-7 right-6 text-sm">
+                  {movItem.data}
+                </p>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

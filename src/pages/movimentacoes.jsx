@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { BsThreeDots } from 'react-icons/bs';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
+import { getCategoryIcon } from '@/utils/categoryIcons';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
-// Função que retorna o ícone padrão para todas as movimentações
-function getIconForMovimentacao(mov) {
-  const colorClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
-  return <BsThreeDots size={20} className={colorClass} />;
+// Função que retorna o ícone da categoria
+function getIconForMovimentacao(mov, categoryIconMapping = {}) {
+  const { Icon, color } = getCategoryIcon(mov.descritivo, mov.tipo, categoryIconMapping);
+  const bgClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+  
+  return {
+    icon: <Icon size={20} style={{ color }} />,
+    bgClass
+  };
 }
 
 const movimentacoes = () => {
+  // Busca o mapeamento de ícones do Context
+  const { categoryIconMapping } = useFormOptionsContext();
+  
   // Estados de modal e movimentações
   const [visible, setVisible] = useState(false);
   const [tipo, setTipo] = useState('');
@@ -91,44 +100,69 @@ const movimentacoes = () => {
     openConf();
   };
 
-  // TODO: Implementar exclusão com Google Sheets API
   const confirmaExcFinal = async () => {
-    console.warn('Função de exclusão temporariamente desabilitada');
-    // setLoading(true);
-    // try {
-    //   await deleteTransacao(rowIndex)
-    //   setLoading(false);
-    //   setExcluido(true);
-    //   await fetchMovimentacoes();
-    //   setTimeout(() => {
-    //     setConfirmarExc(false)
-    //     setExcluido(false)
-    //   }, 1500)
-    // } catch (error) {
-    //   console.error('Erro ao excluir movimentação:', error);
-    //   setLoading(false);
-    // }
+    setLoading(true);
+    try {
+      const response = await fetch('/api/deleteRow', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIndex,
+          sheetName: 'Extrato'
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setExcluido(true);
+        
+        // Recarrega as movimentações após exclusão
+        await fetchMovimentacoes();
+        
+        setTimeout(() => {
+          setConfirmarExc(false);
+          setExcluido(false);
+        }, 1500);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao excluir movimentação:', error);
+      alert('Erro ao excluir movimentação: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // TODO: Implementar atualização de status com Google Sheets API
-  const changeStatus = async (mov) => {
-    console.warn('Função de mudança de status temporariamente desabilitada');
-    // try {
-    //   setLoading(true)
-    //   const novoStatus = mov.situação === 'Paga' 
-    //     ? 'A pagar' 
-    //     : mov.situação === 'A pagar'
-    //     ? 'Paga'
-    //     : mov.situação === 'Recebida'
-    //     ? 'A receber'
-    //     : 'Recebida'
-    //   // Atualizar via API do Sheets
-    //   await fetchMovimentacoes();
-    //   setLoading(false)
-    // } catch (error) {
-    //   console.error('Erro ao atualizar status:', error)
-    //   setLoading(false)
-    // }
+  const changeStatus = async (mov, novoStatus) => {
+    try {
+      setLoading(true);
+
+      const response = await fetch('/api/updateStatus', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rowIndex: mov.rowIndex,
+          novoStatus,
+          sheetName: 'Extrato'
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Recarrega as movimentações após atualização
+        await fetchMovimentacoes();
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar status: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,62 +179,74 @@ const movimentacoes = () => {
           <ul>
             {movimentacao
               .slice(0)
-              .reverse()
-              .map((mov, index) => (
-                <li
-                  key={mov.rowIndex || index}
-                  className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
-                >
-                  <div
-                    className="flex"
-                    onClick={() =>
-                      handler(
-                        mov.tipo,
-                        mov.descritivo,
-                        mov.valor,
-                        mov.data,
-                        mov.mês,
-                        mov.detalhes,
-                        mov.situação,
-                        mov.conta,
-                        mov.rowIndex
-                      )
-                    }
+              .map((mov, index) => {
+                const { icon, bgClass } = getIconForMovimentacao(mov, categoryIconMapping);
+                
+                return (
+                  <li
+                    key={mov.rowIndex || index}
+                    className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                   >
                     <div
-                      className={
-                        mov.tipo?.toUpperCase() === 'RECEITA'
-                          ? 'bg-green-200 rounded-lg p-3'
-                          : 'bg-red-200 rounded-lg p-3'
+                      className="flex"
+                      onClick={() =>
+                        handler(
+                          mov.tipo,
+                          mov.descritivo,
+                          mov.valor,
+                          mov.data,
+                          mov.mês,
+                          mov.detalhes,
+                          mov.situação,
+                          mov.conta,
+                          mov.rowIndex
+                        )
                       }
                     >
-                      {getIconForMovimentacao(mov)}
+                      <div className={`${bgClass} rounded-lg p-3`}>
+                        {icon}
+                      </div>
+                      <div className="pl-2 w-32">
+                        <p className="text-gray-800 font-bold text-xs">
+                          {mov.valor}
+                        </p>
+                        <p className="text-gray-800 text-sm lg:hidden">
+                          {mov.detalhes?.length >= 15
+                            ? mov.detalhes.slice(0, 13) + '...'
+                            : mov.detalhes}
+                        </p>
+                        <p className="text-gray-800 text-sm hidden lg:block">
+                          {mov.detalhes}
+                        </p>
+                      </div>
                     </div>
-                    <div className="pl-2 w-32">
-                      <p className="text-gray-800 font-bold text-xs">
-                        {mov.valor}
-                      </p>
-                      <p className="text-gray-800 text-sm lg:hidden">
-                        {mov.detalhes?.length >= 15
-                          ? mov.detalhes.slice(0, 13) + '...'
-                          : mov.detalhes}
-                      </p>
-                      <p className="text-gray-800 text-sm hidden lg:block">
-                        {mov.detalhes}
-                      </p>
-                    </div>
-                  </div>
                   <div className="flex text-gray-600 sm:text-left text-left justify-between">
-                    <button
+                    <select
                       className={
-                        mov.situação === 'Recebida' || mov.situação === 'A receber'
-                          ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
-                          : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
+                        mov.situação === 'Recebido' || mov.situação === 'A receber'
+                          ? 'bg-green-200 p-1 rounded-lg text-green-800 font-semibold cursor-pointer border-none outline-none'
+                          : 'bg-red-200 p-1 rounded-lg text-red-800 font-semibold cursor-pointer border-none outline-none'
                       }
-                      onClick={() => changeStatus(mov)}
+                      value={mov.situação}
+                      onChange={(e) => {
+                        const novoStatus = e.target.value;
+                        if (novoStatus !== mov.situação) {
+                          changeStatus(mov, novoStatus);
+                        }
+                      }}
                     >
-                      {mov.situação}
-                    </button>
+                      {mov.tipo === 'RECEITA' ? (
+                        <>
+                          <option value="A receber">A receber</option>
+                          <option value="Recebido">Recebido</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="A pagar">A pagar</option>
+                          <option value="Pago">Pago</option>
+                        </>
+                      )}
+                    </select>
                     <div
                       onClick={() => deleteRow(mov.rowIndex)}
                       className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
@@ -219,7 +265,8 @@ const movimentacoes = () => {
                     </div>
                   </div>
                 </li>
-              ))}
+              );
+            })}
           </ul>
         </div>
       </div>

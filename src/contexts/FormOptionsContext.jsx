@@ -7,19 +7,22 @@ export function FormOptionsProvider({ children }) {
   const [meses, setMeses] = useState([])
   const [contas, setContas] = useState([])
   const [cartoes, setCartoes] = useState([])
+  const [categoryIconMapping, setCategoryIconMapping] = useState({})
   
   const [loading, setLoading] = useState({
     categorias: true,
     meses: true,
     contas: true,
-    cartoes: true
+    cartoes: true,
+    categoryIcons: true
   })
   
   const [error, setError] = useState({
     categorias: null,
     meses: null,
     contas: null,
-    cartoes: null
+    cartoes: null,
+    categoryIcons: null
   })
 
   // Fetch único para categorias
@@ -78,6 +81,20 @@ export function FormOptionsProvider({ children }) {
       })
   }, [])
 
+  // Fetch único para mapeamento de ícones de categorias
+  useEffect(() => {
+    fetch('/api/category-icons')
+      .then(res => res.json())
+      .then(data => {
+        setCategoryIconMapping(data.data || {})
+        setLoading(prev => ({ ...prev, categoryIcons: false }))
+      })
+      .catch(err => {
+        setError(prev => ({ ...prev, categoryIcons: err.message }))
+        setLoading(prev => ({ ...prev, categoryIcons: false }))
+      })
+  }, [])
+
   // Funções de refetch para quando precisar recarregar
   const refetchCategorias = async () => {
     setLoading(prev => ({ ...prev, categorias: true }))
@@ -118,16 +135,31 @@ export function FormOptionsProvider({ children }) {
     }
   }
 
+  const refetchCategoryIcons = async () => {
+    setLoading(prev => ({ ...prev, categoryIcons: true }))
+    try {
+      const res = await fetch('/api/category-icons')
+      const data = await res.json()
+      setCategoryIconMapping(data.data || {})
+    } catch (err) {
+      setError(prev => ({ ...prev, categoryIcons: err.message }))
+    } finally {
+      setLoading(prev => ({ ...prev, categoryIcons: false }))
+    }
+  }
+
   const value = {
     categorias,
     meses,
     contas,
     cartoes,
+    categoryIconMapping,
     loading,
     error,
     refetchCategorias,
     refetchContas,
-    refetchCartoes
+    refetchCartoes,
+    refetchCategoryIcons
   }
 
   return (
