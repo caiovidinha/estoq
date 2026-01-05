@@ -3,7 +3,7 @@ import { BsThreeDots } from 'react-icons/bs';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
-import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
+// REMOVIDO: import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
 
 // Função que retorna o ícone padrão para todas as movimentações
 // function getIconForMovimentacao(mov) {

@@ -17,7 +17,7 @@ import {
 } from 'react-icons/ai'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { useMeses, useContas } from '@/hooks/useFormOptions'
-import { createTransacao } from '@/services/api'
+// REMOVIDO: import { createTransacao } from '@/services/api'
 
 const AddIncomeModalConta = () => {
     const [selectedValue, setSelectedValue] = useState('Categoria');
@@ -82,7 +82,7 @@ const AddIncomeModalConta = () => {
                 : 'A receber'
 
             const transacao = {
-                tipo: 'Receita',
+                tipo: 'RECEITA',
                 descritivo: categoria,
                 valor: valorFormatado,
                 data: dataFormatada,
@@ -95,7 +95,29 @@ const AddIncomeModalConta = () => {
             setLoading(true)
             setError(null)
 
-            await createTransacao(transacao)
+            // Chamar API para criar transação
+            const response = await fetch('/api/transacoes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transacao),
+            })
+
+            const result = await response.json()
+
+            if (result.success) {
+                setCreated(true)
+                setTimeout(() => {
+                    setCreated(false)
+                    setVisible(false)
+                    // Recarregar página ou atualizar lista
+                    window.location.reload()
+                }, 2000)
+            } else {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+            }
 
             setLoading(false)
             setCreated(true)

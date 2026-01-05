@@ -6,7 +6,7 @@ import {
   Input,
   Loading
 } from '@nextui-org/react';
-import { createCategoria } from '@/services/api';
+// REMOVIDO: import { createCategoria } from '@/services/api';
 
 // Ícones disponíveis
 import {

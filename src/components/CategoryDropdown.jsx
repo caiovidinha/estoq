@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import React from 'react';
 import { Dropdown } from '@nextui-org/react';
-import { getCategorias } from '@/services/api';
+import { useCategorias } from '@/hooks/useFormOptions';
 
 const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
-  const [categories, setCategories] = useState([]);
+  const { categorias, loading, error } = useCategorias();
   const [selected, setSelected] = useState(new Set(['Categoria']));
   const selectedValue = useMemo(
     () => Array.from(selected).join(', ').replaceAll('_', ' '),
@@ -16,36 +16,34 @@ const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
     onSelect(Array.from(keys)[0]); // passa a primeira chave selecionada
   };
 
+  // Se houver erro, mostrar no console
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const cats = await getCategorias();
-        // Filtra somente categorias do tipo especificado (RECEITA ou DESPESA)
-        const filtered = cats.filter(cat => cat.tipo.toUpperCase() === categoryType);
-        setCategories(filtered);
-      } catch (error) {
-        console.error('Erro ao carregar categorias:', error)
-      }
+    if (error) {
+      console.error('Erro ao carregar categorias:', error);
     }
-    loadCategories();
-  }, [categoryType]);
+  }, [error]);
 
   return (
     <Dropdown>
-      <Dropdown.Button flat color={categoryType=="RECEITA" ? "success" : "error"} css={{ tt: 'capitalize' }}>
-        {selectedValue}
+      <Dropdown.Button 
+        flat 
+        color={categoryType === "RECEITA" ? "success" : "error"} 
+        css={{ tt: 'capitalize' }}
+        disabled={loading}
+      >
+        {loading ? 'Carregando...' : selectedValue}
       </Dropdown.Button>
       <Dropdown.Menu
         aria-label="Seleção única de categoria"
-        color={categoryType=="RECEITA" ? "success" : "error"}
+        color={categoryType === "RECEITA" ? "success" : "error"}
         selectionMode="single"
         selectedKeys={selected}
         onSelectionChange={handleSelectionChange}
         id="categoria"
       >
-        {categories.map(cat => (
-          <Dropdown.Item key={cat.nome}>
-            {cat.nome}
+        {categorias.map(cat => (
+          <Dropdown.Item key={cat}>
+            {cat}
           </Dropdown.Item>
         ))}
       </Dropdown.Menu>

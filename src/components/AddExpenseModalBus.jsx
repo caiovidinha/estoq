@@ -10,7 +10,7 @@ import {
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { AiFillCheckCircle, AiFillExclamationCircle } from 'react-icons/ai'
 import { useMeses } from '@/hooks/useFormOptions'
-import { createTransacao } from '@/services/api'
+// REMOVIDO: import { createTransacao } from '@/services/api'
 
 const AddExpenseModalBus = () => {
     const [visible, setVisible] = useState(false)

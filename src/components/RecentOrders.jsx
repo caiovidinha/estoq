@@ -1,93 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
-import { getTransacoes } from '@/services/api';
 
 // Função para retornar o ícone padrão para todas as movimentações
 function getIconForMovimentacao(mov) {
-  const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
+  const colorClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
   return <BsThreeDots size={20} className={colorClass} />;
 }
 
 const RecentOrders = () => {
   const [mov, setMov] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Carrega as movimentações da API
+  // Carrega as 20 movimentações mais recentes (Paga/Recebida)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Busca transações Pagas e Recebidas separadamente
-        const [responsePaga, responseRecebida] = await Promise.all([
-          getTransacoes({ 
-            page_size: 50,
-            situacao: 'Paga',
-            order_by: 'data'
-          }),
-          getTransacoes({ 
-            page_size: 50,
-            situacao: 'Recebida',
-            order_by: 'data'
-          })
-        ])
-
-        // Junta as duas listas
-        const todasTransacoes = [
-          ...(responsePaga.items || []),
-          ...(responseRecebida.items || [])
-        ]
-
-        // Ordena por data (mais recente primeiro) e pega apenas as 20 primeiras
-        const transacoesOrdenadas = todasTransacoes
-          .sort((a, b) => {
-            // Converte DD/MM/YYYY para Date para comparar
-            const [diaA, mesA, anoA] = a.data.split('/')
-            const [diaB, mesB, anoB] = b.data.split('/')
-            const dataA = new Date(anoA, mesA - 1, diaA)
-            const dataB = new Date(anoB, mesB - 1, diaB)
-            return dataB - dataA // Ordem decrescente (mais recente primeiro)
-          })
-          .slice(0, 20)
-
-        setMov(transacoesOrdenadas)
+        setLoading(true);
+        const response = await fetch('/api/movimentacoes?situacao=Pago,Recebido&limit=20');
+        const result = await response.json();
+        
+        if (result.success) {
+          setMov(result.data);
+        } else {
+          setError('Erro ao carregar movimentações');
+        }
       } catch (err) {
-        console.error('Erro ao carregar movimentações:', err)
+        console.error('Erro ao carregar movimentações:', err);
+        setError('Erro ao carregar movimentações');
+      } finally {
+        setLoading(false);
       }
-    }
-    fetchData()
+    };
+    fetchData();
   }, []);
 
   return (
     <div className="w-full col-span-3 relative lg:h-[70vh] h-[50vh] m-auto p-4 border rounded-lg bg-white overflow-scroll">
-      <ul>
-        {mov.map((mov, id) => (
+      {loading && (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-gray-500">Carregando...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-red-500">{error}</p>
+        </div>
+      )}
+      
+      {!loading && !error && (
+        <ul>
+          {mov.map((movItem, id) => (
             <li
-              key={mov.row_index}
+              key={movItem.rowIndex || id}
               className="bg-gray-50 rounded-lg my-3 p-2 flex items-center cursor-pointer"
             >
               <div className="flex items-center">
                 <div
                   className={
-                    mov.tipo.toUpperCase() === 'RECEITA'
+                    movItem.tipo?.toUpperCase() === 'RECEITA'
                       ? 'bg-green-200 rounded-lg p-3'
                       : 'bg-red-200 rounded-lg p-3'
                   }
                 >
-                  {getIconForMovimentacao(mov)}
+                  {getIconForMovimentacao(movItem)}
                 </div>
                 <div className="pl-4">
                   <p className="text-gray-800 font-extrabold">
-                    {mov.valor}
+                    {movItem.valor}
                   </p>
                   <p className="text-gray-400 text-sm">
-                    {mov.detalhes ? `${mov.detalhes} - ` : ''}{mov.conta}{mov.cartao ? ` - ${mov.cartao}` : ''}
+                    {movItem.detalhes ? `${movItem.detalhes} - ` : ''}{movItem.conta}
                   </p>
                 </div>
               </div>
               <p className="lg:flex md:hidden absolute mb-7 right-6 text-sm">
-                {mov.data}
+                {movItem.data}
               </p>
             </li>
           ))}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 };

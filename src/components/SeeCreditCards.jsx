@@ -1,7 +1,7 @@
 import { React, useState, useEffect } from 'react'
 import { Modal, Button, Text, Card, Progress, Popover} from '@nextui-org/react'
 import { BsCreditCardFill } from 'react-icons/bs'
-import { getCartoes } from '@/services/api'
+// REMOVIDO: import { getCartoes } from '@/services/api'
 
 const SeeCreditCards = () => {
     const [cartoes, setCartoes] = useState([])

@@ -13,7 +13,7 @@ import CategoryDropdown from '@/components/CategoryDropdown';
 import { AiFillCheckCircle, AiFillExclamationCircle, AiFillCloseCircle } from 'react-icons/ai'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { useMeses, useContas } from '@/hooks/useFormOptions'
-import { createTransacao } from '@/services/api'
+// REMOVIDO: import { createTransacao } from '@/services/api'
 
 const AddExpenseModalConta = () => {
     const [selectedValue, setSelectedValue] = useState('Categoria');
@@ -74,7 +74,7 @@ const AddExpenseModalConta = () => {
                 : 'A pagar'
 
             const transacao = {
-                tipo: 'Despesa',
+                tipo: 'DESPESA',
                 descritivo: categoria,
                 valor: valorFormatado,
                 data: dataFormatada,
@@ -87,20 +87,36 @@ const AddExpenseModalConta = () => {
             setLoading(true)
             setError(null)
 
-            await createTransacao(transacao)
+            // Chamar API para criar transação
+            const response = await fetch('/api/transacoes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transacao),
+            })
 
-            setLoading(false)
-            setCreated(true)
+            const result = await response.json()
 
-            setTimeout(() => {
-                setCreated(false)
-                setSelectedMes(new Set(['Mês']))
-                setSelectedAccount(new Set(['Conta']))
-                setSelectedValue('Categoria')
-                document.getElementById('valor-despesa-conta').value = ''
-                document.getElementById('data-despesa-conta').value = ''
-                document.getElementById('descricao-despesa-conta').value = ''
-            }, 1300)
+            if (result.success) {
+                setLoading(false)
+                setCreated(true)
+
+                setTimeout(() => {
+                    setCreated(false)
+                    setSelectedMes(new Set(['Mês']))
+                    setSelectedAccount(new Set(['Conta']))
+                    setSelectedValue('Categoria')
+                    document.getElementById('valor-despesa-conta').value = ''
+                    document.getElementById('data-despesa-conta').value = ''
+                    document.getElementById('descricao-despesa-conta').value = ''
+                    window.location.reload()
+                }, 1300)
+            } else {
+                setLoading(false)
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+            }
 
         } catch (err) {
             console.error('Erro ao criar despesa:', err)

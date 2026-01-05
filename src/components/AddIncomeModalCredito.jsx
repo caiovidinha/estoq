@@ -8,13 +8,17 @@ import {
   Loading,
 } from '@nextui-org/react';
 import { GiReceiveMoney } from 'react-icons/gi';
-import { updateLimiteCartao, getCartoes } from '@/services/api';
+import { useCartoes } from '@/hooks/useFormOptions';
+// REMOVIDO: import { updateLimiteCartao, getCartoes } from '@/services/api';
 
 const AddIncomeModalCredito = () => {
   const [loading, setLoading] = useState(false);
   const [updated, setUpdated] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [visible, setVisible] = useState(false);
+
+  // Hook para buscar cartões do Context
+  const { cartoes, loading: cartoesLoading } = useCartoes();
 
   // Estado para seleção do cartão e novo limite
   const [selectedAccount, setSelectedAccount] = useState(new Set(['Selecionar']));
@@ -41,23 +45,17 @@ const AddIncomeModalCredito = () => {
     if (valor === 'NaN') elemento.value = ''
 }
 
-  // Buscar lista de cartões da API REST
+  // Atualizar accounts quando cartoes do Context mudar
   useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const data = await getCartoes()
-        let accountsArray = data.map((cartao, index) => ({
-          id: cartao,
-          cartao: cartao,
-          limite: 0 // TODO: ajustar quando API retornar limite
-        }))
-        setAccounts(accountsArray);
-      } catch (error) {
-        console.error('Erro ao buscar cartões:', error);
-      }
-    };
-    fetchAccounts();
-  }, []);
+    if (cartoes && cartoes.length > 0) {
+      const accountsArray = cartoes.map((cartao) => ({
+        id: cartao,
+        cartao: cartao,
+        limite: 0 // TODO: ajustar quando API retornar limite
+      }));
+      setAccounts(accountsArray);
+    }
+  }, [cartoes]);
 
   // Função para enviar a atualização do limite via endpoint interno
   const updateLimit = async () => {

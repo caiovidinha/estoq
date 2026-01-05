@@ -11,19 +11,21 @@ import AddExpenseModalBus from './AddExpenseModalBus'
 import SeeCreditCards from './SeeCreditCards'
 import SeeAccounts from './SeeAccounts';
 import AddInvestimento from './AddInvestimento';
-import { getSaldos } from '@/services/api';
 
 const TopCards = () => {
-    const [saldoGeral, setSaldoGeral] = useState(0)
-    const [saldoBU, setSaldoBU] = useState(0)
+    const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
+    const [saldoBU, setSaldoBU] = useState('R$ 0,00')
 
     useEffect(() => {
         const fetchSaldos = async () => {
             try {
-                const data = await getSaldos()
-                // API retorna { valor: "R$ 1.234,56" }
-                setSaldoGeral(data.valor || 'R$ 0,00')
-                setSaldoBU(data.saldo_bu || 'R$ 0,00')
+                // Busca saldo geral de API!A2
+                const response = await fetch('/api/saldo')
+                const data = await response.json()
+                
+                if (data.success) {
+                    setSaldoGeral(data.valor)
+                }
             } catch (error) {
                 console.error('Erro ao carregar saldos:', error)
             }

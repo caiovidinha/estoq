@@ -1,7 +1,6 @@
 import { React, useState, useEffect } from 'react'
 import { Modal, Button, Text, Card } from '@nextui-org/react'
 import { BiSolidBank } from 'react-icons/bi'
-import { getSaldosContas } from '@/services/api'
 
 const SeeAccounts = () => {
     const [contas, setContas] = useState([])
@@ -13,9 +12,13 @@ const SeeAccounts = () => {
     useEffect(() => {
         const fetchContas = async () => {
             try {
-                const data = await getSaldosContas()
-                // API retorna array de objetos com { conta: "nome", saldo: "R$ 1.234,56" }
-                setContas(data)
+                // Busca contas de API!O:P
+                const response = await fetch('/api/contas')
+                const result = await response.json()
+                
+                if (result.success) {
+                    setContas(result.data)
+                }
             } catch (error) {
                 console.error('Erro ao carregar contas:', error)
             }

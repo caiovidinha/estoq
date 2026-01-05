@@ -13,7 +13,7 @@ import { GiTakeMyMoney } from 'react-icons/gi'
 import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
 import { AiFillCheckCircle, AiFillExclamationCircle, AiFillCloseCircle } from 'react-icons/ai'
 import { useMeses, useCartoes } from '@/hooks/useFormOptions'
-import { createTransacaoCredito } from '@/services/api'
+// REMOVIDO: import { createTransacaoCredito } from '@/services/api'
 
 const AddExpenseModalCrédito = () => {
     const [selectedValue, setSelectedValue] = useState('Categoria');
@@ -74,7 +74,7 @@ const AddExpenseModalCrédito = () => {
                 : 'A pagar'
 
             const transacao = {
-                tipo: 'Despesa',
+                tipo: 'DESPESA',
                 descritivo: categoria,
                 valor: valorFormatado,
                 data: dataFormatada,
@@ -87,20 +87,36 @@ const AddExpenseModalCrédito = () => {
             setLoading(true)
             setError(null)
 
-            await createTransacaoCredito(transacao)
+            // Chamar API para criar transação de crédito
+            const response = await fetch('/api/transacoes-credito', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transacao),
+            })
 
-            setLoading(false)
-            setCreated(true)
+            const result = await response.json()
 
-            setTimeout(() => {
-                setCreated(false)
-                setSelectedMes(new Set(['Mês']))
-                setSelectedCard(new Set(['Cartão']))
-                setSelectedValue('Categoria')
-                document.getElementById('valor-despesa-credito').value = ''
-                document.getElementById('data-despesa-credito').value = ''
-                document.getElementById('descricao-despesa-credito').value = ''
-            }, 1300)
+            if (result.success) {
+                setLoading(false)
+                setCreated(true)
+
+                setTimeout(() => {
+                    setCreated(false)
+                    setSelectedMes(new Set(['Mês']))
+                    setSelectedCard(new Set(['Cartão']))
+                    setSelectedValue('Categoria')
+                    document.getElementById('valor-despesa-credito').value = ''
+                    document.getElementById('data-despesa-credito').value = ''
+                    document.getElementById('descricao-despesa-credito').value = ''
+                    window.location.reload()
+                }, 1300)
+            } else {
+                setLoading(false)
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+            }
 
         } catch (err) {
             console.error('Erro ao criar despesa:', err)

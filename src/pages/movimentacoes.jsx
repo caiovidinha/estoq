@@ -3,13 +3,10 @@ import { BsThreeDots } from 'react-icons/bs';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
-import { getTransacoes, deleteTransacao, updateTransacao } from '@/services/api';
 
 // Função que retorna o ícone padrão para todas as movimentações
-// function getIconForMovimentacao(mov) {
-// Função que retorna o ícone padrão para todas as movimentações
 function getIconForMovimentacao(mov) {
-  const colorClass = mov.tipo.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
+  const colorClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'text-green-800' : 'text-red-800';
   return <BsThreeDots size={20} className={colorClass} />;
 }
 
@@ -31,16 +28,20 @@ const movimentacoes = () => {
 
   const [movimentacao, setMovimentacao] = useState([]);
 
-  // Função para carregar movimentações
+  // Função para carregar movimentações da nova API
   const fetchMovimentacoes = async () => {
     try {
-      setLoading(true)
-      const response = await getTransacoes({ page_size: 1000 }) // Busca todas as transações
-      setMovimentacao(response.items || [])
-      setLoading(false)
+      setLoading(true);
+      const response = await fetch('/api/movimentacoes?situacao=Pago,Recebido');
+      const result = await response.json();
+      
+      if (result.success) {
+        setMovimentacao(result.data);
+      }
     } catch (error) {
-      console.error('Erro ao buscar movimentações:', error)
-      setLoading(false)
+      console.error('Erro ao buscar movimentações:', error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -90,47 +91,44 @@ const movimentacoes = () => {
     openConf();
   };
 
+  // TODO: Implementar exclusão com Google Sheets API
   const confirmaExcFinal = async () => {
-    setLoading(true);
-    try {
-      await deleteTransacao(rowIndex)
-      setLoading(false);
-      setExcluido(true);
-      // Recarrega as movimentações após exclusão
-      const response = await getTransacoes({ page_size: 1000 })
-      setMovimentacao(response.items || [])
-      setTimeout(() => {
-        setConfirmarExc(false)
-        setExcluido(false)
-      }, 1500)
-    } catch (error) {
-      console.error('Erro ao excluir movimentação:', error);
-      setLoading(false);
-    }
+    console.warn('Função de exclusão temporariamente desabilitada');
+    // setLoading(true);
+    // try {
+    //   await deleteTransacao(rowIndex)
+    //   setLoading(false);
+    //   setExcluido(true);
+    //   await fetchMovimentacoes();
+    //   setTimeout(() => {
+    //     setConfirmarExc(false)
+    //     setExcluido(false)
+    //   }, 1500)
+    // } catch (error) {
+    //   console.error('Erro ao excluir movimentação:', error);
+    //   setLoading(false);
+    // }
   };
 
+  // TODO: Implementar atualização de status com Google Sheets API
   const changeStatus = async (mov) => {
-    try {
-      setLoading(true)
-      // Alterna o status
-      const novoStatus = mov.situacao === 'Pago' 
-        ? 'A pagar' 
-        : mov.situacao === 'A pagar'
-        ? 'Pago'
-        : mov.situacao === 'Recebido'
-        ? 'A receber'
-        : 'Recebido'
-
-      await updateTransacao(mov.row_index, { situacao: novoStatus })
-      
-      // Atualiza lista local
-      const response = await getTransacoes({ page_size: 1000 })
-      setMovimentacao(response.items || [])
-      setLoading(false)
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error)
-      setLoading(false)
-    }
+    console.warn('Função de mudança de status temporariamente desabilitada');
+    // try {
+    //   setLoading(true)
+    //   const novoStatus = mov.situação === 'Paga' 
+    //     ? 'A pagar' 
+    //     : mov.situação === 'A pagar'
+    //     ? 'Paga'
+    //     : mov.situação === 'Recebida'
+    //     ? 'A receber'
+    //     : 'Recebida'
+    //   // Atualizar via API do Sheets
+    //   await fetchMovimentacoes();
+    //   setLoading(false)
+    // } catch (error) {
+    //   console.error('Erro ao atualizar status:', error)
+    //   setLoading(false)
+    // }
   };
 
   return (
@@ -150,7 +148,7 @@ const movimentacoes = () => {
               .reverse()
               .map((mov, index) => (
                 <li
-                  key={mov.row_index}
+                  key={mov.rowIndex || id}
                   className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                 >
                   <div
@@ -161,17 +159,17 @@ const movimentacoes = () => {
                         mov.descritivo,
                         mov.valor,
                         mov.data,
-                        mov.mes,
+                        mov.mês,
                         mov.detalhes,
-                        mov.situacao,
+                        mov.situação,
                         mov.conta,
-                        mov.row_index
+                        mov.rowIndex
                       )
                     }
                   >
                     <div
                       className={
-                        mov.tipo.toUpperCase() === 'RECEITA'
+                        mov.tipo?.toUpperCase() === 'RECEITA'
                           ? 'bg-green-200 rounded-lg p-3'
                           : 'bg-red-200 rounded-lg p-3'
                       }
@@ -183,7 +181,7 @@ const movimentacoes = () => {
                         {mov.valor}
                       </p>
                       <p className="text-gray-800 text-sm lg:hidden">
-                        {mov.detalhes.length >= 15
+                        {mov.detalhes?.length >= 15
                           ? mov.detalhes.slice(0, 13) + '...'
                           : mov.detalhes}
                       </p>
@@ -195,16 +193,16 @@ const movimentacoes = () => {
                   <div className="flex text-gray-600 sm:text-left text-left justify-between">
                     <button
                       className={
-                        mov.situacao === 'Recebido' || mov.situacao === 'A receber'
+                        mov.situação === 'Recebida' || mov.situação === 'A receber'
                           ? 'bg-green-200 p-1 rounded-lg hover:bg-green-400 text-green-800 font-semibold hover:cursor-pointer'
                           : 'bg-red-200 p-1 rounded-lg hover:bg-red-400 text-red-800 font-semibold hover:cursor-pointer'
                       }
                       onClick={() => changeStatus(mov)}
                     >
-                      {mov.situacao}
+                      {mov.situação}
                     </button>
                     <div
-                      onClick={() => deleteRow(mov.row_index)}
+                      onClick={() => deleteRow(mov.rowIndex)}
                       className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
                     >
                       <RiDeleteBin2Fill className="text-black" size={20} />
@@ -214,7 +212,7 @@ const movimentacoes = () => {
                   <div className="flex justify-between items-center">
                     <p className="sm:flex hidden">{mov.conta}</p>
                     <div
-                      onClick={() => deleteRow(mov.row_index)}
+                      onClick={() => deleteRow(mov.rowIndex)}
                       className="bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950"
                     >
                       <RiDeleteBin2Fill className="text-black" size={20} />
