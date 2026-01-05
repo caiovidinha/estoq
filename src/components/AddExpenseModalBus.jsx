@@ -75,7 +75,9 @@ const AddExpenseModalBus = () => {
             setLoading(true)
             setError(null)
 
-            await createTransacao(transacao)
+            // TODO: Implementar com nova API - POST para /api/transacoes
+            console.warn('createTransacao() para Bus precisa ser implementado')
+            // await createTransacao(transacao)
 
             setLoading(false)
             setCreated(true)

@@ -102,7 +102,9 @@ const AddCategoryModal = ({ onClose }) => {
     };
 
     try {
-      await createCategoria(payload);
+      // TODO: Implementar createCategoria com nova API do Google Sheets
+      console.warn('createCategoria() precisa ser implementado')
+      // await createCategoria(payload);
       setCreated(true);
       setCategoryName('');
       setCategoryType('DESPESA');

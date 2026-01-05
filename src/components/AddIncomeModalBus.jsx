@@ -88,9 +88,11 @@ const AddIncomeModalBus = () => {
             setLoading(true)
             setError(null)
 
+            // TODO: Implementar com nova API - POST para /api/transacoes
+            console.warn('createTransacao() para Bus precisa ser implementado')
             // Cria ambas transações
-            await createTransacao(transacaoReceita)
-            await createTransacao(transacaoDespesa)
+            // await createTransacao(transacaoReceita)
+            // await createTransacao(transacaoDespesa)
 
             setLoading(false)
             setCreated(true)

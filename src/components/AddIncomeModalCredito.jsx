@@ -66,7 +66,9 @@ const AddIncomeModalCredito = () => {
     setLoading(true);
     
     try {
-      await updateLimiteCartao(selectedValueAccount, newLimit);
+      // TODO: Implementar updateLimiteCartao com nova API
+      console.warn('updateLimiteCartao() precisa ser implementado')
+      // await updateLimiteCartao(selectedValueAccount, newLimit);
       setUpdated(true);
     } catch (error) {
       console.error('Erro ao atualizar o limite:', error);

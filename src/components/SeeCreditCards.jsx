@@ -1,21 +1,37 @@
 import { React, useState, useEffect } from 'react'
 import { Modal, Button, Text, Card, Progress, Popover} from '@nextui-org/react'
 import { BsCreditCardFill } from 'react-icons/bs'
+import { useCartoes } from '@/hooks/useFormOptions'
 // REMOVIDO: import { getCartoes } from '@/services/api'
 
 const SeeCreditCards = () => {
     const [cartoes, setCartoes] = useState([])
     const [visible, setVisible] = useState(false)
     
+    // Hook para buscar cartões
+    const { cartoes: cartoesData, loading } = useCartoes()
+    
     const handler = () => setVisible(true)
     const closeHandler = () => setVisible(false)
 
     useEffect(() => {
+        if (cartoesData && cartoesData.length > 0) {
+            // TODO: Ajustar quando API retornar limite e fatura
+            // Por enquanto, mock dos dados
+            setCartoes(cartoesData.map(cartao => ({
+                cartao: cartao,
+                limite: 0,
+                fatura: 0
+            })))
+        }
+    }, [cartoesData])
+
+    // Remover useEffect antigo que fazia fetch
+    /* CÓDIGO ANTIGO
+    useEffect(() => {
         const fetchCartoes = async () => {
             try {
                 const data = await getCartoes()
-                // TODO: Ajustar quando API retornar limite e fatura
-                // Por enquanto, mock dos dados
                 setCartoes(data.map(cartao => ({
                     cartao: cartao,
                     limite: 0,
@@ -25,12 +41,11 @@ const SeeCreditCards = () => {
                 console.error('Erro ao carregar cartões:', error)
             }
         }
-        
-        // Só busca quando o modal é aberto
         if (visible) {
             fetchCartoes()
         }
     }, [visible])
+    */
 
     return (
         <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
