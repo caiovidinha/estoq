@@ -148,7 +148,7 @@ const movimentacoes = () => {
               .reverse()
               .map((mov, index) => (
                 <li
-                  key={mov.rowIndex || id}
+                  key={mov.rowIndex || index}
                   className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
                 >
                   <div

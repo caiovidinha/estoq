@@ -21,7 +21,9 @@ async function getClient() {
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
+        // eslint-disable-next-line no-undef
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        // eslint-disable-next-line no-undef
         private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'], // Permissão de leitura E escrita
@@ -43,6 +45,7 @@ async function getClient() {
 export async function getRange(range) {
   try {
     const sheets = await getClient();
+    // eslint-disable-next-line no-undef
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
 
     const response = await sheets.spreadsheets.values.get({
@@ -256,6 +259,7 @@ export async function getCartoesConfig() {
 async function appendRow(range, values) {
   try {
     const sheets = await getClient();
+    // eslint-disable-next-line no-undef
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
 
     const response = await sheets.spreadsheets.values.append({

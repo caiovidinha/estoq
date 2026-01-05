@@ -81,6 +81,12 @@ const Apagar = () => {
     
     try {
       setLoading(true)
+      // TODO: Implementar busca com nova API do Google Sheets
+      console.warn('fetchMovimentacoes() precisa ser implementado com nova API')
+      setMovimentacao([])
+      setLoading(false)
+      
+      /* CÓDIGO ANTIGO - PRECISA SER REFATORADO
       const response = await getTransacoes({ page_size: 1000 })
       const todasTransacoes = response.items || []
       
@@ -105,7 +111,7 @@ const Apagar = () => {
       })
       
       setMovimentacao(sorted)
-      setLoading(false)
+      */
     } catch (error) {
       console.error('Erro ao buscar movimentações:', error)
       setLoading(false)
@@ -165,21 +171,14 @@ const Apagar = () => {
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      await deleteTransacao(rowIndex)
+      // TODO: Implementar delete com nova API do Google Sheets
+      console.warn('deleteTransacao() precisa ser implementado com nova API')
+      // await deleteTransacao(rowIndex)
       setLoading(false);
       setExcluido(true);
       
       // Recarrega as movimentações após exclusão
-      const response = await getTransacoes({ page_size: 1000 })
-      const todasTransacoes = response.items || []
-      const filtered = todasTransacoes.filter(mov => {
-        const [dia, mes, ano] = mov.data.split('/')
-        const mesData = mes.padStart(2, '0')
-        const anoData = ano
-        const isPendente = mov.situacao === 'A pagar' || mov.situacao === 'A receber'
-        return mesData === filterMes && anoData === filterAno && isPendente
-      })
-      setMovimentacao(filtered)
+      await fetchMovimentacoes()
       
       setTimeout(() => {
         setConfirmarExc(false)
@@ -195,6 +194,10 @@ const Apagar = () => {
     try {
       setLoading(true)
       
+      // TODO: Implementar update com nova API do Google Sheets
+      console.warn('updateTransacao() precisa ser implementado com nova API')
+      
+      /* CÓDIGO ANTIGO
       // Alterna o status
       const novoStatus = mov.situacao === 'Pago' 
         ? 'A pagar' 
@@ -217,6 +220,7 @@ const Apagar = () => {
         return mesData === filterMes && anoData === filterAno && isPendente
       })
       setMovimentacao(filtered)
+      */
       setLoading(false)
     } catch (error) {
       console.error('Erro ao atualizar status:', error)
