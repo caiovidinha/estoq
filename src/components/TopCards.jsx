@@ -2,6 +2,7 @@ import { React, useEffect, useState, useRef } from 'react'
 import { BiLogoMastercard } from 'react-icons/bi'
 import { BsBusFrontFill } from 'react-icons/bs'
 import { BiSolidBank } from "react-icons/bi";
+import { HiRefresh } from 'react-icons/hi';
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
 import AddIncomeModalCredito from './AddIncomeModalCredito'
@@ -11,10 +12,13 @@ import AddExpenseModalBus from './AddExpenseModalBus'
 import SeeCreditCards from './SeeCreditCards'
 import SeeAccounts from './SeeAccounts';
 import AddInvestimento from './AddInvestimento';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 const TopCards = () => {
     const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
     const [saldoBU, setSaldoBU] = useState('R$ 0,00')
+    const [refreshing, setRefreshing] = useState(false)
+    const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
 
     useEffect(() => {
         const fetchSaldos = async () => {
@@ -33,6 +37,34 @@ const TopCards = () => {
         fetchSaldos()
     }, [])
 
+    // Função para atualizar todos os dados
+    const handleRefresh = async () => {
+        setRefreshing(true)
+        try {
+            // Recarrega saldos
+            const response = await fetch('/api/saldo')
+            const data = await response.json()
+            if (data.success) {
+                setSaldoGeral(data.valor)
+            }
+
+            // Recarrega dados do Context (categorias, contas, etc)
+            await Promise.all([
+                refetchCategorias?.(),
+                refetchContas?.(),
+                refetchCartoes?.(),
+                refetchCategoryIcons?.()
+            ])
+
+            // Força reload da página para atualizar RecentOrders
+            window.location.reload()
+        } catch (error) {
+            console.error('Erro ao atualizar dados:', error)
+        } finally {
+            setRefreshing(false)
+        }
+    }
+
     return (
         <div className="grid lg:grid-cols-6 gap-4 p-4">
             <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
@@ -40,9 +72,22 @@ const TopCards = () => {
                     <BiSolidBank size={30} />
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2">
-                    <p className="sm:text-2xl text-sm font-bold">
-                        {saldoGeral}
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <p className="sm:text-2xl text-sm font-bold">
+                            {saldoGeral}
+                        </p>
+                        <button
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                            className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Atualizar dados"
+                        >
+                            <HiRefresh 
+                                size={18} 
+                                className={refreshing ? 'animate-spin' : ''}
+                            />
+                        </button>
+                    </div>
                     <p className="text-gray-600 sm:text-md text-xs">
                         Saldo em Conta
                     </p>
