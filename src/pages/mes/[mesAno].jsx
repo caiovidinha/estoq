@@ -209,13 +209,13 @@ const VisaoMensal = () => {
                             </h2>
                             
                             {/* Tabela compacta */}
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="text-left p-2 font-semibold text-gray-700">Data</th>
-                                            <th className="text-right p-2 font-semibold text-gray-700">Movimentação</th>
-                                            <th className="text-right p-2 font-semibold text-gray-700">Saldo Projetado</th>
+                                            <th className="text-left p-2 font-semibold text-gray-700 whitespace-nowrap">Data</th>
+                                            <th className="text-right p-2 font-semibold text-gray-700 whitespace-nowrap">Movim.</th>
+                                            <th className="text-right p-2 font-semibold text-gray-700 whitespace-nowrap">Saldo Proj.</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -244,7 +244,7 @@ const VisaoMensal = () => {
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className={`p-2 text-right font-semibold ${
+                                                    <td className={`p-2 text-right font-semibold whitespace-nowrap ${
                                                         diaData.totalDia > 0 
                                                             ? 'text-green-700' 
                                                             : diaData.totalDia < 0 
@@ -253,7 +253,7 @@ const VisaoMensal = () => {
                                                     }`}>
                                                         {formatarMoeda(diaData.totalDia)}
                                                     </td>
-                                                    <td className={`p-2 text-right font-bold ${
+                                                    <td className={`p-2 text-right font-bold whitespace-nowrap ${
                                                         diaData.saldoAposDia >= 0 
                                                             ? 'text-blue-700' 
                                                             : 'text-red-700'

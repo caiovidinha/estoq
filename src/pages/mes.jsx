@@ -94,9 +94,9 @@ const mes = () => {
                                         >
                                             {bal.saldo}
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        {/* <p className="text-xs text-gray-500">
                                             {bal.saldoNumerico >= 0 ? 'Superávit' : 'Déficit'}
-                                        </p>
+                                        </p> */}
                                     </div>
                                 </li>
                             ))}
