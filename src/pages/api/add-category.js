@@ -26,6 +26,7 @@ export default async function handler(req, res) {
 
     // Usar client do sheets.js que já tem autenticação configurada
     const sheets = await getClient();
+    // eslint-disable-next-line no-undef
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
 
     // Buscar a próxima linha vazia na coluna A (Configurações)
