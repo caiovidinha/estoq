@@ -213,9 +213,9 @@ const VisaoMensal = () => {
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <th className="text-left p-2 font-semibold text-gray-700 whitespace-nowrap">Data</th>
-                                            <th className="text-right p-2 font-semibold text-gray-700 whitespace-nowrap">Movim.</th>
-                                            <th className="text-right p-2 font-semibold text-gray-700 whitespace-nowrap">Saldo Proj.</th>
+                                            <th className="text-left py-2 px-1 font-semibold text-gray-700 whitespace-nowrap">Data</th>
+                                            <th className="text-right py-2 px-1 font-semibold text-gray-700 whitespace-nowrap">Movim.</th>
+                                            <th className="text-right py-2 px-1 font-semibold text-gray-700 whitespace-nowrap">Saldo Proj.</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -234,8 +234,8 @@ const VisaoMensal = () => {
                                                             : 'bg-red-50/30'
                                                     }`}
                                                 >
-                                                    <td className="p-2">
-                                                        <div className="flex items-center gap-2">
+                                                    <td className="py-2 px-1">
+                                                        <div className="flex items-center gap-1">
                                                             <span className="font-bold text-gray-800">
                                                                 {String(diaData.dia).padStart(2, '0')}/{mesAno.replace("-","/")}
                                                             </span>
@@ -244,7 +244,7 @@ const VisaoMensal = () => {
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className={`p-2 text-right font-semibold whitespace-nowrap ${
+                                                    <td className={`py-2 px-1 text-right font-semibold whitespace-nowrap ${
                                                         diaData.totalDia > 0 
                                                             ? 'text-green-700' 
                                                             : diaData.totalDia < 0 
@@ -253,7 +253,7 @@ const VisaoMensal = () => {
                                                     }`}>
                                                         {formatarMoeda(diaData.totalDia)}
                                                     </td>
-                                                    <td className={`p-2 text-right font-bold whitespace-nowrap ${
+                                                    <td className={`py-2 px-1 text-right font-bold whitespace-nowrap ${
                                                         diaData.saldoAposDia >= 0 
                                                             ? 'text-blue-700' 
                                                             : 'text-red-700'
