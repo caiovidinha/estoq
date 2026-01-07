@@ -49,7 +49,7 @@ const mes = () => {
                         </div>
                     ) : (
                         <ul>
-                            {balanco.reverse().map((bal, index) => (
+                            {balanco.map((bal, index) => (
                                 <li
                                     key={index}
                                     onClick={() => router.push(`/mes/${bal.mes}-${bal.ano}`)}

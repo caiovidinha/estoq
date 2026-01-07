@@ -286,11 +286,12 @@ const Categorias = () => {
     <div className="bg-gray-100 min-h-screen">
       <title>Categorias - CF</title>
       <div className="p-4">
-        {/* Filtros: Ano, Mês, Tipo e Switch de Visualização */}
-        <div className="flex gap-4 mb-4 items-center flex-wrap">
+        {/* Filtros: Ano, Mês, Tipo */}
+        <div className="flex gap-2 mb-3 items-center justify-between">
+          {/* Ano */}
           <select
             id="ano"
-            className="w-20 bg-blue-800 p-1 rounded-lg text-blue-200 font-semibold"
+            className="flex-1 bg-blue-800 p-2 rounded-lg text-blue-200 font-semibold text-sm"
             onChange={(e) => setYear(e.target.value)}
             value={year}
           >
@@ -303,9 +304,11 @@ const Categorias = () => {
               );
             })}
           </select>
+          
+          {/* Mês */}
           <select
             id="mes"
-            className="w-32 bg-blue-200 p-1 rounded-lg text-blue-800 font-semibold"
+            className="flex-1 bg-blue-200 p-2 rounded-lg text-blue-800 font-semibold text-sm"
             onChange={(e) => setMonth(convertMonthNameToNumber(e.target.value))}
             value={monthName(month)}
           >
@@ -322,50 +325,56 @@ const Categorias = () => {
             <option>Novembro</option>
             <option>Dezembro</option>
           </select>
+          
+          {/* Tipo: Receita/Despesa */}
           <select
             id="tipo"
-            className="w-32 bg-blue-200 p-1 rounded-lg text-blue-800 font-semibold"
+            className="flex-1 bg-blue-200 p-2 rounded-lg text-blue-800 font-semibold text-sm"
             onChange={(e) => setSelectedTransactionType(e.target.value.toUpperCase())}
             value={selectedTransactionType}
           >
             <option value="DESPESA">Despesas</option>
             <option value="RECEITA">Receitas</option>
           </select>
+        </div>
+
+        {/* Botões de Ação */}
+        <div className="flex gap-2 mb-4 items-center justify-end">
+          {/* Switch de visualização Lista/Gráfico */}
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded-lg transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+            title="Visualização em Lista"
+            aria-label="Visualização em Lista"
+          >
+            <BsList size={20} />
+          </button>
+          <button
+            onClick={() => setViewMode('chart')}
+            className={`p-2 rounded-lg transition-colors ${
+              viewMode === 'chart' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+            title="Visualização em Gráfico"
+            aria-label="Visualização em Gráfico"
+          >
+            <BsPieChart size={20} />
+          </button>
           
-          {/* Switch de visualização */}
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              }`}
-              title="Visualização em Lista"
-            >
-              <BsList size={24} />
-            </button>
-            <button
-              onClick={() => setViewMode('chart')}
-              className={`p-2 rounded-lg transition-colors ${
-                viewMode === 'chart' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              }`}
-              title="Visualização em Gráfico"
-            >
-              <BsPieChart size={24} />
-            </button>
-            
-            {/* Botão para adicionar categoria */}
-            <button
-              onClick={() => setAddModalVisible(true)}
-              className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
-              title="Adicionar Nova Categoria"
-            >
-              <BsPlus size={24} />
-            </button>
-          </div>
+          {/* Botão para adicionar categoria */}
+          <button
+            onClick={() => setAddModalVisible(true)}
+            className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+            title="Adicionar Nova Categoria"
+            aria-label="Adicionar Nova Categoria"
+          >
+            <BsPlus size={24} />
+          </button>
         </div>
 
         {/* Visualizações */}
@@ -391,18 +400,15 @@ const Categorias = () => {
                   onClick={() => detailCategory(cat.nome)}
                 >
                   <div className="flex items-center">
-                    <div className={`rounded-full p-3 mr-4 w-11 h-11 flex justify-center items-center ${
+                    <div className={`rounded-full p-2 mr-3 w-9 h-9 flex justify-center items-center ${
                       cat.tipo === 'RECEITA' ? 'bg-green-200' : 'bg-red-200'
                     }`}>
-                      <Icon size={20} color={color} />
+                      <Icon size={18} color={color} />
                     </div>
-                    <Text b>{cat.nome}</Text>
+                    <Text b className="text-sm">{cat.nome}</Text>
                   </div>
                   <div className="flex items-center justify-end">
-                    <div className="mr-3">
-                      <Progress className="w-40" color="primary" value={Number(perc)} />
-                    </div>
-                    <div className={`font-bold ${cat.tipo === 'RECEITA' ? 'text-green-700' : 'text-red-700'}`}>
+                    <div className={`font-semibold text-sm whitespace-nowrap ${cat.tipo === 'RECEITA' ? 'text-green-700' : 'text-red-700'}`}>
                       {formatarMoeda(cat.total)} ({perc.toString().replace(".",",")}%)
                     </div>
                   </div>
