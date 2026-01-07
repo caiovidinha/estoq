@@ -9,7 +9,6 @@ import {
   BsController,
   BsBook,
   BsBag,
-  BsPaw,
   BsGraphUpArrow,
   BsFileText,
   BsCreditCard,
@@ -49,14 +48,10 @@ import {
   BsPersonCircle,
   BsPeople,
   BsBuilding,
-  BsBicycle,
-  BsCar,
   BsAirplane,
-  BsTrain,
   BsGlobe,
   BsMap,
   BsChatDots,
-  BsMusic,
   BsPalette,
   BsNewspaper
 } from 'react-icons/bs';
@@ -97,11 +92,8 @@ export const availableIconsMap = {
   
   // Transporte
   'BsBusFront': { icon: BsBusFront, label: 'Ônibus' },
-  'BsCar': { icon: BsCar, label: 'Carro' },
   'BsFillFuelPumpFill': { icon: BsFillFuelPumpFill, label: 'Combustível' },
-  'BsBicycle': { icon: BsBicycle, label: 'Bicicleta' },
   'BsAirplane': { icon: BsAirplane, label: 'Avião' },
-  'BsTrain': { icon: BsTrain, label: 'Trem' },
   
   // Saúde e Bem-estar
   'BsHeartPulse': { icon: BsHeartPulse, label: 'Saúde' },
@@ -122,7 +114,6 @@ export const availableIconsMap = {
   'BsCake': { icon: BsCake, label: 'Festa/Aniversário' },
   'BsTicket': { icon: BsTicket, label: 'Ingressos' },
   'BsCameraVideo': { icon: BsCameraVideo, label: 'Streaming/Cinema' },
-  'BsMusic': { icon: BsMusic, label: 'Música' },
   'BsPalette': { icon: BsPalette, label: 'Arte' },
   
   // Tecnologia
@@ -133,7 +124,6 @@ export const availableIconsMap = {
   'BsPrinter': { icon: BsPrinter, label: 'Impressora' },
   
   // Outros
-  'BsPaw': { icon: BsPaw, label: 'Pets' },
   'BsCalendar': { icon: BsCalendar, label: 'Calendário' },
   'BsClock': { icon: BsClock, label: 'Relógio' },
   'BsStar': { icon: BsStar, label: 'Estrela/Favorito' },

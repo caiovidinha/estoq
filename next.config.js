@@ -2,7 +2,14 @@ import withPWA from 'next-pwa'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
+    reactStrictMode: false,
+    webpack: (config) => {
+        // Suprimir warnings de defaultProps do NextUI v1
+        config.ignoreWarnings = [
+            { module: /node_modules\/@nextui-org/ },
+        ];
+        return config;
+    },
 }
 
 export default withPWA({

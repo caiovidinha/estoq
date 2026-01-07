@@ -53,20 +53,18 @@ const Header = ({ children }) => {
         <span className="ml-2">Movimentações</span>
       </div>
     </li>
-    {/* Temporariamente oculto - migrando para API
-    <li onClick={() => { setMenuOpen(false); router.push('/categorias'); }}>
-      <div className={router.pathname === "/categorias" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
-        <FaChartPie size={25} />
-        <span className="ml-2">Categorias</span>
-      </div>
-    </li>
     <li onClick={() => { setMenuOpen(false); router.push('/mes'); }}>
       <div className={router.pathname === "/mes" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
         <BiSolidBarChartAlt2 size={25} />
         <span className="ml-2">Balanço Mensal</span>
       </div>
     </li>
-    */}
+    <li onClick={() => { setMenuOpen(false); router.push('/categorias'); }}>
+      <div className={router.pathname === "/categorias" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+        <FaChartPie size={25} />
+        <span className="ml-2">Categorias</span>
+      </div>
+    </li>
     <li onClick={() => { setMenuOpen(false); router.push('/aPagar'); }}>
       <div className={router.pathname === "/aPagar" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
         <RiBillFill size={25} />
@@ -78,7 +76,7 @@ const Header = ({ children }) => {
 
 
       {/* Menu fixo para desktop */}
-      <nav className="hidden sm:grid grid-cols-3 gap-8 px-4 pt-4 bg-gray-100">
+      <nav className="hidden sm:grid grid-cols-5 gap-8 px-4 pt-4 bg-gray-100">
         <Link href="/">
           <div className={router.pathname === "/" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BiSolidDashboard size={25} />
@@ -91,20 +89,18 @@ const Header = ({ children }) => {
             <p className="hidden sm:block font-bold">Movimentações</p>
           </div>
         </Link>
-        {/* Temporariamente oculto - migrando para API
-        <Link href="/categorias">
-          <div className={router.pathname === "/categorias" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
-            <FaChartPie size={25} />
-            <p className="hidden sm:block font-bold">Categorias</p>
-          </div>
-        </Link>
         <Link href="/mes">
           <div className={router.pathname === "/mes" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BiSolidBarChartAlt2 size={25} />
             <p className="hidden sm:block font-bold">Balanço Mensal</p>
           </div>
         </Link>
-        */}
+        <Link href="/categorias">
+          <div className={router.pathname === "/categorias" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+            <FaChartPie size={25} />
+            <p className="hidden sm:block font-bold">Categorias</p>
+          </div>
+        </Link>
         <Link href="/aPagar">
           <div className={router.pathname === "/aPagar" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <RiBillFill size={25} />

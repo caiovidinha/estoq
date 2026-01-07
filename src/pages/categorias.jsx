@@ -1,63 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import AddCategoryModal from '@/components/AddCategoryModal';
-import { Modal, Progress, Text, Button } from '@nextui-org/react';
-import { CiCirclePlus } from "react-icons/ci";
-import { BsThreeDots } from 'react-icons/bs';
-import {
-  BiRestaurant,
-  BiCar,
-  BiPhone,
-  BiSolidTShirt,
-  BiBomb,
-  BiSmile,
-  BiGift,
-  BiMoneyWithdraw,
-} from 'react-icons/bi';
-import { MdMoneyOff } from 'react-icons/md';
-import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi';
-import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si';
-import { AiOutlineTool } from 'react-icons/ai';
-import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri';
+import { Modal, Progress, Text, Button, Loading } from '@nextui-org/react';
+import { getCategoryIcon, availableIconsList } from '@/utils/categoryIcons';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+import { BsList, BsPieChart, BsPlus } from 'react-icons/bs';
+import { AiFillCheckCircle, AiFillExclamationCircle } from 'react-icons/ai';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
-// Mapeamento dos ícones conforme o valor gravado na planilha
-const ICON_MAP = {
-  BiRestaurant: <BiRestaurant size={20} className="text-blue-800" />,
-  BiCar: <BiCar size={20} className="text-blue-800" />,
-  GiWeightLiftingUp: <GiWeightLiftingUp size={20} className="text-blue-800" />,
-  BiPhone: <BiPhone size={20} className="text-blue-800" />,
-  BiSolidTShirt: <BiSolidTShirt size={20} className="text-blue-800" />,
-  BiBomb: <BiBomb size={20} className="text-blue-800" />,
-  BiSmile: <BiSmile size={20} className="text-blue-800" />,
-  GiHealthNormal: <GiHealthNormal size={20} className="text-blue-800" />,
-  SiBetfair: <SiBetfair size={20} className="text-blue-800" />,
-  BiGift: <BiGift size={20} className="text-blue-800" />,
-  AiOutlineTool: <AiOutlineTool size={20} className="text-blue-800" />,
-  RiFundsBoxLine: <RiFundsBoxLine size={20} className="text-green-800" />,
-  RiBillLine: <RiBillLine size={20} className="text-blue-800" />,
-  BiMoneyWithdraw: <BiMoneyWithdraw size={20} className="text-green-800" />,
-  SiFreelancer: <SiFreelancer size={20} className="text-green-800" />,
-  MdMoneyOff: <MdMoneyOff size={20} className="text-green-800" />,
-  SiYourtraveldottv: <SiYourtraveldottv size={20} className="text-blue-800" />,
-  BsThreeDots: <BsThreeDots size={20} className="text-blue-800" />,
-};
+ChartJS.register(ArcElement, Tooltip, Legend);
 
-const categorias = () => {
+const Categorias = () => {
+  const isMobile = useIsMobile();
+  
   // Estados para filtro de data e de tipo (receita/despesa)
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, '0'));
-  const [selectedTransactionType, setSelectedTransactionType] = useState('DESPESA'); // ou "RECEITA"
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedTransactionType, setSelectedTransactionType] = useState('DESPESA');
+  const [viewMode, setViewMode] = useState('list'); // 'list' ou 'chart'
+  const [groupByName, setGroupByName] = useState(false); // agrupar por nome no modal
   
-  const [categorias, setCategorias] = useState([]); // Ex: [{ nome, tipo, icone, soma }]
+  const [categoriasData, setCategoriasData] = useState([]);
   const [total, setTotal] = useState(0);
-  const [detalhes, setDetalhes] = useState([]); // Detalhes das transações filtradas
+  const [loading, setLoading] = useState(false);
+  const [detalhes, setDetalhes] = useState([]);
   const [visible, setVisible] = useState(false);
   const [catModal, setCatModal] = useState('');
-
-  // IDs e ranges da planilha
-  const SHEET_ID = '1kusPEM4OdchOyHp7Coa7MfB0Nnq3SUqWCxH0PGW5ldE';
-  const FULL_URL_CATEGORIAS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=Categories&range=A2:C`;
-  const FULL_URL_EXTRATO = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=Extrato&range=A:H`;
+  const [categoryIconMapping, setCategoryIconMapping] = useState({});
+  
+  // Estados para o modal de adicionar categoria
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryIcon, setNewCategoryIcon] = useState('BsCurrencyDollar');
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [categoryCreated, setCategoryCreated] = useState(false);
+  const [categoryInvalid, setCategoryInvalid] = useState(false);
 
   // Converte número do mês para nome
   const monthName = (m) => {
@@ -84,179 +60,234 @@ const categorias = () => {
     return names[name] || '01';
   };
 
-  function parseSheetValue(rawValue) {
-    // Se não vier nada, assume '0'
-    let valorStr = rawValue?.toString() || '0';
-  
-    // Logs para depuração
-    console.log('Valor bruto da planilha:', valorStr);
-  
-    // Remove "R$" e possíveis espaços
-    valorStr = valorStr.replace(/R\$\s?/, '');
-    // Remove pontos de milhar
-    valorStr = valorStr.replace(/\./g, '');
-    // Troca a vírgula decimal por ponto
-    valorStr = valorStr.replace(',', '.');
-  
-    console.log('Valor após remover pontuação:', valorStr);
-  
-    const valorNum = parseFloat(valorStr) || 0;
-    console.log('Valor parseado:', valorNum);
-  
-    return valorNum;
-  }
-  
-
-  // Busca categorias da aba "Categorias"
-  const fetchCategorias = async () => {
+  // Busca categorias agregadas da API
+  const loadData = async () => {
     try {
-      const res = await fetch(FULL_URL_CATEGORIAS);
-      const text = await res.text();
-      const data = JSON.parse(text.substr(47).slice(0, -2));
-      let catList = [];
-      for (let i = 0; i < data.table.rows.length; i++) {
-        const nome = data.table.rows[i].c[0]?.v || '';
-        const tipo = data.table.rows[i].c[1]?.v || '';
-        const icone = data.table.rows[i].c[2]?.v || 'BsThreeDots';
-        catList.push({ nome, tipo, icone, soma: 0 });
+      setLoading(true);
+      const res = await fetch(`/api/categorias-agregadas?mes=${month}&ano=${year}&tipo=${selectedTransactionType}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        setCategoriasData(data.data);
+        setTotal(data.totalGeral);
       }
-      return catList;
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
-      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Busca o extrato e agrupa por categoria filtrando por data e pelo tipo (receita/despesa)
-  const fetchExtrato = async () => {
+  // Busca o mapeamento de ícones
+  const loadIconMapping = async () => {
     try {
-      const res = await fetch(FULL_URL_EXTRATO);
-      const text = await res.text();
-      const data = JSON.parse(text.substr(47).slice(0, -2));
-      let agrupado = {};
-      let totalSoma = 0;
-  
-      // row[0] = tipo (DESPESA/RECEITA)
-      // row[1] = categoria
-      // row[2] = valor (ex: "R$ 620.547,00")
-      // row[3] = data (ex: "Date(2025,0,30)")
-      for (let i = 0; i < data.table.rows.length; i++) {
-        const row = data.table.rows[i].c;
-        const tipoRow = row[0]?.v || '';
-        const categoria = row[1]?.v || '';
-  
-        // Converte o valor usando a função parseSheetValue
-        const valor = row[2]?.v > 0 ? row[2]?.v : (row[2]?.v * -1);
-  
-        // Lida com a data no formato "Date(2025,0,30)"
-        const dataStr = row[3]?.v || '';
-        const match = dataStr.match(/Date\((\d+),(\d+),(\d+)\)/);
-        if (match) {
-          const anoData = match[1]; // "2025"
-          const mesData = String(Number(match[2]) + 1).padStart(2, '0'); // 0 => "01"
-          // Compare com os filtros
-          if (
-            anoData === String(year) &&
-            mesData === month &&
-            tipoRow.toUpperCase() === selectedTransactionType
-          ) {
-            if (!agrupado[categoria]) {
-              agrupado[categoria] = 0;
-            }
-            agrupado[categoria] += valor;
-            totalSoma += valor;
-          }
-        }
+      const res = await fetch('/api/category-icons');
+      const data = await res.json();
+      if (data.success) {
+        setCategoryIconMapping(data.data);
       }
-      return { agrupado, totalSoma };
     } catch (error) {
-      console.error('Erro ao carregar extrato:', error);
-      return { agrupado: {}, totalSoma: 0 };
+      console.error('Erro ao carregar mapeamento de ícones:', error);
     }
-  }
-  
-  
-
-  // Junta categorias e extrato
-  const loadData = async () => {
-    const catList = await fetchCategorias();
-    const { agrupado, totalSoma } = await fetchExtrato();
-    const finalList = catList
-      // Filtra apenas as categorias cujo tipo bate com o selecionado
-      .filter(cat => cat.tipo.toUpperCase() === selectedTransactionType)
-      .map(cat => ({
-        ...cat,
-        soma: agrupado[cat.nome] ? agrupado[cat.nome] : 0
-      }));
-    // Recalcula o total com base na lista final
-    const finalTotal = finalList.reduce((acc, cat) => acc + cat.soma, 0);
-    setCategorias(finalList);
-    setTotal(finalTotal);
   };
+
+  // Carrega mapeamento de ícones uma vez
+  useEffect(() => {
+    loadIconMapping();
+  }, []);
 
   // Chama loadData ao mudar filtros
   useEffect(() => {
     loadData();
   }, [year, month, selectedTransactionType]);
 
-  // Atualiza detalhes quando uma categoria é clicada
-  const detailCategory = async (categoria) => {
-    try {
-      const res = await fetch(FULL_URL_EXTRATO);
-      const text = await res.text();
-      const data = JSON.parse(text.substr(47).slice(0, -2));
-      let detalhesList = [];
-      // Supondo:
-      // row[0]: tipo
-      // row[1]: categoria
-      // row[2]: valor
-      // row[3]: data ("Date(2025,0,30)")
-      // row[5]: detalhes (descrição)
-      for (let i = 0; i < data.table.rows.length; i++) {
-        const row = data.table.rows[i].c;
-        const tipoRow = row[0]?.v || '';
-        const catRow = row[1]?.v || '';
-        
-        // Processa o valor
-        const valor = row[2]?.v > 0 ? row[2]?.v : (row[2]?.v * -1);
-        
-        // Processa a data no formato "Date(2025,0,30)"
-        const dataStr = row[3]?.v || '';
-        const match = dataStr.match(/Date\((\d+),(\d+),(\d+)\)/);
-        if (match) {
-          const anoData = match[1];
-          const mesData = String(Number(match[2]) + 1).padStart(2, '0');
-          const diaData = String(match[3]).padStart(2, '0');
-          if (
-            anoData === String(year) &&
-            mesData === month &&
-            catRow === categoria &&
-            tipoRow.toUpperCase() === selectedTransactionType
-          ) {
-            detalhesList.push({
-              id: i,
-              detalhes: row[5]?.v || '',
-              valor,
-              data: `${diaData}/${mesData}/${anoData}`,
-            });
-          }
-        }
-      }
-      setDetalhes(detalhesList);
+  // Mostra detalhes quando uma categoria é clicada
+  const detailCategory = (categoria) => {
+    const cat = categoriasData.find(c => c.nome === categoria);
+    if (cat) {
+      setDetalhes(cat.transacoes);
       setCatModal(categoria);
       setVisible(true);
-    } catch (error) {
-      console.error('Erro ao buscar detalhes da categoria:', error);
+      setGroupByName(false); // Reset grouping when opening modal
     }
   };
-  
+
+  // Agrupa transações por nome (detalhes)
+  const getGroupedTransactions = () => {
+    if (!groupByName) {
+      return detalhes.slice().reverse();
+    }
+
+    // Agrupa por nome (detalhes)
+    const groups = {};
+    detalhes.forEach((mov) => {
+      const nome = mov.detalhes || 'Sem detalhes';
+      if (!groups[nome]) {
+        groups[nome] = {
+          nome: nome,
+          transacoes: [],
+          total: 0,
+        };
+      }
+      groups[nome].transacoes.push(mov);
+      
+      // Parse do valor para somar
+      const valorLimpo = mov.valor
+        .replace('R$', '')
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.');
+      const valorNum = parseFloat(valorLimpo);
+      groups[nome].total += Math.abs(valorNum);
+    });
+
+    // Converte para array e ordena por total
+    return Object.values(groups).sort((a, b) => b.total - a.total);
+  };
+
+  const formatarMoeda = (valor) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor);
+  };
+
+  // Adiciona nova categoria
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) {
+      setCategoryInvalid(true);
+      setTimeout(() => setCategoryInvalid(false), 3000);
+      return;
+    }
+
+    setAddingCategory(true);
+    try {
+      const response = await fetch('/api/add-category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: newCategoryName.trim(),
+          icone: newCategoryIcon,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCategoryCreated(true);
+        setTimeout(() => {
+          setCategoryCreated(false);
+          setAddModalVisible(false);
+          setNewCategoryName('');
+          setNewCategoryIcon('BsCurrencyDollar');
+          // Recarregar página para atualizar lista
+          window.location.reload();
+        }, 2000);
+      } else {
+        setCategoryInvalid(true);
+        setTimeout(() => setCategoryInvalid(false), 3000);
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar categoria:', error);
+      setCategoryInvalid(true);
+      setTimeout(() => setCategoryInvalid(false), 3000);
+    } finally {
+      setAddingCategory(false);
+    }
+  };
+
+  // Gera cores para o gráfico de pizza
+  const generateColors = (count) => {
+    const colors = [
+      'rgba(255, 99, 132, 0.8)',
+      'rgba(54, 162, 235, 0.8)',
+      'rgba(255, 206, 86, 0.8)',
+      'rgba(75, 192, 192, 0.8)',
+      'rgba(153, 102, 255, 0.8)',
+      'rgba(255, 159, 64, 0.8)',
+      'rgba(199, 199, 199, 0.8)',
+      'rgba(83, 102, 255, 0.8)',
+      'rgba(255, 99, 255, 0.8)',
+      'rgba(99, 255, 132, 0.8)',
+    ];
+    
+    // Repete as cores se houver mais categorias
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push(colors[i % colors.length]);
+    }
+    return result;
+  };
+
+  // Prepara dados para o gráfico de pizza
+  const chartData = {
+    labels: categoriasData.map(cat => cat.nome),
+    datasets: [
+      {
+        label: selectedTransactionType === 'DESPESA' ? 'Despesas' : 'Receitas',
+        data: categoriasData.map(cat => cat.total),
+        backgroundColor: generateColors(categoriasData.length),
+        borderColor: 'rgba(255, 255, 255, 1)',
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: isMobile ? 'bottom' : 'right',
+        labels: {
+          padding: 15,
+          font: {
+            size: isMobile ? 10 : 12,
+          },
+          generateLabels: (chart) => {
+            const data = chart.data;
+            if (data.labels.length && data.datasets.length) {
+              return data.labels.map((label, i) => {
+                const value = data.datasets[0].data[i];
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return {
+                  text: `${label}: ${formatarMoeda(value)} (${percentage}%)`,
+                  fillStyle: data.datasets[0].backgroundColor[i],
+                  hidden: false,
+                  index: i,
+                };
+              });
+            }
+            return [];
+          },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            return `${label}: ${formatarMoeda(value)} (${percentage}%)`;
+          },
+        },
+      },
+    },
+    onClick: (event, elements) => {
+      if (elements.length > 0) {
+        const index = elements[0].index;
+        const categoria = categoriasData[index];
+        detailCategory(categoria.nome);
+      }
+    },
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
       <title>Categorias - CF</title>
       <div className="p-4">
-        {/* Filtros: Ano, Mês e Tipo (Receita/Despesa) */}
-        <div className="flex gap-4 mb-4 items-center">
+        {/* Filtros: Ano, Mês, Tipo e Switch de Visualização */}
+        <div className="flex gap-4 mb-4 items-center flex-wrap">
           <select
             id="ano"
             className="w-20 bg-blue-800 p-1 rounded-lg text-blue-200 font-semibold"
@@ -300,39 +331,91 @@ const categorias = () => {
             <option value="DESPESA">Despesas</option>
             <option value="RECEITA">Receitas</option>
           </select>
+          
+          {/* Switch de visualização */}
+          <div className="ml-auto flex gap-2">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+              title="Visualização em Lista"
+            >
+              <BsList size={24} />
+            </button>
+            <button
+              onClick={() => setViewMode('chart')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'chart' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+              title="Visualização em Gráfico"
+            >
+              <BsPieChart size={24} />
+            </button>
+            
+            {/* Botão para adicionar categoria */}
+            <button
+              onClick={() => setAddModalVisible(true)}
+              className="p-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+              title="Adicionar Nova Categoria"
+            >
+              <BsPlus size={24} />
+            </button>
+          </div>
         </div>
 
-        {/* Lista de Categorias */}
-        <ul>
-          {categorias.map((cat, index) => {
-            const somaFormatada = cat.soma.toFixed(2).replace('.', ',');
-            const perc = total ? ((cat.soma / total) * 100).toFixed(2) : 0;
-            return (
-              <li
-                key={index}
-                className="bg-gray-50 rounded-lg my-3 p-3 grid grid-cols-2 items-center justify-between cursor-pointer"
-              >
-                <div className="flex items-center">
-                  <div className="rounded-full p-3 bg-blue-200 mr-4 w-11 h-11 flex justify-center items-center">
-                    {ICON_MAP[cat.icone] || ICON_MAP['BsThreeDots']}
+        {/* Visualizações */}
+        {loading ? (
+          <div className="text-center p-8 text-gray-500">
+            Carregando...
+          </div>
+        ) : categoriasData.length === 0 ? (
+          <div className="text-center p-8 text-gray-500">
+            Nenhuma categoria encontrada para este período.
+          </div>
+        ) : viewMode === 'list' ? (
+          /* Lista de Categorias */
+          <ul>
+            {categoriasData.map((cat, index) => {
+              const perc = total ? ((cat.total / total) * 100).toFixed(2) : 0;
+              const { Icon, color } = getCategoryIcon(cat.nome, cat.tipo, categoryIconMapping);
+              
+              return (
+                <li
+                  key={index}
+                  className="bg-gray-50 rounded-lg my-3 p-3 grid grid-cols-2 items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => detailCategory(cat.nome)}
+                >
+                  <div className="flex items-center">
+                    <div className={`rounded-full p-3 mr-4 w-11 h-11 flex justify-center items-center ${
+                      cat.tipo === 'RECEITA' ? 'bg-green-200' : 'bg-red-200'
+                    }`}>
+                      <Icon size={20} color={color} />
+                    </div>
+                    <Text b>{cat.nome}</Text>
                   </div>
-                  <Text b>{cat.nome}</Text>
-                </div>
-                <div className="flex items-center">
-                  <div className="mr-3">
-                    <Progress className="w-40" color="primary" value={Number(perc)} />
+                  <div className="flex items-center justify-end">
+                    <div className="mr-3">
+                      <Progress className="w-40" color="primary" value={Number(perc)} />
+                    </div>
+                    <div className={`font-bold ${cat.tipo === 'RECEITA' ? 'text-green-700' : 'text-red-700'}`}>
+                      {formatarMoeda(cat.total)} ({perc.toString().replace(".",",")}%)
+                    </div>
                   </div>
-                  <div
-                    className="text-blue-700 font-bold"
-                    onClick={() => detailCategory(cat.nome)}
-                  >
-                    R$ {somaFormatada} ({perc.toString().replace(".",",")}%)
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          /* Visualização em Gráfico */
+          <div className="bg-white rounded-lg p-6 shadow-sm" style={{ height: '600px' }}>
+            <Pie data={chartData} options={chartOptions} />
+          </div>
+        )}
       </div>
 
       {/* Modal com detalhes das transações da categoria */}
@@ -345,41 +428,158 @@ const categorias = () => {
           </Text>
         </Modal.Header>
         <Modal.Body className="text-center">
+          {/* Toggle para agrupar por nome */}
+          <div className="flex items-center justify-center gap-3 mb-4 pb-3 border-b">
+            <Text className="text-sm text-gray-600">Agrupar por nome:</Text>
+            <button
+              onClick={() => setGroupByName(false)}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                !groupByName 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+            >
+              Lista
+            </button>
+            <button
+              onClick={() => setGroupByName(true)}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                groupByName 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+            >
+              Agrupado
+            </button>
+          </div>
+
+          {/* Lista de transações */}
           <ul>
-            {detalhes
-              .slice(0)
-              .reverse()
-              .map((mov, index) => (
+            {!groupByName ? (
+              /* Vista normal - lista de transações */
+              getGroupedTransactions().map((mov, index) => (
                 <li
                   key={index}
                   className="bg-gray-50 rounded-lg my-3 p-2 flex justify-between items-center"
                 >
                   <div className="flex flex-col">
-                    <Text b>{mov.detalhes}</Text>
-                    <Text className="text-red-700">
-                      R$ {mov.valor.toFixed(2).replace('.', ',')}
+                    <Text b>{mov.detalhes || 'Sem detalhes'}</Text>
+                    <Text className="text-xs text-gray-500">{mov.conta}</Text>
+                    <Text className={selectedTransactionType === 'RECEITA' ? 'text-green-700' : 'text-red-700'}>
+                      {mov.valor}
                     </Text>
                   </div>
                   <Text>{mov.data}</Text>
                 </li>
-              ))}
+              ))
+            ) : (
+              /* Vista agrupada - por nome */
+              getGroupedTransactions().map((group, index) => (
+                <li
+                  key={index}
+                  className="bg-gray-50 rounded-lg my-3 p-3"
+                >
+                  <div className="flex justify-between items-center mb-2 border-b pb-2">
+                    <Text b size={14}>{group.nome}</Text>
+                    <Text b className={selectedTransactionType === 'RECEITA' ? 'text-green-700' : 'text-red-700'}>
+                      {formatarMoeda(group.total)}
+                    </Text>
+                  </div>
+                  <div className="text-xs text-gray-500 space-y-1">
+                    {group.transacoes.map((mov, i) => (
+                      <div key={i} className="flex justify-between items-center py-1">
+                        <span>{mov.conta}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{mov.valor}</span>
+                          <span>•</span>
+                          <span>{mov.data}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </li>
+              ))
+            )}
           </ul>
         </Modal.Body>
       </Modal>
-      <div className="fixed bottom-4 right-4">
-        <Button
-          className="bg-green-500 rounded-full h-12 w-12 flex justify-center items-center"
-          auto
-          onPress={() => setShowAddModal(true)}
-        >
-          <CiCirclePlus size={26}/>
-        </Button>
-        {showAddModal && (
-        <AddCategoryModal onClose={() => setShowAddModal(false)} />
-      )}
-      </div>
+
+      {/* Modal para Adicionar Nova Categoria */}
+      <Modal closeButton open={addModalVisible} onClose={() => setAddModalVisible(false)}>
+        <Modal.Header>
+          <Text id="modal-add-title" size={18}>
+            <Text b>Adicionar Nova Categoria</Text>
+          </Text>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="space-y-4">
+            {/* Nome da Categoria */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">Nome da Categoria</label>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Ex: Farmácia, Vestuário, etc."
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Seleção de Ícone */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Ícone</label>
+              <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto border rounded-lg p-2">
+                {availableIconsList && availableIconsList.map(({ name, icon, label }) => {
+                  const IconComponent = icon;
+                  
+                  // Proteção contra ícone undefined
+                  if (!IconComponent) {
+                    console.error('Icon undefined for:', name);
+                    return null;
+                  }
+                  
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setNewCategoryIcon(name)}
+                      className={`p-3 rounded-lg transition-all flex flex-col items-center justify-center ${
+                        newCategoryIcon === name
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                          : 'bg-gray-100 hover:bg-gray-200'
+                      }`}
+                      title={label}
+                    >
+                      <IconComponent size={24} />
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Ícone selecionado: <strong>{availableIconsList.find(i => i.name === newCategoryIcon)?.label}</strong>
+              </p>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button auto flat color="error" onClick={() => setAddModalVisible(false)}>
+            Cancelar
+          </Button>
+          <Button auto color={categoryInvalid ? 'warning' : 'success'} onClick={handleAddCategory}>
+            {categoryCreated ? (
+              <AiFillCheckCircle size={20} />
+            ) : addingCategory ? (
+              <Loading type="spinner" color="white" size="sm" />
+            ) : categoryInvalid ? (
+              <AiFillExclamationCircle size={20} />
+            ) : (
+              'Adicionar'
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
 
-export default categorias;
+export default Categorias;

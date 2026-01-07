@@ -13,7 +13,7 @@ let cachedClient = null;
 /**
  * Inicializa e retorna o cliente do Google Sheets (com cache)
  */
-async function getClient() {
+export async function getClient() {
   if (cachedClient) {
     return cachedClient;
   }
@@ -259,12 +259,23 @@ export async function getCategoryIconMapping() {
   try {
     const data = await getRange('Configurações!A2:F');
     
+    // Mapeamento de ícones deprecados para substitutos
+    const iconMapping = {
+      'BsPaw': 'BsHeart',
+      'BsCar': 'BsBusFront',
+      'BsTrain': 'BsBusFront',
+      'BsMusic': 'BsController',
+      'BsBicycle': 'BsBusFront'
+    };
+    
     const mapping = {};
     data.forEach(row => {
       const categoria = row[0]; // Coluna A
-      const iconName = row[5];  // Coluna F (índice 5)
+      let iconName = row[5];    // Coluna F (índice 5)
       
       if (categoria && iconName) {
+        // Substituir ícone se estiver deprecado
+        iconName = iconMapping[iconName] || iconName;
         mapping[categoria] = iconName;
       }
     });
