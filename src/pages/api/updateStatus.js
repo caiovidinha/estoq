@@ -24,9 +24,22 @@ export default async function handler(req, res) {
 
   try {
     // Coluna G é a situação (índice 7)
-    const range = `${sheetName}!G${rowIndex}`;
+    const rangeStatus = `${sheetName}!G${rowIndex}`;
     
-    await updateCell(range, novoStatus);
+    await updateCell(rangeStatus, novoStatus);
+
+    // Se marcar como Pago ou Recebido, atualiza a data para hoje
+    if (novoStatus === 'Pago' || novoStatus === 'Recebido') {
+      const hoje = new Date();
+      const dia = String(hoje.getDate()).padStart(2, '0');
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+      const ano = hoje.getFullYear();
+      const dataHoje = `${dia}/${mes}/${ano}`;
+      
+      // Coluna D é a data
+      const rangeData = `${sheetName}!D${rowIndex}`;
+      await updateCell(rangeData, dataHoje);
+    }
 
     return res.status(200).json({
       success: true,
