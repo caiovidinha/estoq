@@ -25,6 +25,8 @@ const Apagar = () => {
   const [filterAno, setFilterAno] = useState('');
   const [update, setUpdate] = useState(false);
   const [movimentacao, setMovimentacao] = useState([]);
+  const [tipoConta, setTipoConta] = useState('todos'); // 'debito', 'credito', 'todos'
+  const [tipoContaAtual, setTipoContaAtual] = useState(''); // Para saber qual sheet usar
   
   // Estados dos totais (opcional)
   const [receber, setReceber] = useState(0);
@@ -88,8 +90,8 @@ const Apagar = () => {
     try {
       setLoading(true)
       
-      // Busca movimentações pendentes (A pagar ou A receber)
-      const response = await fetch('/api/movimentacoes?situacao=A pagar,A receber');
+      // Busca movimentações pendentes (A pagar ou A receber) com filtro de tipo de conta
+      const response = await fetch(`/api/movimentacoes?situacao=A pagar,A receber&tipoConta=${tipoConta}`);
       const result = await response.json();
       
       if (result.success) {
@@ -138,12 +140,12 @@ const Apagar = () => {
     }
   }
 
-  // Carrega as movimentações quando mês/ano mudam
+  // Carrega as movimentações quando mês/ano ou tipoConta mudam
   useEffect(() => {
     if (filterMes && filterAno) {
       fetchMovimentacoes()
     }
-  }, [filterMes, filterAno]);
+  }, [filterMes, filterAno, tipoConta]);
 
   // Handler do modal de detalhes
   const handler = (
@@ -155,7 +157,8 @@ const Apagar = () => {
     detalhes,
     situacao,
     conta,
-    index
+    index,
+    tipoContaMov
   ) => {
     setTipo(tipo);
     seteDescritivo(descritivo);
@@ -166,6 +169,7 @@ const Apagar = () => {
     setSituacao(situacao);
     setConta(conta);
     setRowIndex(index);
+    setTipoContaAtual(tipoContaMov);
     setVisible(true);
   };
 
@@ -183,20 +187,23 @@ const Apagar = () => {
     setExcluido(false);
   };
 
-  const deleteRow = (index) => {
+  const deleteRow = (index, tipoContaMov) => {
     setRowIndex(index);
+    setTipoContaAtual(tipoContaMov);
     openConf();
   };
 
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
+      const sheetName = tipoContaAtual === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      
       const response = await fetch('/api/deleteRow', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rowIndex,
-          sheetName: 'Extrato'
+          sheetName
         })
       });
 
@@ -226,6 +233,8 @@ const Apagar = () => {
   const changeStatus = async (mov, novoStatus) => {
     try {
       setLoading(true);
+      
+      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
 
       const response = await fetch('/api/updateStatus', {
         method: 'PUT',
@@ -233,7 +242,7 @@ const Apagar = () => {
         body: JSON.stringify({
           rowIndex: mov.rowIndex,
           novoStatus,
-          sheetName: 'Extrato'
+          sheetName
         })
       });
 
@@ -329,7 +338,7 @@ const Apagar = () => {
       <title>A pagar/A receber - CF</title>
       <div className="p-4">
         {/* Filtros de Ano e Mês */}
-        <div className="w-full flex md:justify-end h-10">
+        <div className="w-full flex md:justify-end h-10 mb-3">
           <div className="w-[100%] md:w-[30%] md:justify-end gap-[10%] md:gap-3 flex">
             <select
               id="ano"
@@ -366,6 +375,40 @@ const Apagar = () => {
           </div>
         </div>
 
+        {/* Filtro de Tipo de Conta */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setTipoConta('todos')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tipoConta === 'todos'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            onClick={() => setTipoConta('debito')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tipoConta === 'debito'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Débito
+          </button>
+          <button
+            onClick={() => setTipoConta('credito')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tipoConta === 'credito'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Crédito
+          </button>
+        </div>
+
         {/* Lista de Movimentações */}
         <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
           <span>Movimentação</span>
@@ -376,10 +419,12 @@ const Apagar = () => {
         <ul>
           {movimentacao.slice(0).map((mov, index) => {
             const { icon, bgClass } = getIconForMovimentacao(mov, categoryIconMapping);
+            // Cria uma key única combinando tipoConta e rowIndex
+            const uniqueKey = `${mov.tipoConta || 'debito'}-${mov.rowIndex || index}`;
             
             return (
               <li
-                key={mov.rowIndex}
+                key={uniqueKey}
                 className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
               >
                 <div
@@ -394,26 +439,21 @@ const Apagar = () => {
                       mov.detalhes,
                       mov.situação,
                       mov.conta,
-                      mov.rowIndex
+                      mov.rowIndex,
+                      mov.tipoConta
                     )
                   }
                 >
-                  <div className={`${bgClass} rounded-lg p-3 h-[50%] my-auto`}>
+                  <div className={`${bgClass} rounded-lg p-3 flex items-center justify-center`}>
                     {icon}
                   </div>
                   <div className="pl-2 w-32">
                     <p className="text-gray-800 font-bold text-xs">
                       {mov.valor}
                     </p>
-                    <p className="text-gray-800 text-xs lg:hidden">
-                      {mov.detalhes.length >= 15
-                        ? mov.detalhes.slice(0, 13) + '...'
-                        : mov.detalhes}
-                    </p>
-                    <p className="text-gray-800 text-sm hidden lg:block">
+                    <p className="text-gray-800 text-xs">
                       {mov.detalhes}
                     </p>
-                    <p className="text-gray-500 text-xs">{mov.conta}</p>
                   </div>
                 </div>
               <div className="flex text-gray-600 sm:text-left text-left justify-between">
@@ -444,7 +484,7 @@ const Apagar = () => {
                   )}
                 </select>
                 <div
-                  onClick={() => deleteRow(mov.rowIndex)}
+                  onClick={() => deleteRow(mov.rowIndex, mov.tipoConta)}
                   className="sm:hidden bg-red-400 rounded-lg p-3 w-12 flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />
@@ -454,7 +494,7 @@ const Apagar = () => {
               <div className="flex justify-between items-center">
                 <p className="sm:flex hidden">{mov.conta}</p>
                 <div
-                  onClick={() => deleteRow(mov.rowIndex)}
+                  onClick={() => deleteRow(mov.rowIndex, mov.tipoConta)}
                   className="bg-red-400 rounded-lg p-3 w-12 hidden sm:flex justify-center cursor-pointer hover:bg-red-950"
                 >
                   <RiDeleteBin2Fill className="text-black" size={20} />
@@ -511,6 +551,13 @@ const Apagar = () => {
               <Text b size={18}>Conta:</Text> {conta}
             </Text>
           </div>
+          {tipoContaAtual && (
+            <div className="bg-gray-100 rounded-lg -my-1 p-3 grid">
+              <Text>
+                <Text b size={18}>Tipo de Conta:</Text> {tipoContaAtual}
+              </Text>
+            </div>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button auto flat color="error" onPress={closeHandler}>

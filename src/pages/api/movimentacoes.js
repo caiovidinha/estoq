@@ -8,6 +8,7 @@ import { getRange, parseSheetData, filterAndSortMovimentacoes } from '@/lib/shee
  * - tipo: "Receita" | "Despesa"
  * - mes: nome do mês (ex: "Janeiro")
  * - conta: nome da conta
+ * - tipoConta: "debito" | "credito" | "todos" (default: "debito")
  * - limit: número máximo de resultados
  */
 export default async function handler(req, res) {
@@ -16,11 +17,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Busca dados da planilha: Extrato!A:H
-    const rawData = await getRange('Extrato!A:H');
-    
-    // Converte para array de objetos
-    const movimentacoes = parseSheetData(rawData);
+    const tipoConta = req.query.tipoConta || 'debito';
+    let todasMovimentacoes = [];
+
+    // Busca transações de débito (Extrato)
+    if (tipoConta === 'debito' || tipoConta === 'todos') {
+      const rawDataDebito = await getRange('Extrato!A:I');
+      const movimentacoesDebito = parseSheetData(rawDataDebito).map(mov => ({
+        ...mov,
+        tipoConta: 'Débito'
+      }));
+      todasMovimentacoes = [...todasMovimentacoes, ...movimentacoesDebito];
+    }
+
+    // Busca transações de crédito (Extrato Crédito)
+    if (tipoConta === 'credito' || tipoConta === 'todos') {
+      const rawDataCredito = await getRange('Extrato Crédito!A:H');
+      const movimentacoesCredito = parseSheetData(rawDataCredito).map(mov => {
+        // Se não tem conta definida, usa o nome do cartão (coluna H)
+        const conta = mov.conta || mov.cartão || 'Crédito';
+        return {
+          ...mov,
+          conta: conta,
+          tipoConta: 'Crédito'
+        };
+      });
+      todasMovimentacoes = [...todasMovimentacoes, ...movimentacoesCredito];
+    }
 
     // Prepara filtros
     const filters = {
@@ -32,10 +55,11 @@ export default async function handler(req, res) {
     };
 
     // Filtra e ordena
-    const resultado = filterAndSortMovimentacoes(movimentacoes, filters);
+    const resultado = filterAndSortMovimentacoes(todasMovimentacoes, filters);
 
-    // Cache por 30 segundos
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');
+    // Cache mais curto quando há filtro de tipoConta
+    const cacheTime = tipoConta === 'todos' ? 's-maxage=30' : 's-maxage=10';
+    res.setHeader('Cache-Control', `${cacheTime}, stale-while-revalidate`);
     
     return res.status(200).json({
       success: true,

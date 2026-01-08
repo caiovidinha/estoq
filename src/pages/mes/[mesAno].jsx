@@ -211,7 +211,7 @@ const VisaoMensal = () => {
                             {/* Tabela compacta */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 border-b border-gray-200">
+                                    <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 pt-2 -mt-2 shadow-sm">
                                         <tr>
                                             <th className="text-left py-2 px-1 font-semibold text-gray-700 whitespace-nowrap">Data</th>
                                             <th className="text-right py-2 px-1 font-semibold text-gray-700 whitespace-nowrap">Movim.</th>
