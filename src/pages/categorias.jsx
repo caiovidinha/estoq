@@ -6,11 +6,13 @@ import { Pie } from 'react-chartjs-2';
 import { BsList, BsPieChart, BsPlus } from 'react-icons/bs';
 import { AiFillCheckCircle, AiFillExclamationCircle } from 'react-icons/ai';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Categorias = () => {
   const isMobile = useIsMobile();
+  const { refetchCategoryIcons } = useFormOptionsContext();
   
   // Estados para filtro de data e de tipo (receita/despesa)
   const [year, setYear] = useState(new Date().getFullYear());
@@ -175,13 +177,24 @@ const Categorias = () => {
 
       if (data.success) {
         setCategoryCreated(true);
+        
+        // Recarrega o mapeamento de ícones no Context
+        await refetchCategoryIcons();
+        
+        // Recarrega o mapeamento local também com cache-bust
+        const timestamp = Date.now();
+        const iconRes = await fetch(`/api/category-icons?_t=${timestamp}`);
+        const iconData = await iconRes.json();
+        setCategoryIconMapping(iconData.data || {});
+        
+        // Recarrega os dados das categorias
+        await loadData();
+        
         setTimeout(() => {
           setCategoryCreated(false);
           setAddModalVisible(false);
           setNewCategoryName('');
           setNewCategoryIcon('BsCurrencyDollar');
-          // Recarregar página para atualizar lista
-          window.location.reload();
         }, 2000);
       } else {
         setCategoryInvalid(true);

@@ -173,6 +173,16 @@ export function getIconByName(iconName, tipo = 'DESPESA') {
 export function getCategoryIcon(categoria, tipo = 'DESPESA', categoryIconMapping = {}) {
   const iconName = categoryIconMapping[categoria];
   
+  // Debug temporário
+  if (categoria === 'Tecnologia') {
+    console.log('🔍 DEBUG Tecnologia:', {
+      categoria,
+      iconName,
+      mapping: categoryIconMapping,
+      temMapping: !!iconName
+    });
+  }
+  
   if (iconName) {
     return getIconByName(iconName, tipo);
   }

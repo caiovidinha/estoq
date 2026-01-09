@@ -83,7 +83,9 @@ export function FormOptionsProvider({ children }) {
 
   // Fetch único para mapeamento de ícones de categorias
   useEffect(() => {
-    fetch('/api/category-icons')
+    // Adiciona timestamp para evitar cache desatualizado
+    const timestamp = Date.now()
+    fetch(`/api/category-icons?_t=${timestamp}`)
       .then(res => res.json())
       .then(data => {
         setCategoryIconMapping(data.data || {})
@@ -138,7 +140,9 @@ export function FormOptionsProvider({ children }) {
   const refetchCategoryIcons = async () => {
     setLoading(prev => ({ ...prev, categoryIcons: true }))
     try {
-      const res = await fetch('/api/category-icons')
+      // Adiciona timestamp para forçar bypass do cache
+      const timestamp = Date.now()
+      const res = await fetch(`/api/category-icons?_t=${timestamp}`)
       const data = await res.json()
       setCategoryIconMapping(data.data || {})
     } catch (err) {

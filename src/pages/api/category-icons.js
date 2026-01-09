@@ -5,8 +5,8 @@ import { getCategoryIconMapping } from '@/lib/sheets';
  * Retorna mapeamento de categorias → ícones da planilha Configurações!A2:F
  */
 export default async function handler(req, res) {
-  // Cache de 5 minutos (dados de configuração mudam pouco)
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+  // Cache de 10 segundos para pegar atualizações rápido
+  res.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=30');
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Método não permitido' });
