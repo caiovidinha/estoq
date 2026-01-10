@@ -103,33 +103,13 @@ const TopCards = () => {
                 <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
                     <BiLogoMastercard size={30} />
                 </div>
-                {/* TODO: Reimplementar valores de crédito usando endpoint da API REST
-                <div className="flex flex-col w-full pb-4 mt-2">
-                    <p className="sm:text-2xl text-sm font-bold">
-                        {'R$ '}
-                        {(
-                            Number(limiteNeonJulia || 0) +
-                            Number(limiteNuJulia || 0) +
-                            Number(limitePicPayCaio || 0) +
-                            Number(limiteNuCaio || 0) -
-                            Number(faturaNuCaio || 0) -
-                            Number(faturaNeonJulia || 0) - 
-                            Number(faturaPicPayCaio || 0) - 
-                            Number(faturaNuJulia || 0)
-                        ).toFixed(2).replace('.',',')}
-                    </p>
-                    <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
+                <div className="flex flex-col w-full pb-4 mt-2 justify-center">
+                    <p className="text-gray-600 sm:text-lg text-sm font-semibold">Cartões de Crédito</p>
                 </div>
-                */}
-                <div className="flex flex-col w-full pb-4 mt-2">
-                    <p className="text-gray-600 sm:text-md text-xs">Crédito</p>
-                </div>
-                <div className="flex w-[90px] justify-between">
+                <div className="flex w-[130px] justify-between">
                     <AddIncomeModalCredito />
                     <AddExpenseModalCredito />
-                    {/* TODO: Descomentar quando houver endpoint de saldos de cartões
                     <SeeCreditCards />
-                    */}
                 </div>
             </div>
 
