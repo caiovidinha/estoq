@@ -85,7 +85,7 @@ export default async function handler(req, res) {
         detalhes: trans.detalhes || '',
         valor: trans.valor,
         valorNumerico: valorNumerico,
-        conta: trans.conta || trans.situação || '' // Usa conta ou situação como fallback
+        conta: trans.conta || trans["cartão"] || 'Sem conta' // Usa conta, se não tiver usa cartão, se não tiver usa "Sem conta"
       });
     });
 

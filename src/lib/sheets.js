@@ -346,7 +346,7 @@ export async function createTransacao(transacao) {
     ];
 
     const result = await appendRow('Extrato!A:I', row);
-    console.log('Transação criada com sucesso:', result);
+    
     return result;
   } catch (error) {
     console.error('Erro ao criar transação:', error);
@@ -384,7 +384,7 @@ export async function createTransacaoCredito(transacao) {
     ];
 
     const result = await appendRow('Extrato Crédito!A:I', row);
-    console.log('Transação de crédito criada com sucesso:', result);
+    
     return result;
   } catch (error) {
     console.error('Erro ao criar transação de crédito:', error);
@@ -413,7 +413,7 @@ export async function updateCell(range, value) {
       },
     });
 
-    console.log('Célula atualizada:', range, '=', value);
+    
     return result.data;
   } catch (error) {
     console.error('Erro ao atualizar célula:', error);
@@ -467,7 +467,7 @@ export async function deleteRow(sheetName, rowIndex) {
       },
     });
 
-    console.log(`Linha ${rowIndex} deletada da aba ${sheetName}`);
+    
     return result.data;
   } catch (error) {
     console.error('Erro ao deletar linha:', error);

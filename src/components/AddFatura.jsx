@@ -51,9 +51,7 @@ const AddFatura = () => {
         form.append('data', data.value)
         form.append('conta', 'Cartão de Crédito')
         form.append('cartao', cartao)
-        for (let i of form.entries()) {
-            console.log(i)
-        }
+
     }
 
     const fillDate = () => {

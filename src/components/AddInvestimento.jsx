@@ -32,9 +32,7 @@ const AddInvestimento = () => {
         form.append('valor', valor.value)
         form.append('data', data.value)
         form.append('conta', 'Investimento')
-        for (let i of form.entries()) {
-            console.log(i)
-        }
+        
     }
 
     const fillDate = () => {
