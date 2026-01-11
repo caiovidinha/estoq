@@ -31,26 +31,14 @@ export default async function handler(req, res) {
     const transacoesData = await getRange('Extrato Crédito!A:H');
     const transacoes = parseSheetData(transacoesData);
     
-    console.log('🔍 Buscando transações para:', { cartao, mes });
-    console.log('📊 Total de transações no extrato:', transacoes.length);
-    console.log('📊 Amostra de cartões no extrato:', transacoes.slice(0, 5).map(t => ({ cartao: t.cartão, mes: t.mês })));
-    
     // Filtra por cartão e mês
     const transacoesFiltradas = transacoes.filter(transacao => {
       const mesTransacao = transacao.mês?.substring(0, 2);
       const cartaoTransacao = transacao.cartão;
       
       // Comparação case-insensitive e trimmed
-      const match = mesTransacao === mes && cartaoTransacao?.toLowerCase().trim() === cartao?.toLowerCase().trim();
-      
-      if (match) {
-        console.log('✅ Match encontrado:', { cartaoTransacao, mesTransacao, descritivo: transacao.descritivo });
-      }
-      
-      return match;
+      return mesTransacao === mes && cartaoTransacao?.toLowerCase().trim() === cartao?.toLowerCase().trim();
     });
-    
-    console.log('📊 Transações filtradas:', transacoesFiltradas.length);
 
     // Ordena por data (mais recente primeiro)
     transacoesFiltradas.sort((a, b) => {

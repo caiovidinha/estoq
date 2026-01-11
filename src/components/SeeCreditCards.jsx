@@ -192,14 +192,6 @@ const SeeCreditCards = () => {
             mes = String(new Date().getMonth() + 1).padStart(2, '0');
         }
         
-        console.log('🔍 Buscando transações para:', {
-            nomeCartao: cartao.nome,
-            mes,
-            mesCompleto: cartao.mês,
-            viewMode,
-            faturaCompleta: cartao
-        });
-        
         setFaturaAtual({
             cartao: cartao.nome,
             mes: cartao.mês || `${selectedMonth} - ${mesesDisponiveis.find(m => m.valor === selectedMonth)?.label.split(' - ')[1]}`,
@@ -209,12 +201,8 @@ const SeeCreditCards = () => {
         
         try {
             const url = `/api/transacoes-fatura?cartao=${encodeURIComponent(cartao.nome)}&mes=${mes}`;
-            console.log('📡 URL da API:', url);
-            
             const response = await fetch(url)
             const data = await response.json()
-            
-            console.log('📊 Resposta da API:', data);
             
             if (data.success) {
                 setTransacoes(data.data)
