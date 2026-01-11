@@ -1,6 +1,7 @@
 import { React, useState, useEffect } from 'react'
-import { Modal, Button, Text, Card } from '@nextui-org/react'
+import { Modal, Button, Text, Card, Loading } from '@nextui-org/react'
 import { BsCreditCard2Front } from 'react-icons/bs'
+import { AiOutlineClose } from 'react-icons/ai'
 
 const SeeCreditCards = () => {
     const [cartoesComFaturas, setCartoesComFaturas] = useState([])
@@ -9,6 +10,12 @@ const SeeCreditCards = () => {
     const [selectedMonth, setSelectedMonth] = useState('')
     const [selectedYear, setSelectedYear] = useState('')
     const [mesesDisponiveis, setMesesDisponiveis] = useState([])
+    
+    // Estado para modal de transações
+    const [transacoesVisible, setTransacoesVisible] = useState(false)
+    const [transacoes, setTransacoes] = useState([])
+    const [loadingTransacoes, setLoadingTransacoes] = useState(false)
+    const [faturaAtual, setFaturaAtual] = useState({ cartao: '', mes: '' })
     
     const handler = () => setVisible(true)
     const closeHandler = () => setVisible(false)
@@ -127,7 +134,8 @@ const SeeCreditCards = () => {
                                 currency: 'BRL'
                             }).format(limiteRestante),
                             vencimento: fatura.vencimento || '-',
-                            status: fatura.status || '-'
+                            status: fatura.status || '-',
+                            mês: fatura.mês // Adiciona o mês da fatura
                         }
                     } else {
                         // Cartão sem fatura no período
@@ -140,7 +148,8 @@ const SeeCreditCards = () => {
                             limiteRestante: cartao.limite,
                             limiteRestanteFormatado: cartao.limiteFormatado,
                             vencimento: '-',
-                            status: 'Sem fatura'
+                            status: 'Sem fatura',
+                            mês: undefined // Sem mês quando não tem fatura
                         }
                     }
                 })
@@ -163,6 +172,64 @@ const SeeCreditCards = () => {
         if (mesObj) {
             setSelectedYear(mesObj.ano)
         }
+    }
+
+    // Função para buscar transações da fatura
+    const handleVerTransacoes = async (cartao) => {
+        setLoadingTransacoes(true)
+        setTransacoesVisible(true)
+        
+        // Pega o mês da fatura (usa o mês que veio da fatura, não o selectedMonth)
+        let mes;
+        if (cartao.mês) {
+            // Tem o mês da fatura no objeto cartao
+            mes = cartao.mês.substring(0, 2);
+        } else if (viewMode === 'mensal') {
+            // No modo mensal, usa o mês selecionado
+            mes = selectedMonth;
+        } else {
+            // Fallback: usa mês atual
+            mes = String(new Date().getMonth() + 1).padStart(2, '0');
+        }
+        
+        console.log('🔍 Buscando transações para:', {
+            nomeCartao: cartao.nome,
+            mes,
+            mesCompleto: cartao.mês,
+            viewMode,
+            faturaCompleta: cartao
+        });
+        
+        setFaturaAtual({
+            cartao: cartao.nome,
+            mes: cartao.mês || `${selectedMonth} - ${mesesDisponiveis.find(m => m.valor === selectedMonth)?.label.split(' - ')[1]}`,
+            valor: cartao.faturaFormatada,
+            vencimento: cartao.vencimento
+        })
+        
+        try {
+            const url = `/api/transacoes-fatura?cartao=${encodeURIComponent(cartao.nome)}&mes=${mes}`;
+            console.log('📡 URL da API:', url);
+            
+            const response = await fetch(url)
+            const data = await response.json()
+            
+            console.log('📊 Resposta da API:', data);
+            
+            if (data.success) {
+                setTransacoes(data.data)
+            }
+        } catch (error) {
+            console.error('Erro ao buscar transações:', error)
+        } finally {
+            setLoadingTransacoes(false)
+        }
+    }
+
+    const closeTransacoesHandler = () => {
+        setTransacoesVisible(false)
+        setTransacoes([])
+        setFaturaAtual({ cartao: '', mes: '' })
     }
 
     return (
@@ -242,9 +309,17 @@ const SeeCreditCards = () => {
                                 {cartoesComFaturas.length === 0 ? (
                                     <Text className="text-gray-500">Nenhum cartão cadastrado</Text>
                                 ) : (
-                                    cartoesComFaturas.map((cartao, index) => (
+                                    cartoesComFaturas.map((cartao, index) => {
+                                        const temFatura = cartao.fatura > 0 || cartao.status !== 'Sem fatura';
+                                        
+                                        return (
                                         <li key={index} className="mb-3">
-                                            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                            <div 
+                                                className={`bg-gray-50 rounded-lg p-3 border border-gray-200 ${
+                                                    temFatura ? 'cursor-pointer hover:bg-gray-100 hover:border-gray-300 transition-colors' : ''
+                                                }`}
+                                                onClick={() => temFatura && handleVerTransacoes(cartao)}
+                                            >
                                                 {/* Layout responsivo */}
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex items-start gap-2 min-w-0 flex-1">
@@ -275,6 +350,11 @@ const SeeCreditCards = () => {
                                                                     </>
                                                                 )}
                                                             </div>
+                                                            {temFatura && (
+                                                                <div className="text-xs text-purple-600 mt-1">
+                                                                    👆 Clique para ver transações
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     
@@ -305,7 +385,8 @@ const SeeCreditCards = () => {
                                                 )}
                                             </div>
                                         </li>
-                                    ))
+                                        )
+                                    })
                                 )}
                             </ul>
                         </Card.Body>
@@ -313,6 +394,113 @@ const SeeCreditCards = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button auto flat color="error" onPress={closeHandler}>
+                        Fechar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de Transações */}
+            <Modal
+                closeButton
+                aria-labelledby="modal-transacoes-title"
+                open={transacoesVisible}
+                onClose={closeTransacoesHandler}
+                width="90%"
+                className="max-w-2xl"
+            >
+                <Modal.Header>
+                    <div className="w-full">
+                        <Text id="modal-transacoes-title" size={18}>
+                            <Text b size={18}>
+                                Transações da Fatura
+                            </Text>
+                        </Text>
+                        <div className="mt-2 text-sm text-gray-600">
+                            <div><strong>{faturaAtual.cartao}</strong></div>
+                            <div className="flex gap-4 mt-1">
+                                <span>Mês: <strong>{faturaAtual.mes}</strong></span>
+                                {faturaAtual.vencimento && faturaAtual.vencimento !== '-' && (
+                                    <span>Vencimento: <strong>{faturaAtual.vencimento}</strong></span>
+                                )}
+                            </div>
+                            <div className="mt-1">Total: <strong className="text-red-600">{faturaAtual.valor}</strong></div>
+                        </div>
+                    </div>
+                </Modal.Header>
+                <Modal.Body>
+                    {loadingTransacoes ? (
+                        <div className="flex justify-center items-center py-8">
+                            <Loading size="lg" />
+                        </div>
+                    ) : (
+                        <Card>
+                            <Card.Body>
+                                {transacoes.length === 0 ? (
+                                    <Text className="text-gray-500 text-center py-4">
+                                        Nenhuma transação encontrada para esta fatura
+                                    </Text>
+                                ) : (
+                                    <div className="max-h-96 overflow-y-auto">
+                                        <ul className="divide-y divide-gray-200">
+                                            {transacoes.map((transacao, index) => (
+                                                <li key={index} className="py-3 px-2 hover:bg-gray-50">
+                                                    <div className="flex justify-between items-start gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                                                    transacao.tipo?.toLowerCase() === 'despesa'
+                                                                        ? 'bg-red-100 text-red-700'
+                                                                        : 'bg-green-100 text-green-700'
+                                                                }`}>
+                                                                    {transacao.tipo}
+                                                                </span>
+                                                                <Text size={12} className="text-gray-500">
+                                                                    {transacao.data}
+                                                                </Text>
+                                                            </div>
+                                                            <Text b size={14} className="mt-1 truncate">
+                                                                {transacao.descritivo}
+                                                            </Text>
+                                                            {transacao.detalhes && (
+                                                                <Text size={12} className="text-gray-500 mt-0.5 truncate">
+                                                                    {transacao.detalhes}
+                                                                </Text>
+                                                            )}
+                                                            {transacao.situação && (
+                                                                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs ${
+                                                                    transacao.situação?.toLowerCase() === 'paga'
+                                                                        ? 'bg-green-100 text-green-700'
+                                                                        : 'bg-orange-100 text-orange-700'
+                                                                }`}>
+                                                                    {transacao.situação}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right flex-shrink-0">
+                                                            <Text 
+                                                                b 
+                                                                size={15}
+                                                                className={`whitespace-nowrap ${
+                                                                    transacao.tipo?.toLowerCase() === 'despesa'
+                                                                        ? 'text-red-600'
+                                                                        : 'text-green-600'
+                                                                }`}
+                                                            >
+                                                                {transacao.valor}
+                                                            </Text>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button auto flat color="error" onPress={closeTransacoesHandler}>
                         Fechar
                     </Button>
                 </Modal.Footer>

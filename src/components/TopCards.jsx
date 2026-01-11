@@ -104,7 +104,7 @@ const TopCards = () => {
                     <BiLogoMastercard size={30} />
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2 justify-center">
-                    <p className="text-gray-600 sm:text-lg text-sm font-semibold">Cartões de Crédito</p>
+                    <p className="text-gray-600 sm:text-lg text-sm font-semibold">Cartões</p>
                 </div>
                 <div className="flex w-[130px] justify-between">
                     <AddIncomeModalCredito />
