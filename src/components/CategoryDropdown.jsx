@@ -31,11 +31,12 @@ const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
       value={selected}
       onChange={handleSelectionChange}
       disabled={loading}
-      className={`w-full px-4 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${
+      className={`w-full px-3 py-3 rounded-lg font-semibold border-2 transition-all ${
         categoryType === "RECEITA" 
-          ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200 focus:border-green-500' 
-          : 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200 focus:border-red-500'
+          ? 'bg-green-100 text-green-800 border-green-300 focus:border-green-500 focus:bg-green-50' 
+          : 'bg-red-100 text-red-800 border-red-300 focus:border-red-500 focus:bg-red-50'
       }`}
+      style={{ fontSize: '16px' }}
       id="categoria"
     >
       <option value="">

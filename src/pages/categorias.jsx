@@ -304,7 +304,8 @@ const Categorias = () => {
           {/* Ano */}
           <select
             id="ano"
-            className="flex-1 bg-blue-800 px-3 py-2 rounded-lg text-blue-200 font-semibold text-sm border-2 border-blue-700 hover:bg-blue-700 transition-colors"
+            className="flex-1 bg-blue-800 px-2 py-2 rounded-lg text-blue-200 font-semibold border border-blue-700 hover:bg-blue-700"
+            style={{ fontSize: '16px' }}
             onChange={(e) => setYear(e.target.value)}
             value={year}
           >
@@ -321,7 +322,8 @@ const Categorias = () => {
           {/* Mês */}
           <select
             id="mes"
-            className="flex-1 bg-blue-200 px-3 py-2 rounded-lg text-blue-800 font-semibold text-sm border-2 border-blue-300 hover:bg-blue-300 transition-colors"
+            className="flex-1 bg-blue-200 px-2 py-2 rounded-lg text-blue-800 font-semibold border border-blue-300 hover:bg-blue-300"
+            style={{ fontSize: '16px' }}
             onChange={(e) => setMonth(convertMonthNameToNumber(e.target.value))}
             value={monthName(month)}
           >
@@ -342,7 +344,8 @@ const Categorias = () => {
           {/* Tipo: Receita/Despesa */}
           <select
             id="tipo"
-            className="flex-1 bg-blue-200 px-3 py-2 rounded-lg text-blue-800 font-semibold text-sm border-2 border-blue-300 hover:bg-blue-300 transition-colors"
+            className="flex-1 bg-blue-200 px-2 py-2 rounded-lg text-blue-800 font-semibold border border-blue-300 hover:bg-blue-300"
+            style={{ fontSize: '16px' }}
             onChange={(e) => setSelectedTransactionType(e.target.value.toUpperCase())}
             value={selectedTransactionType}
           >

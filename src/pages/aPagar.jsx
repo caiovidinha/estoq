@@ -343,7 +343,8 @@ const Apagar = () => {
             <select
               id="ano"
               key="ano"
-              className="w-[30%] md:w-20 h-full bg-blue-800 px-3 py-2 rounded-lg hover:bg-blue-700 text-blue-200 font-semibold border-2 border-blue-700 hover:cursor-pointer text-lg transition-colors"
+              className="w-[30%] md:w-20 h-full bg-blue-800 px-2 py-2 rounded-lg hover:bg-blue-700 text-blue-200 font-semibold border border-blue-700 hover:cursor-pointer"
+              style={{ fontSize: '16px' }}
               onChange={changeData}
               defaultValue={filterAno || new Date().getFullYear()}
             >
@@ -355,7 +356,8 @@ const Apagar = () => {
             <select
               id="mes"
               key="mes"
-              className="w-[60%] md:w-32 h-full bg-blue-200 px-3 py-2 rounded-lg hover:bg-blue-300 text-blue-800 border-2 border-blue-300 font-semibold hover:cursor-pointer text-lg transition-colors"
+              className="w-[60%] md:w-32 h-full bg-blue-200 px-2 py-2 rounded-lg hover:bg-blue-300 text-blue-800 border border-blue-300 font-semibold hover:cursor-pointer"
+              style={{ fontSize: '16px' }}
               onChange={changeData}
               defaultValue={monthName(filterMes || new Date().toISOString().slice(5,7))}
             >
@@ -460,9 +462,10 @@ const Apagar = () => {
                 <select
                   className={
                     mov.situação === 'Recebido' || mov.situação === 'A receber'
-                      ? 'bg-green-200 px-3 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border-2 border-green-300 hover:bg-green-100 transition-colors'
-                      : 'bg-red-200 px-3 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border-2 border-red-300 hover:bg-red-100 transition-colors'
+                      ? 'bg-green-200 px-2 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border border-green-300'
+                      : 'bg-red-200 px-2 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border border-red-300'
                   }
+                  style={{ fontSize: '16px' }}
                   value={mov.situação}
                   onChange={(e) => {
                     const novoStatus = e.target.value;

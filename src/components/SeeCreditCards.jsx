@@ -278,7 +278,8 @@ const SeeCreditCards = () => {
                                 <select
                                     value={selectedMonth}
                                     onChange={handleMonthChange}
-                                    className="w-full px-3 py-2 border-2 rounded-lg bg-purple-100 text-purple-800 font-semibold text-xs sm:text-sm focus:bg-purple-50 transition-colors"
+                                    className="w-full px-3 py-2 border rounded-lg bg-purple-100 text-purple-800 font-semibold focus:bg-purple-50 focus:border-purple-500"
+                                    style={{ fontSize: '16px' }}
                                 >
                                     {mesesDisponiveis.map(mes => (
                                         <option key={mes.valor} value={mes.valor}>
