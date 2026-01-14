@@ -275,8 +275,8 @@ const movimentacoes = () => {
                     <select
                       className={
                         mov.situação === 'Recebido' || mov.situação === 'A receber'
-                          ? 'bg-green-200 p-1 rounded-lg text-green-800 font-semibold cursor-pointer border-none outline-none'
-                          : 'bg-red-200 p-1 rounded-lg text-red-800 font-semibold cursor-pointer border-none outline-none'
+                          ? 'bg-green-200 px-3 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border-2 border-green-300 hover:bg-green-100 transition-colors'
+                          : 'bg-red-200 px-3 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border-2 border-red-300 hover:bg-red-100 transition-colors'
                       }
                       value={mov.situação}
                       onChange={(e) => {

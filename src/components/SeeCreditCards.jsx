@@ -278,7 +278,7 @@ const SeeCreditCards = () => {
                                 <select
                                     value={selectedMonth}
                                     onChange={handleMonthChange}
-                                    className="w-full p-2 border rounded-lg bg-purple-100 text-purple-800 font-semibold text-xs sm:text-sm"
+                                    className="w-full px-3 py-2 border-2 rounded-lg bg-purple-100 text-purple-800 font-semibold text-xs sm:text-sm focus:bg-purple-50 transition-colors"
                                 >
                                     {mesesDisponiveis.map(mes => (
                                         <option key={mes.valor} value={mes.valor}>
@@ -338,39 +338,36 @@ const SeeCreditCards = () => {
                                                                     </>
                                                                 )}
                                                             </div>
-                                                            {temFatura && (
-                                                                <div className="text-xs text-purple-600 mt-1">
-                                                                    👆 Clique para ver transações
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     </div>
                                                     
-                                                    {/* Valor disponível */}
-                                                    <div className="text-right flex-shrink-0">
-                                                        <Text b color="success" size={14} className="whitespace-nowrap">
-                                                            {cartao.limiteRestanteFormatado}
-                                                        </Text>
-                                                        <Text size={9} className="text-gray-400 whitespace-nowrap">
-                                                            Disponível
-                                                        </Text>
+                                                    {/* Valor disponível + Status (mobile: vertical, desktop: horizontal) */}
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-shrink-0">
+                                                        <div className="text-right">
+                                                            <Text b color="success" size={14} className="whitespace-nowrap">
+                                                                {cartao.limiteRestanteFormatado}
+                                                            </Text>
+                                                            <Text size={9} className="text-gray-400 whitespace-nowrap">
+                                                                Disponível
+                                                            </Text>
+                                                        </div>
+                                                        
+                                                        {/* Status badge (mobile: abaixo do valor, desktop: ao lado) */}
+                                                        {cartao.status !== '-' && cartao.status !== 'Sem fatura' && (
+                                                            <div className="flex justify-end sm:justify-start">
+                                                                <span className={`text-xs px-2 py-0.5 rounded whitespace-nowrap ${
+                                                                    cartao.status === 'Pago' 
+                                                                        ? 'bg-green-100 text-green-700' 
+                                                                        : cartao.status === 'A pagar'
+                                                                        ? 'bg-orange-100 text-orange-700'
+                                                                        : 'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                    {cartao.status}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                
-                                                {/* Status badge */}
-                                                {cartao.status !== '-' && cartao.status !== 'Sem fatura' && (
-                                                    <div className="mt-2 pl-0 sm:pl-10">
-                                                        <span className={`text-xs px-2 py-0.5 rounded ${
-                                                            cartao.status === 'Pago' 
-                                                                ? 'bg-green-100 text-green-700' 
-                                                                : cartao.status === 'A pagar'
-                                                                ? 'bg-orange-100 text-orange-700'
-                                                                : 'bg-gray-100 text-gray-600'
-                                                        }`}>
-                                                            {cartao.status}
-                                                        </span>
-                                                    </div>
-                                                )}
                                             </div>
                                         </li>
                                         )

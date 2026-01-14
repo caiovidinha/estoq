@@ -343,7 +343,7 @@ const Apagar = () => {
             <select
               id="ano"
               key="ano"
-              className="w-[30%] md:w-20 h-full bg-blue-800 p-1 rounded-lg hover:bg-blue-400 text-blue-200 font-semibold outline-none hover:cursor-pointer text-lg"
+              className="w-[30%] md:w-20 h-full bg-blue-800 px-3 py-2 rounded-lg hover:bg-blue-700 text-blue-200 font-semibold border-2 border-blue-700 hover:cursor-pointer text-lg transition-colors"
               onChange={changeData}
               defaultValue={filterAno || new Date().getFullYear()}
             >
@@ -355,7 +355,7 @@ const Apagar = () => {
             <select
               id="mes"
               key="mes"
-              className="w-[60%] md:w-32 h-full bg-blue-200 p-1 rounded-lg hover:bg-blue-400 text-blue-800 outline-none font-semibold hover:cursor-pointer text-lg"
+              className="w-[60%] md:w-32 h-full bg-blue-200 px-3 py-2 rounded-lg hover:bg-blue-300 text-blue-800 border-2 border-blue-300 font-semibold hover:cursor-pointer text-lg transition-colors"
               onChange={changeData}
               defaultValue={monthName(filterMes || new Date().toISOString().slice(5,7))}
             >
@@ -460,8 +460,8 @@ const Apagar = () => {
                 <select
                   className={
                     mov.situação === 'Recebido' || mov.situação === 'A receber'
-                      ? 'bg-green-200 p-1 rounded-lg text-green-800 font-semibold cursor-pointer border-none outline-none'
-                      : 'bg-red-200 p-1 rounded-lg text-red-800 font-semibold cursor-pointer border-none outline-none'
+                      ? 'bg-green-200 px-3 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border-2 border-green-300 hover:bg-green-100 transition-colors'
+                      : 'bg-red-200 px-3 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border-2 border-red-300 hover:bg-red-100 transition-colors'
                   }
                   value={mov.situação}
                   onChange={(e) => {
