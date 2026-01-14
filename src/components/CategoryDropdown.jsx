@@ -1,20 +1,23 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
-import { Dropdown } from '@nextui-org/react';
 import { useCategorias } from '@/hooks/useFormOptions';
 
 const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
   const { categorias, loading, error } = useCategorias();
-  const [selected, setSelected] = useState(new Set(['Categoria']));
-  const selectedValue = useMemo(
-    () => Array.from(selected).join(', ').replaceAll('_', ' '),
-    [selected]
-  );
+  const [selected, setSelected] = useState(selectedCategory || '');
 
-  const handleSelectionChange = (keys) => {
-    setSelected(keys);
-    onSelect(Array.from(keys)[0]); // passa a primeira chave selecionada
+  const handleSelectionChange = (e) => {
+    const value = e.target.value;
+    setSelected(value);
+    onSelect(value);
   };
+
+  // Atualiza se a categoria selecionada mudar externamente
+  useEffect(() => {
+    if (selectedCategory) {
+      setSelected(selectedCategory);
+    }
+  }, [selectedCategory]);
 
   // Se houver erro, mostrar no console
   useEffect(() => {
@@ -24,30 +27,26 @@ const CategoryDropdown = ({ selectedCategory, onSelect, categoryType }) => {
   }, [error]);
 
   return (
-    <Dropdown>
-      <Dropdown.Button 
-        flat 
-        color={categoryType === "RECEITA" ? "success" : "error"} 
-        css={{ tt: 'capitalize' }}
-        disabled={loading}
-      >
-        {loading ? 'Carregando...' : selectedValue}
-      </Dropdown.Button>
-      <Dropdown.Menu
-        aria-label="Seleção única de categoria"
-        color={categoryType === "RECEITA" ? "success" : "error"}
-        selectionMode="single"
-        selectedKeys={selected}
-        onSelectionChange={handleSelectionChange}
-        id="categoria"
-      >
-        {categorias.map(cat => (
-          <Dropdown.Item key={cat}>
-            {cat}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Menu>
-    </Dropdown>
+    <select
+      value={selected}
+      onChange={handleSelectionChange}
+      disabled={loading}
+      className={`w-full px-4 py-3 rounded-lg font-semibold text-sm border-2 transition-colors ${
+        categoryType === "RECEITA" 
+          ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200 focus:border-green-500' 
+          : 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200 focus:border-red-500'
+      }`}
+      id="categoria"
+    >
+      <option value="">
+        {loading ? 'Carregando...' : 'Selecione uma categoria'}
+      </option>
+      {categorias.map(cat => (
+        <option key={cat} value={cat}>
+          {cat}
+        </option>
+      ))}
+    </select>
   );
 };
 
