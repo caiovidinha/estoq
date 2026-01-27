@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { RxHamburgerMenu, RxDashboard } from 'react-icons/rx'
 import { BiTransferAlt } from 'react-icons/bi'
 import { BsFillCalendarCheckFill } from 'react-icons/bs'
+import { AiOutlineLineChart } from 'react-icons/ai'
 
 const Sidebar = ({ children }) => {
     return (
@@ -33,6 +34,11 @@ const Sidebar = ({ children }) => {
                     <Link href="/mes">
                         <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
                             <BsFillCalendarCheckFill size={25} />
+                        </div>
+                    </Link>
+                    <Link href="/estatisticas">
+                        <div className="bg-gray-100 hover:bg-gray-200 cursor-pointer my-4 p-3 rounded-lg inline-block">
+                            <AiOutlineLineChart size={25} />
                         </div>
                     </Link>
                     {/* <Link href='/config'>

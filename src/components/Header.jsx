@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { BiSolidDashboard, BiTransferAlt, BiSolidBarChartAlt2 } from 'react-icons/bi';
 import { RiBillFill } from 'react-icons/ri';
 import { FaChartPie } from 'react-icons/fa';
+import { AiOutlineLineChart } from 'react-icons/ai';
 import { HiOutlineMenuAlt3, HiX } from 'react-icons/hi';
 
 const Header = ({ children }) => {
@@ -71,6 +72,12 @@ const Header = ({ children }) => {
         <span className="ml-2">A pagar/A receber</span>
       </div>
     </li>
+    {/* <li onClick={() => { setMenuOpen(false); router.push('/estatisticas'); }}>
+      <div className={router.pathname === "/estatisticas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+        <AiOutlineLineChart size={25} />
+        <span className="ml-2">Estatísticas</span>
+      </div>
+    </li> */}
   </ul>
 </nav>
 
@@ -107,6 +114,12 @@ const Header = ({ children }) => {
             <p className="hidden sm:block font-bold">A pagar/A receber</p>
           </div>
         </Link>
+        {/* <Link href="/estatisticas">
+          <div className={router.pathname === "/estatisticas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+            <AiOutlineLineChart size={25} />
+            <p className="hidden sm:block font-bold">Estatísticas</p>
+          </div>
+        </Link> */}
       </nav>
 
       <main>{children}</main>
