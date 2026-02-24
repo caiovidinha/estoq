@@ -42,10 +42,11 @@ function isDateInPeriod(dateStr, periodo, dataInicio, dataFim) {
   const now = new Date();
 
   switch (periodo) {
-    case 'semana':
+    case 'semana': {
       const weekStart = getStartOfWeek(now);
       const weekEnd = getEndOfWeek(now);
       return date >= weekStart && date <= weekEnd;
+    }
 
     case 'mes':
       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
@@ -53,11 +54,12 @@ function isDateInPeriod(dateStr, periodo, dataInicio, dataFim) {
     case 'ano':
       return date.getFullYear() === now.getFullYear();
 
-    case 'personalizado':
+    case 'personalizado': {
       if (!dataInicio || !dataFim) return false;
       const start = parseDate(dataInicio);
       const end = parseDate(dataFim);
       return date >= start && date <= end;
+    }
 
     default:
       return false;
@@ -78,12 +80,13 @@ function getDaysInPeriod(periodo, dataInicio, dataFim) {
     case 'ano':
       return 365;
 
-    case 'personalizado':
+    case 'personalizado': {
       if (!dataInicio || !dataFim) return 30;
       const start = parseDate(dataInicio);
       const end = parseDate(dataFim);
       const diff = Math.abs(end - start);
       return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    }
 
     default:
       return 30;
