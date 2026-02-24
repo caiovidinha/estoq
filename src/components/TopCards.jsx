@@ -1,14 +1,14 @@
 import { React, useEffect, useState, useRef } from 'react'
 import { BiLogoMastercard } from 'react-icons/bi'
-import { BsBusFrontFill } from 'react-icons/bs'
+import { MdRestaurantMenu } from 'react-icons/md'
 import { BiSolidBank } from "react-icons/bi";
 import { HiRefresh } from 'react-icons/hi';
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
 import AddIncomeModalCredito from './AddIncomeModalCredito'
 import AddExpenseModalCredito from './AddExpenseModalCredito'
-import AddIncomeModalBus from './AddIncomeModalBus'
-import AddExpenseModalBus from './AddExpenseModalBus'
+import AddIncomeModalVR from './AddIncomeModalVR'
+import AddExpenseModalVR from './AddExpenseModalVR'
 import SeeCreditCards from './SeeCreditCards'
 import SeeAccounts from './SeeAccounts';
 import AddInvestimento from './AddInvestimento';
@@ -16,7 +16,7 @@ import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 const TopCards = () => {
     const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
-    const [saldoBU, setSaldoBU] = useState('R$ 0,00')
+    const [saldoVR, setSaldoVR] = useState('R$ 0,00')
     const [refreshing, setRefreshing] = useState(false)
     const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
 
@@ -26,9 +26,15 @@ const TopCards = () => {
                 // Busca saldo geral de API!A2
                 const response = await fetch('/api/saldo')
                 const data = await response.json()
-                
                 if (data.success) {
                     setSaldoGeral(data.valor)
+                }
+
+                // Busca saldo VR de API!B2
+                const responseVR = await fetch('/api/saldo-vr')
+                const dataVR = await responseVR.json()
+                if (dataVR.success) {
+                    setSaldoVR(dataVR.valor)
                 }
             } catch (error) {
                 console.error('Erro ao carregar saldos:', error)
@@ -46,6 +52,12 @@ const TopCards = () => {
             const data = await response.json()
             if (data.success) {
                 setSaldoGeral(data.valor)
+            }
+
+            const responseVR = await fetch('/api/saldo-vr')
+            const dataVR = await responseVR.json()
+            if (dataVR.success) {
+                setSaldoVR(dataVR.valor)
             }
 
             // Recarrega dados do Context (categorias, contas, etc)
@@ -113,21 +125,21 @@ const TopCards = () => {
                 </div>
             </div>
 
-            <div className="hidden lg:flex lg:col-span-2 col-span-1 bg-white justify-between w-full border p-4 rounded-lg">
+            <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
                 <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
-                    <BsBusFrontFill size={30} />
+                    <MdRestaurantMenu size={30} />
                 </div>
                 <div className="flex flex-col w-full pb-4 mt-2">
                     <p className="sm:text-2xl text-sm font-bold">
-                        {saldoBU}
+                        {saldoVR}
                     </p>
                     <p className="text-gray-600 sm:text-md text-xs">
-                        Bilhete Único
+                        Vale Benefícios
                     </p>
                 </div>
                 <div className="flex w-[130px] justify-between">
-                    <AddIncomeModalBus />
-                    <AddExpenseModalBus />
+                    <AddIncomeModalVR />
+                    <AddExpenseModalVR />
                 </div>
             </div>
         </div>

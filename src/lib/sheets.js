@@ -168,6 +168,45 @@ export async function getSaldoGeral() {
 }
 
 /**
+ * Busca o saldo de Vale Benefícios (VR/VA) da célula API!B2
+ * @returns {string} Valor do saldo (ex: "R$ 500,00")
+ */
+export async function getSaldoVR() {
+  try {
+    const data = await getRange('API!B2');
+    return data[0]?.[0] || 'R$ 0,00';
+  } catch (error) {
+    console.error('Erro ao buscar saldo VR:', error);
+    return 'R$ 0,00';
+  }
+}
+
+/**
+ * Cria uma nova transação em 'Extrato VR'!A:G
+ * Formato: TIPO | DESCRITIVO | VALOR | DATA | MÊS | DETALHES | SITUAÇÃO
+ *
+ * @param {Object} transacao
+ */
+export async function createTransacaoVR(transacao) {
+  try {
+    const row = [
+      transacao.tipo || '',
+      transacao.descritivo || '',
+      transacao.valor || '',
+      transacao.data || '',
+      transacao.mes || '',
+      transacao.detalhes || '',
+      transacao.situacao || '',
+    ];
+    const result = await appendRow('Extrato VR!A:G', row);
+    return result;
+  } catch (error) {
+    console.error('Erro ao criar transação VR:', error);
+    throw error;
+  }
+}
+
+/**
  * Busca as contas e seus saldos de API!O:P
  * @returns {Array<{conta: string, saldo: string}>} Array de contas com saldos
  */
