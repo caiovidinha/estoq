@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input, Loading, Text } from '@nextui-org/react';
+import { Modal, Button, Loading, Text } from '@nextui-org/react';
 import { AiFillCheckCircle, AiFillCloseCircle } from 'react-icons/ai';
 import { MdAdd } from 'react-icons/md';
 import CategoryDropdown from '@/components/CategoryDropdown';
@@ -9,6 +9,8 @@ const QuickTransaction = () => {
   const [visible, setVisible] = useState(false);
   const [tipo, setTipo] = useState('DESPESA');
   const [categoria, setCategoria] = useState('Categoria');
+  const [valor, setValor] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -20,6 +22,10 @@ const QuickTransaction = () => {
     setVisible(false);
     setError(null);
     setSuccess(false);
+    setValor('');
+    setDescricao('');
+    setCategoria('Categoria');
+    setTipo('DESPESA');
   };
 
   // Obter data de hoje formatada
@@ -44,32 +50,26 @@ const QuickTransaction = () => {
   };
 
   const formatarMoeda = (e) => {
-    let valor = e.target.value;
-    valor = valor.replace(/[\D]+/g, '');
-    valor = parseFloat(valor);
-    valor = valor + '';
-    valor = valor.replace(/([0-9]{2})$/g, '.$1');
-    e.target.value = valor;
-    if (valor === 'NaN') e.target.value = '';
+    let v = e.target.value.replace(/[\D]+/g, '');
+    if (!v) { setValor(''); return; }
+    let num = parseFloat(v);
+    let formatted = (num / 100).toFixed(2).replace('.', ',');
+    setValor(formatted);
   };
 
   const handleSubmit = async () => {
     try {
-      const valorInput = document.getElementById('valor-quick').value;
-      const descricao = document.getElementById('descricao-quick').value;
-
-      if (!categoria || categoria === 'Categoria' || !valorInput || !descricao) {
+      if (!categoria || categoria === 'Categoria' || !valor || !descricao) {
         setError('Preencha todos os campos');
         setTimeout(() => setError(null), 3000);
         return;
       }
 
-      // Formatar valor
-      let valorNumerico = valorInput.replace(/[\D]+/g, '');
-      let valorDecimal = (parseFloat(valorNumerico) / 100).toFixed(2);
-      let valorFormatado = tipo === 'DESPESA' 
-        ? 'R$ -' + valorDecimal.replace('.', ',')
-        : 'R$ ' + valorDecimal.replace('.', ',');
+      // Formatar valor para envio
+      let valorNumerico = valor.replace(',', '.');
+      let valorFormatado = tipo === 'DESPESA'
+        ? 'R$ -' + valorNumerico
+        : 'R$ ' + valorNumerico;
 
       // Data de hoje formatada para DD/MM/YYYY
       const hoje = new Date();
@@ -146,24 +146,27 @@ const QuickTransaction = () => {
           </Text>
         </Modal.Header>
         <Modal.Body>
-          {/* Tipo de Transação */}
-          <div className="flex gap-2 mb-4">
-            <Button
-              auto
-              color={tipo === 'DESPESA' ? 'error' : 'default'}
-              onClick={() => setTipo('DESPESA')}
-              css={{ flex: 1 }}
-            >
+          {/* Toggle Despesa / Receita */}
+          <div className="flex items-center justify-center mb-4">
+            <span className={`text-sm font-semibold mr-3 transition-colors duration-300 ${tipo === 'DESPESA' ? 'text-red-500' : 'text-gray-400'}`}>
               Despesa
-            </Button>
-            <Button
-              auto
-              color={tipo === 'RECEITA' ? 'success' : 'default'}
-              onClick={() => setTipo('RECEITA')}
-              css={{ flex: 1 }}
+            </span>
+            <button
+              type="button"
+              onClick={() => setTipo(tipo === 'DESPESA' ? 'RECEITA' : 'DESPESA')}
+              className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none ${
+                tipo === 'RECEITA' ? 'bg-green-500' : 'bg-red-500'
+              }`}
             >
+              <span
+                className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${
+                  tipo === 'RECEITA' ? 'translate-x-7' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-semibold ml-3 transition-colors duration-300 ${tipo === 'RECEITA' ? 'text-green-500' : 'text-gray-400'}`}>
               Receita
-            </Button>
+            </span>
           </div>
 
           {/* Categoria */}
@@ -174,32 +177,31 @@ const QuickTransaction = () => {
           />
 
           {/* Valor */}
-          <Input
-            id="valor-quick"
-            clearable
-            bordered
-            fullWidth
-            color="primary"
-            size="lg"
-            placeholder="0.00"
-            label="Valor"
-            type="text"
-            onChange={formatarMoeda}
-            contentLeft={<span>R$</span>}
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Valor</label>
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:border-purple-500">
+              <span className="px-3 py-2 bg-gray-100 text-gray-600 border-r border-gray-300 text-sm">R$</span>
+              <input
+                className="flex-1 px-4 py-2 text-sm outline-none"
+                placeholder="0,00"
+                type="text"
+                value={valor}
+                onChange={formatarMoeda}
+              />
+            </div>
+          </div>
 
           {/* Descrição */}
-          <Input
-            id="descricao-quick"
-            clearable
-            bordered
-            fullWidth
-            color="primary"
-            size="lg"
-            placeholder="Descrição da transação"
-            label="Descrição"
-            type="text"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Descrição</label>
+            <input
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none focus:border-purple-500"
+              placeholder="Descrição da transação"
+              type="text"
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+            />
+          </div>
 
           {/* Informações Pré-definidas */}
           <div className="bg-gray-100 p-3 rounded-lg text-sm text-gray-700">
