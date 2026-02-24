@@ -66,10 +66,9 @@ const QuickTransaction = () => {
       }
 
       // Formatar valor para envio
-      let valorNumerico = valor.replace(',', '.');
       let valorFormatado = tipo === 'DESPESA'
-        ? 'R$ -' + valorNumerico
-        : 'R$ ' + valorNumerico;
+        ? '-' + valor
+        : valor;
 
       // Data de hoje formatada para DD/MM/YYYY
       const hoje = new Date();
@@ -171,9 +170,9 @@ const QuickTransaction = () => {
 
           {/* Categoria */}
           <CategoryDropdown
-            selectedValue={categoria}
-            setSelectedValue={setCategoria}
-            tipo={tipo}
+            selectedCategory={categoria}
+            onSelect={setCategoria}
+            categoryType={tipo}
           />
 
           {/* Valor */}
