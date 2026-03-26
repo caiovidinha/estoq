@@ -21,6 +21,8 @@ const AddExpenseModalConta = () => {
     const [created, setCreated] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [isParcelado, setIsParcelado] = useState(false)
+    const [numParcelas, setNumParcelas] = useState(2)
 
     // Hooks para buscar dados da API
     const { meses } = useMeses()
@@ -32,6 +34,8 @@ const AddExpenseModalConta = () => {
         setVisible(false)
         setError(null)
         setInvalid(false)
+        setIsParcelado(false)
+        setNumParcelas(2)
     }
 
     const formatarMoeda = () => {
@@ -47,6 +51,18 @@ const AddExpenseModalConta = () => {
         if (valor === 'NaN') elemento.value = ''
     }
 
+    const getNextMesFromArray = (baseMes, offset) => {
+        const idx = meses.indexOf(baseMes)
+        if (idx === -1) return baseMes
+        return meses[(idx + offset) % meses.length]
+    }
+
+    const addMonthsToDate = (dateStr, months) => {
+        const [dia, mesNum, ano] = dateStr.split('/')
+        const date = new Date(parseInt(ano), parseInt(mesNum) - 1 + months, parseInt(dia))
+        return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
+    }
+
     const getForm = async () => {
         try {
             const categoria = selectedValue
@@ -56,8 +72,14 @@ const AddExpenseModalConta = () => {
             const descricao = document.getElementById('descricao-despesa-conta').value
             const conta = selectedValueAccount
 
-            if (!categoria || categoria === 'Categoria' || !mes || mes === 'Mês' || 
+            if (!categoria || categoria === 'Categoria' || !mes || mes === 'Mês' ||
                 !valorInput || !dataInput || !descricao || !conta || conta === 'Conta') {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+                return
+            }
+
+            if (isParcelado && (!numParcelas || numParcelas < 2)) {
                 setInvalid(true)
                 setTimeout(() => setInvalid(false), 3000)
                 return
@@ -75,53 +97,78 @@ const AddExpenseModalConta = () => {
                 ? 'Pago'
                 : 'A pagar'
 
-            const fixa = document.getElementById('fixa-despesa-conta')?.getAttribute('data-state') === 'checked'
-
-            const transacao = {
-                tipo: 'DESPESA',
-                descritivo: categoria,
-                valor: valorFormatado,
-                data: dataFormatada,
-                mes: mes,
-                detalhes: descricao,
-                situacao: status,
-                conta: conta,
-                fixa: fixa,
-            }
-
             setLoading(true)
             setError(null)
 
-            // Chamar API para criar transação
-            const response = await fetch('/api/transacoes', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(transacao),
-            })
-
-            const result = await response.json()
-
-            if (result.success) {
-                setLoading(false)
-                setCreated(true)
-
-                setTimeout(() => {
-                    setCreated(false)
-                    setSelectedMes(new Set(['Mês']))
-                    setSelectedAccount(new Set(['Conta']))
-                    setSelectedValue('Categoria')
-                    document.getElementById('valor-despesa-conta').value = ''
-                    document.getElementById('data-despesa-conta').value = ''
-                    document.getElementById('descricao-despesa-conta').value = ''
-                    window.location.reload()
-                }, 1300)
+            if (isParcelado) {
+                const total = parseInt(numParcelas)
+                for (let i = 0; i < total; i++) {
+                    const transacao = {
+                        tipo: 'DESPESA',
+                        descritivo: categoria,
+                        valor: valorFormatado,
+                        data: addMonthsToDate(dataFormatada, i),
+                        mes: getNextMesFromArray(mes, i),
+                        detalhes: `${descricao} (${i + 1}/${total})`,
+                        situacao: status,
+                        conta: conta,
+                        fixa: true,
+                    }
+                    const response = await fetch('/api/transacoes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(transacao),
+                    })
+                    const result = await response.json()
+                    if (!result.success) {
+                        setLoading(false)
+                        setInvalid(true)
+                        setTimeout(() => setInvalid(false), 3000)
+                        return
+                    }
+                }
             } else {
-                setLoading(false)
-                setInvalid(true)
-                setTimeout(() => setInvalid(false), 3000)
+                const fixa = document.getElementById('fixa-despesa-conta')?.getAttribute('data-state') === 'checked'
+                const transacao = {
+                    tipo: 'DESPESA',
+                    descritivo: categoria,
+                    valor: valorFormatado,
+                    data: dataFormatada,
+                    mes: mes,
+                    detalhes: descricao,
+                    situacao: status,
+                    conta: conta,
+                    fixa: fixa,
+                }
+                const response = await fetch('/api/transacoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(transacao),
+                })
+                const result = await response.json()
+                if (!result.success) {
+                    setLoading(false)
+                    setInvalid(true)
+                    setTimeout(() => setInvalid(false), 3000)
+                    return
+                }
             }
+
+            setLoading(false)
+            setCreated(true)
+
+            setTimeout(() => {
+                setCreated(false)
+                setSelectedMes(new Set(['Mês']))
+                setSelectedAccount(new Set(['Conta']))
+                setSelectedValue('Categoria')
+                setIsParcelado(false)
+                setNumParcelas(2)
+                document.getElementById('valor-despesa-conta').value = ''
+                document.getElementById('data-despesa-conta').value = ''
+                document.getElementById('descricao-despesa-conta').value = ''
+                window.location.reload()
+            }, 1300)
 
         } catch (err) {
             console.error('Erro ao criar despesa:', err)
@@ -179,6 +226,33 @@ const AddExpenseModalConta = () => {
                     </Text>
                 </Modal.Header>
                 <Modal.Body>
+                    <div className="w-full flex items-center justify-between bg-blue-50 rounded-xl px-4 py-2 mb-1">
+                        <span className={`font-semibold ${isParcelado ? 'text-blue-600' : 'text-gray-500'}`}>Parcelar</span>
+                        <Switch
+                            checked={isParcelado}
+                            onChange={(e) => setIsParcelado(e.target.checked)}
+                            size="lg"
+                            color="primary"
+                        />
+                    </div>
+                    {isParcelado && (
+                        <Input
+                            bordered
+                            fullWidth
+                            color="primary"
+                            size="lg"
+                            type="number"
+                            min={2}
+                            max={60}
+                            value={String(numParcelas)}
+                            onChange={(e) => {
+                                const val = parseInt(e.target.value)
+                                if (!isNaN(val) && val >= 2) setNumParcelas(val)
+                            }}
+                            labelLeft="#"
+                            placeholder="Número de parcelas"
+                        />
+                    )}
                     <CategoryDropdown
                     selectedValue={selectedValue}
                     onSelect={(cat) => setSelectedValue(cat)}
@@ -269,6 +343,7 @@ const AddExpenseModalConta = () => {
                             <p className="ml-6 text-gray-500 font-bold">Pago</p>
                         </div>
                         
+                        {!isParcelado && (
                         <div className="bg-gray-300 rounded-full w-32 flex items-center justify-left">
                             <Switch
                                 checked={false}
@@ -279,6 +354,7 @@ const AddExpenseModalConta = () => {
                             />
                             <p className="ml-2 text-gray-500 font-bold">Fixa</p>
                         </div>
+                        )}
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
