@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Modal, Button, Text } from '@nextui-org/react'
 import { AiFillCheckCircle, AiFillCloseCircle } from 'react-icons/ai'
 import { MdAutorenew } from 'react-icons/md'
