@@ -4,6 +4,7 @@ import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
+import GerarAssinaturas from '@/components/GerarAssinaturas';
 
 // Função que retorna o ícone da categoria
 function getIconForMovimentacao(mov, categoryIconMapping = {}) {
@@ -180,37 +181,40 @@ const movimentacoes = () => {
       <div className="p-4">
         <div className="w-full m-auto p-4 border rounded-lg overflow-y-auto">
           {/* Filtro de Tipo de Conta */}
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setTipoConta('todos')}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                tipoConta === 'todos'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              onClick={() => setTipoConta('debito')}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                tipoConta === 'debito'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              }`}
-            >
-              Débito
-            </button>
-            <button
-              onClick={() => setTipoConta('credito')}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                tipoConta === 'credito'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-              }`}
-            >
-              Crédito
-            </button>
+          <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={() => setTipoConta('todos')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  tipoConta === 'todos'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setTipoConta('debito')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  tipoConta === 'debito'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+              >
+                Débito
+              </button>
+              <button
+                onClick={() => setTipoConta('credito')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  tipoConta === 'credito'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+              >
+                Crédito
+              </button>
+            </div>
+            <GerarAssinaturas />
           </div>
 
           <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
