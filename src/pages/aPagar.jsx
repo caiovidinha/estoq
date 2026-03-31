@@ -7,8 +7,12 @@ import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 // Função que retorna o ícone da categoria
 function getIconForMovimentacao(mov, categoryIconMapping = {}) {
-  const { Icon, color } = getCategoryIcon(mov.descritivo, mov.tipo, categoryIconMapping);
-  const bgClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+  const categoria = mov.descritivo || mov.tipo;
+  const tipoReal = (mov.tipo?.toUpperCase() === 'RECEITA' || mov.tipo?.toUpperCase() === 'DESPESA')
+    ? mov.tipo.toUpperCase()
+    : (mov.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
+  const { Icon, color } = getCategoryIcon(categoria, tipoReal, categoryIconMapping);
+  const bgClass = tipoReal === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
   
   return {
     icon: <Icon size={20} style={{ color }} />,
@@ -421,6 +425,9 @@ const Apagar = () => {
         <ul>
           {movimentacao.slice(0).map((mov, index) => {
             const { icon, bgClass } = getIconForMovimentacao(mov, categoryIconMapping);
+            const tipoReal = (mov.tipo?.toUpperCase() === 'RECEITA' || mov.tipo?.toUpperCase() === 'DESPESA')
+              ? mov.tipo.toUpperCase()
+              : (mov.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
             // Cria uma key única combinando tipoConta e rowIndex
             const uniqueKey = `${mov.tipoConta || 'debito'}-${mov.rowIndex || index}`;
             
@@ -461,7 +468,7 @@ const Apagar = () => {
               <div className="flex text-gray-600 sm:text-left text-left justify-between">
                 <select
                   className={
-                    mov.situação === 'Recebido' || mov.situação === 'A receber'
+                    tipoReal === 'RECEITA'
                       ? 'bg-green-200 px-2 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border border-green-300'
                       : 'bg-red-200 px-2 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border border-red-300'
                   }
@@ -474,7 +481,7 @@ const Apagar = () => {
                     }
                   }}
                 >
-                  {mov.tipo === 'RECEITA' ? (
+                  {tipoReal === 'RECEITA' ? (
                     <>
                       <option value="A receber">A receber</option>
                       <option value="Recebido">Recebido</option>

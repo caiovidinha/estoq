@@ -1,3 +1,35 @@
+import {
+  BiRestaurant,
+  BiCar,
+  BiPhone,
+  BiSolidTShirt,
+  BiBomb,
+  BiSmile,
+  BiGift,
+  BiMoneyWithdraw,
+} from 'react-icons/bi';
+import { GiWeightLiftingUp, GiHealthNormal } from 'react-icons/gi';
+import { SiBetfair, SiFreelancer, SiYourtraveldottv } from 'react-icons/si';
+import { AiOutlineTool } from 'react-icons/ai';
+import { RiFundsBoxLine, RiBillLine } from 'react-icons/ri';
+import { MdMoneyOff } from 'react-icons/md';
+import {
+  FaShoppingCart,
+  FaHome,
+  FaPlane,
+  FaCoffee,
+  FaBeer,
+  FaCarSide,
+  FaShoppingBag,
+  FaUtensils,
+  FaMusic,
+  FaBook,
+  FaGamepad,
+  FaLaptop,
+  FaHeart,
+  FaGlobe,
+} from 'react-icons/fa';
+
 import { 
   BsCreditCard2Front,
   BsHouseDoor,
@@ -53,7 +85,8 @@ import {
   BsMap,
   BsChatDots,
   BsPalette,
-  BsNewspaper
+  BsNewspaper,
+  BsThreeDots
 } from 'react-icons/bs';
 
 /**
@@ -135,6 +168,40 @@ export const availableIconsMap = {
   'BsMap': { icon: BsMap, label: 'Mapa' },
   'BsChatDots': { icon: BsChatDots, label: 'Mensagens' },
   'BsNewspaper': { icon: BsNewspaper, label: 'Notícias/Assinatura' },
+  'BsThreeDots': { icon: BsThreeDots, label: 'Outros' },
+
+  // Ícones legados (usados em categorias criadas pelo AddCategoryModal)
+  'BiRestaurant': { icon: BiRestaurant, label: 'Alimentação' },
+  'BiCar': { icon: BiCar, label: 'Locomoção' },
+  'GiWeightLiftingUp': { icon: GiWeightLiftingUp, label: 'Academia' },
+  'BiPhone': { icon: BiPhone, label: 'Celular' },
+  'BiSolidTShirt': { icon: BiSolidTShirt, label: 'Vestuário' },
+  'BiBomb': { icon: BiBomb, label: 'Dívida' },
+  'BiSmile': { icon: BiSmile, label: 'Lazer' },
+  'BiGift': { icon: BiGift, label: 'Presente' },
+  'GiHealthNormal': { icon: GiHealthNormal, label: 'Saúde' },
+  'SiBetfair': { icon: SiBetfair, label: 'Bet' },
+  'AiOutlineTool': { icon: AiOutlineTool, label: 'Serviços' },
+  'RiFundsBoxLine': { icon: RiFundsBoxLine, label: 'Investimento' },
+  'RiBillLine': { icon: RiBillLine, label: 'Fatura' },
+  'BiMoneyWithdraw': { icon: BiMoneyWithdraw, label: 'Salário' },
+  'SiFreelancer': { icon: SiFreelancer, label: 'Freelance' },
+  'MdMoneyOff': { icon: MdMoneyOff, label: 'Reembolso' },
+  'SiYourtraveldottv': { icon: SiYourtraveldottv, label: 'Viagem' },
+  'FaShoppingCart': { icon: FaShoppingCart, label: 'Compras' },
+  'FaHome': { icon: FaHome, label: 'Casa' },
+  'FaPlane': { icon: FaPlane, label: 'Avião' },
+  'FaCoffee': { icon: FaCoffee, label: 'Café' },
+  'FaBeer': { icon: FaBeer, label: 'Cerveja' },
+  'FaCarSide': { icon: FaCarSide, label: 'Carro' },
+  'FaShoppingBag': { icon: FaShoppingBag, label: 'Shopping' },
+  'FaUtensils': { icon: FaUtensils, label: 'Restaurante' },
+  'FaMusic': { icon: FaMusic, label: 'Música' },
+  'FaBook': { icon: FaBook, label: 'Livros' },
+  'FaGamepad': { icon: FaGamepad, label: 'Jogos' },
+  'FaLaptop': { icon: FaLaptop, label: 'Tecnologia' },
+  'FaHeart': { icon: FaHeart, label: 'Amor' },
+  'FaGlobe': { icon: FaGlobe, label: 'Viagens' },
 };
 
 /**
@@ -156,10 +223,10 @@ export function getIconByName(iconName, tipo = 'DESPESA') {
     };
   }
   
-  // Ícone padrão se não encontrar
+  // Ícone padrão se não encontrar (mantém cor baseada no tipo)
   return {
     Icon: BsCurrencyDollar,
-    color: '#6B7280' // Cinza para ícone padrão
+    color: color
   };
 }
 

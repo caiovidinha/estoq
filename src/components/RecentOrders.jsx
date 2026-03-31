@@ -13,8 +13,14 @@ const RecentOrders = () => {
 
   // Função para retornar o ícone da categoria
   function getIconForMovimentacao(movItem) {
-    const { Icon, color } = getCategoryIcon(movItem.descritivo, movItem.tipo, categoryIconMapping || {});
-    const bgClass = movItem.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+    // A categoria pode estar em 'descritivo' (novas entradas) ou em 'tipo' (entradas legadas)
+    const categoria = movItem.descritivo || movItem.tipo;
+    // RECEITA/DESPESA: se 'tipo' for RECEITA/DESPESA usa direto, senão deriva pelo sinal do valor
+    const tipoReal = (movItem.tipo?.toUpperCase() === 'RECEITA' || movItem.tipo?.toUpperCase() === 'DESPESA')
+      ? movItem.tipo
+      : (movItem.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
+    const { Icon, color } = getCategoryIcon(categoria, tipoReal, categoryIconMapping || {});
+    const bgClass = tipoReal.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
     
     return {
       icon: <Icon size={20} style={{ color }} />,

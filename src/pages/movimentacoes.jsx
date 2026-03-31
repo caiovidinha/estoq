@@ -8,8 +8,14 @@ import GerarAssinaturas from '@/components/GerarAssinaturas';
 
 // Função que retorna o ícone da categoria
 function getIconForMovimentacao(mov, categoryIconMapping = {}) {
-  const { Icon, color } = getCategoryIcon(mov.descritivo, mov.tipo, categoryIconMapping);
-  const bgClass = mov.tipo?.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
+  // A categoria pode estar em 'descritivo' (novas entradas) ou em 'tipo' (entradas legadas)
+  const categoria = mov.descritivo || mov.tipo;
+  // RECEITA/DESPESA: se 'tipo' for RECEITA/DESPESA usa direto, senão deriva pelo sinal do valor
+  const tipoReal = (mov.tipo?.toUpperCase() === 'RECEITA' || mov.tipo?.toUpperCase() === 'DESPESA')
+    ? mov.tipo
+    : (mov.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
+  const { Icon, color } = getCategoryIcon(categoria, tipoReal, categoryIconMapping);
+  const bgClass = tipoReal.toUpperCase() === 'RECEITA' ? 'bg-green-200' : 'bg-red-200';
   
   return {
     icon: <Icon size={20} style={{ color }} />,
@@ -228,6 +234,10 @@ const movimentacoes = () => {
               .slice(0)
               .map((mov, index) => {
                 const { icon, bgClass } = getIconForMovimentacao(mov, categoryIconMapping);
+                // Define tipoReal igual à lógica do getIconForMovimentacao
+                const tipoReal = (mov.tipo?.toUpperCase() === 'RECEITA' || mov.tipo?.toUpperCase() === 'DESPESA')
+                  ? mov.tipo.toUpperCase()
+                  : (mov.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
                 // Cria uma key única combinando tipoConta e rowIndex para evitar duplicação
                 const uniqueKey = `${mov.tipoConta || 'debito'}-${mov.rowIndex || index}`;
                 
@@ -278,7 +288,7 @@ const movimentacoes = () => {
                   <div className="flex text-gray-600 sm:text-left text-left justify-between">
                     <select
                       className={
-                        mov.situação === 'Recebido' || mov.situação === 'A receber'
+                        tipoReal === 'RECEITA'
                           ? 'bg-green-200 px-2 py-2 rounded-lg text-green-800 font-semibold cursor-pointer border border-green-300'
                           : 'bg-red-200 px-2 py-2 rounded-lg text-red-800 font-semibold cursor-pointer border border-red-300'
                       }
@@ -291,7 +301,7 @@ const movimentacoes = () => {
                         }
                       }}
                     >
-                      {mov.tipo === 'RECEITA' ? (
+                      {tipoReal === 'RECEITA' ? (
                         <>
                           <option value="A receber">A receber</option>
                           <option value="Recebido">Recebido</option>
