@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
+import { MdCheckBox, MdCheckBoxOutlineBlank, MdIndeterminateCheckBox } from 'react-icons/md';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
@@ -52,6 +53,10 @@ const Apagar = () => {
   const [confirmarExc, setConfirmarExc] = useState(false);
   const [excluido, setExcluido] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Multi-select
+  const [selectedKeys, setSelectedKeys] = useState(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Configura o filtro inicial de data
   useEffect(() => {
@@ -292,8 +297,71 @@ const Apagar = () => {
     }
   }, [movimentacao]);
 
+  // ── multi-select helpers ────────────────────────────────────────────────
+  const getKey = (mov, index) => `${mov.tipoConta || 'debito'}-${mov.rowIndex ?? index}`;
+
+  const toggleSelect = (key) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
+
+  const allKeys = movimentacao.map((m, i) => getKey(m, i));
+  const allSelected = allKeys.length > 0 && allKeys.every(k => selectedKeys.has(k));
+  const someSelected = allKeys.some(k => selectedKeys.has(k));
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedKeys(new Set());
+    } else {
+      setSelectedKeys(new Set(allKeys));
+    }
+  };
+
+  const updateStatusBulk = async (items) => {
+    for (const mov of items) {
+      const novoStatus = mov.tipo?.toUpperCase() === 'RECEITA' ? 'Recebido' : 'Pago';
+      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      try {
+        await fetch('/api/updateStatus', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rowIndex: mov.rowIndex, novoStatus, sheetName }),
+        });
+      } catch (e) {
+        console.error('Erro ao atualizar status em massa:', e);
+      }
+    }
+  };
+
+  const pagarSelecionados = async () => {
+    const items = movimentacao.filter((m, i) => selectedKeys.has(getKey(m, i)));
+    if (!items.length) return;
+    setBulkLoading(true);
+    await updateStatusBulk(items);
+    setSelectedKeys(new Set());
+    await fetchMovimentacoes();
+    setBulkLoading(false);
+  };
+
+  const pagarTodos = async (filtroTipo) => {
+    const items = movimentacao.filter(m => {
+      const t = m.tipo?.toUpperCase();
+      if (filtroTipo === 'todos') return true;
+      return t === filtroTipo;
+    });
+    if (!items.length) return;
+    setBulkLoading(true);
+    await updateStatusBulk(items);
+    setSelectedKeys(new Set());
+    await fetchMovimentacoes();
+    setBulkLoading(false);
+  };
+  // ────────────────────────────────────────────────────────────────────────
+
   const changeData = async () => {
-    let ano = document.getElementById('ano').value;
     setFilterAno(ano);
     let mes = document.getElementById('mes').value;
     switch (mes) {
@@ -415,6 +483,54 @@ const Apagar = () => {
           </button>
         </div>
 
+        {/* Barra multi-select + ações em massa */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <button
+            onClick={toggleSelectAll}
+            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+          >
+            {allSelected
+              ? <MdCheckBox size={20} className="text-blue-600" />
+              : someSelected
+              ? <MdIndeterminateCheckBox size={20} className="text-blue-400" />
+              : <MdCheckBoxOutlineBlank size={20} />}
+            <span>{allSelected ? 'Desmarcar todos' : 'Selecionar todos'}</span>
+          </button>
+
+          {someSelected && (
+            <button
+              onClick={pagarSelecionados}
+              disabled={bulkLoading}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {bulkLoading ? <Loading type="spinner" color="white" size="sm" /> : <AiFillCheckCircle size={18} />}
+              <span>Selecionados ({selectedKeys.size})</span>
+            </button>
+          )}
+
+          {!someSelected && movimentacao.some(m => m.tipo?.toUpperCase() === 'DESPESA') && (
+            <button
+              onClick={() => pagarTodos('DESPESA')}
+              disabled={bulkLoading}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50 transition-colors"
+            >
+              {bulkLoading ? <Loading type="spinner" color="currentColor" size="sm" /> : <AiFillCheckCircle size={18} />}
+              <span>Pagar todos</span>
+            </button>
+          )}
+
+          {!someSelected && movimentacao.some(m => m.tipo?.toUpperCase() === 'RECEITA') && (
+            <button
+              onClick={() => pagarTodos('RECEITA')}
+              disabled={bulkLoading}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-50 transition-colors"
+            >
+              {bulkLoading ? <Loading type="spinner" color="currentColor" size="sm" /> : <AiFillCheckCircle size={18} />}
+              <span>Receber todos</span>
+            </button>
+          )}
+        </div>
+
         {/* Lista de Movimentações */}
         <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">
           <span>Movimentação</span>
@@ -428,41 +544,56 @@ const Apagar = () => {
             const tipoReal = (mov.tipo?.toUpperCase() === 'RECEITA' || mov.tipo?.toUpperCase() === 'DESPESA')
               ? mov.tipo.toUpperCase()
               : (mov.valor?.includes('-') ? 'DESPESA' : 'RECEITA');
-            // Cria uma key única combinando tipoConta e rowIndex
-            const uniqueKey = `${mov.tipoConta || 'debito'}-${mov.rowIndex || index}`;
+            const uniqueKey = getKey(mov, index);
+            const isSelected = selectedKeys.has(uniqueKey);
             
             return (
               <li
                 key={uniqueKey}
-                className="bg-gray-50 rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer"
+                className={`rounded-lg my-3 p-2 grid md:grid-cols-4 w-full sm:w-full sm:grid-cols-3 grid-cols-2 items-center justify-between cursor-pointer transition-colors ${
+                  isSelected ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-gray-50'
+                }`}
               >
                 <div
-                  className="flex"
-                  onClick={() =>
-                    handler(
-                      mov.tipo,
-                      mov.descritivo,
-                      mov.valor,
-                      mov.data,
-                      mov.mes,
-                      mov.detalhes,
-                      mov.situação,
-                      mov.conta,
-                      mov.rowIndex,
-                      mov.tipoConta
-                    )
-                  }
+                  className="flex items-center gap-2"
                 >
+                  <button
+                    onClick={() => toggleSelect(uniqueKey)}
+                    className="flex-shrink-0 text-blue-500 hover:text-blue-700"
+                    aria-label="Selecionar"
+                  >
+                    {isSelected
+                      ? <MdCheckBox size={22} className="text-blue-600" />
+                      : <MdCheckBoxOutlineBlank size={22} className="text-gray-400" />}
+                  </button>
+                  <div
+                    className="flex"
+                    onClick={() =>
+                      handler(
+                        mov.tipo,
+                        mov.descritivo,
+                        mov.valor,
+                        mov.data,
+                        mov.mes,
+                        mov.detalhes,
+                        mov.situação,
+                        mov.conta,
+                        mov.rowIndex,
+                        mov.tipoConta
+                      )
+                    }
+                  >
                   <div className={`${bgClass} rounded-lg p-3 flex items-center justify-center`}>
                     {icon}
                   </div>
-                  <div className="pl-2 w-32">
+                  <div className="pl-2 w-28">
                     <p className="text-gray-800 font-bold text-xs">
                       {mov.valor}
                     </p>
                     <p className="text-gray-800 text-xs">
                       {mov.detalhes}
                     </p>
+                  </div>
                   </div>
                 </div>
               <div className="flex text-gray-600 sm:text-left text-left justify-between">

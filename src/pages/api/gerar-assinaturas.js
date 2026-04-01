@@ -37,7 +37,11 @@ function computeTransacoes(assinaturas, mesAno) {
       return {
         tipo: 'DESPESA',
         descritivo: 'Assinaturas',
-        valor: ass.valor,
+        valor: (() => {
+          // Garante que o valor seja negativo (despesa)
+          const v = (ass.valor || '').trim();
+          return v.startsWith('-') ? v : `-${v}`;
+        })(),
         data: `${dia}/${dataMesNum}/${dataAno}`,
         mes: mesEscolhidoNome,
         detalhes: ass.assinatura,
