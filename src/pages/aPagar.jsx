@@ -362,6 +362,7 @@ const Apagar = () => {
   // ────────────────────────────────────────────────────────────────────────
 
   const changeData = async () => {
+    let ano = document.getElementById('ano').value;
     setFilterAno(ano);
     let mes = document.getElementById('mes').value;
     switch (mes) {
