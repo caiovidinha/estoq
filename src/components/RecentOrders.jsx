@@ -87,6 +87,16 @@ const RecentOrders = () => {
         >
           Crédito
         </button>
+        <button
+          onClick={() => setTipoConta('vr')}
+          className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${
+            tipoConta === 'vr'
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          VR
+        </button>
       </div>
 
       {loading && (

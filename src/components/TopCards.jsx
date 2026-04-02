@@ -17,6 +17,8 @@ import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 const TopCards = () => {
     const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
     const [saldoVR, setSaldoVR] = useState('R$ 0,00')
+    const [gastoDiarioVR, setGastoDiarioVR] = useState(null)
+    const [proximoRecVR, setProximoRecVR] = useState(null)
     const [refreshing, setRefreshing] = useState(false)
     const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
 
@@ -35,6 +37,8 @@ const TopCards = () => {
                 const dataVR = await responseVR.json()
                 if (dataVR.success) {
                     setSaldoVR(dataVR.valor)
+                    setGastoDiarioVR(dataVR.gastoDiario)
+                    setProximoRecVR(dataVR.proximoRecebimento)
                 }
             } catch (error) {
                 console.error('Erro ao carregar saldos:', error)
@@ -58,6 +62,8 @@ const TopCards = () => {
             const dataVR = await responseVR.json()
             if (dataVR.success) {
                 setSaldoVR(dataVR.valor)
+                setGastoDiarioVR(dataVR.gastoDiario)
+                setProximoRecVR(dataVR.proximoRecebimento)
             }
 
             // Recarrega dados do Context (categorias, contas, etc)
@@ -136,6 +142,11 @@ const TopCards = () => {
                     <p className="text-gray-600 sm:text-md text-xs">
                         Vale Benefícios
                     </p>
+                    {gastoDiarioVR && (
+                        <p className="text-green-600 text-xs font-semibold mt-1" title={proximoRecVR ? `Próximo recebimento: ${proximoRecVR}` : ''}>
+                            {gastoDiarioVR}/dia
+                        </p>
+                    )}
                 </div>
                 <div className="flex w-[130px] justify-between">
                     <AddIncomeModalVR />

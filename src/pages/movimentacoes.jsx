@@ -115,7 +115,7 @@ const movimentacoes = () => {
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      const sheetName = tipoContaAtual === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      const sheetName = tipoContaAtual === 'Crédito' ? 'Extrato Crédito' : tipoContaAtual === 'VR' ? 'Extrato VR' : 'Extrato';
       
       const response = await fetch('/api/deleteRow', {
         method: 'DELETE',
@@ -153,7 +153,7 @@ const movimentacoes = () => {
     try {
       setLoading(true);
       
-      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : mov.tipoConta === 'VR' ? 'Extrato VR' : 'Extrato';
 
       const response = await fetch('/api/updateStatus', {
         method: 'PUT',
@@ -218,6 +218,16 @@ const movimentacoes = () => {
                 }`}
               >
                 Crédito
+              </button>
+              <button
+                onClick={() => setTipoConta('vr')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  tipoConta === 'vr'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                }`}
+              >
+                VR
               </button>
             </div>
             <GerarAssinaturas />

@@ -205,7 +205,7 @@ const Apagar = () => {
   const confirmaExcFinal = async () => {
     setLoading(true);
     try {
-      const sheetName = tipoContaAtual === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      const sheetName = tipoContaAtual === 'Crédito' ? 'Extrato Crédito' : tipoContaAtual === 'VR' ? 'Extrato VR' : 'Extrato';
       
       const response = await fetch('/api/deleteRow', {
         method: 'DELETE',
@@ -243,7 +243,7 @@ const Apagar = () => {
     try {
       setLoading(true);
       
-      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : 'Extrato';
+      const sheetName = mov.tipoConta === 'Crédito' ? 'Extrato Crédito' : mov.tipoConta === 'VR' ? 'Extrato VR' : 'Extrato';
 
       const response = await fetch('/api/updateStatus', {
         method: 'PUT',
@@ -482,6 +482,16 @@ const Apagar = () => {
           >
             Crédito
           </button>
+          <button
+            onClick={() => setTipoConta('vr')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tipoConta === 'vr'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            VR
+          </button>
         </div>
 
         {/* Barra multi-select + ações em massa */}
@@ -520,7 +530,7 @@ const Apagar = () => {
             </button>
           )}
 
-          {!someSelected && movimentacao.some(m => m.tipo?.toUpperCase() === 'RECEITA') && (
+          {/* {!someSelected && movimentacao.some(m => m.tipo?.toUpperCase() === 'RECEITA') && (
             <button
               onClick={() => pagarTodos('RECEITA')}
               disabled={bulkLoading}
@@ -529,7 +539,7 @@ const Apagar = () => {
               {bulkLoading ? <Loading type="spinner" color="currentColor" size="sm" /> : <AiFillCheckCircle size={18} />}
               <span>Receber todos</span>
             </button>
-          )}
+          )} */}
         </div>
 
         {/* Lista de Movimentações */}
@@ -575,7 +585,7 @@ const Apagar = () => {
                         mov.descritivo,
                         mov.valor,
                         mov.data,
-                        mov.mes,
+                        mov.mês,
                         mov.detalhes,
                         mov.situação,
                         mov.conta,

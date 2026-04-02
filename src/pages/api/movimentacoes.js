@@ -36,13 +36,27 @@ export default async function handler(req, res) {
       const movimentacoesCredito = parseSheetData(rawDataCredito).map(mov => {
         // Se não tem conta definida, usa o nome do cartão (coluna H)
         const conta = mov.conta || mov.cartão || 'Crédito';
+        // Normaliza o campo mês: pode vir como "fatura" no Extrato Crédito
+        const mes = mov['mês'] || mov['mes'] || mov['fatura'] || '';
         return {
           ...mov,
+          'mês': mes,
           conta: conta,
           tipoConta: 'Crédito'
         };
       });
       todasMovimentacoes = [...todasMovimentacoes, ...movimentacoesCredito];
+    }
+
+    // Busca transações de VR (Extrato VR)
+    if (tipoConta === 'vr' || tipoConta === 'todos') {
+      const rawDataVR = await getRange('Extrato VR!A:G');
+      const movimentacoesVR = parseSheetData(rawDataVR).map(mov => ({
+        ...mov,
+        conta: 'Vale Benefícios',
+        tipoConta: 'VR',
+      }));
+      todasMovimentacoes = [...todasMovimentacoes, ...movimentacoesVR];
     }
 
     // Prepara filtros

@@ -23,18 +23,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Busca dados das duas planilhas
-    const [extratoData, creditoData] = await Promise.all([
+    // Busca dados das três planilhas
+    const [extratoData, creditoData, vrData] = await Promise.all([
       getRange('Extrato!A:H'),
-      getRange('Extrato Crédito!A:H')
+      getRange('Extrato Crédito!A:H'),
+      getRange('Extrato VR!A:G'),
     ]);
 
     // Converte para objetos
     const extratoTransacoes = parseSheetData(extratoData);
     const creditoTransacoes = parseSheetData(creditoData);
+    const vrTransacoes = parseSheetData(vrData);
 
     // Combina todas as transações
-    const todasTransacoes = [...extratoTransacoes, ...creditoTransacoes];
+    const todasTransacoes = [...extratoTransacoes, ...creditoTransacoes, ...vrTransacoes];
 
     // Filtra por mês/ano/tipo e exclui categoria "Cartão"
     const transacoesFiltradas = todasTransacoes.filter(trans => {
