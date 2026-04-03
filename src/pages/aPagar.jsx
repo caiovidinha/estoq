@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { RiDeleteBin2Fill } from 'react-icons/ri';
 import { MdCheckBox, MdCheckBoxOutlineBlank, MdIndeterminateCheckBox } from 'react-icons/md';
+import { TbRefresh, TbPlugConnected, TbCheck, TbPlus, TbX } from 'react-icons/tb';
 import { Modal, Button, Text, Loading } from '@nextui-org/react';
 import { getCategoryIcon } from '@/utils/categoryIcons';
 import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
@@ -58,6 +59,16 @@ const Apagar = () => {
   const [selectedKeys, setSelectedKeys] = useState(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
 
+  // ── Importação Nubank (Pluggy) ──────────────────────────────────────────
+  const [pluggyItemId, setPluggyItemId] = useState(null);
+  const [conflicts, setConflicts] = useState([]);
+  const [newBankTransactions, setNewBankTransactions] = useState([]);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [resolveLoadingIdx, setResolveLoadingIdx] = useState(null);
+  const [syncError, setSyncError] = useState('');
+  // Edições inline das sugestões de IA para cada nova transação
+  const [aiEdits, setAiEdits] = useState({});
+
   // Configura o filtro inicial de data
   useEffect(() => {
     const hoje = new Date().toISOString();
@@ -66,6 +77,38 @@ const Apagar = () => {
     setFilterMes(mesNum);
     setFilterAno(anoNum);
     setUpdate(true);
+  }, []);
+
+  // Carrega itemId salvo do Pluggy e dispara sync automático
+  useEffect(() => {
+    const stored = localStorage.getItem('pluggy_item_id');
+    console.log('[Pluggy][client] pluggy_item_id no localStorage:', stored);
+    if (!stored) {
+      console.log('[Pluggy][client] Nenhum item conectado. Clique em "Conectar Nubank" para vincular a conta.');
+      return;
+    }
+    setPluggyItemId(stored);
+    console.log('[Pluggy][client] Iniciando sync automático com itemId:', stored);
+    setSyncLoading(true);
+    setSyncError('');
+    fetch('/api/pluggy/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: stored }),
+    })
+      .then(res => {
+        console.log('[Pluggy][client] /api/pluggy/sync respondeu com status:', res.status);
+        return res.json().then(data => ({ ok: res.ok, data }));
+      })
+      .then(({ ok, data }) => {
+        console.log('[Pluggy][client] Resposta do sync:', data);
+        if (!ok) throw new Error(data.error || 'Erro na sincronização');
+        console.log('[Pluggy][client] Sync concluído — conflicts:', data.conflicts?.length, '| novas:', data.newTransactions?.length);
+        setConflicts(data.conflicts || []);
+        setNewBankTransactions(data.newTransactions || []);
+      })
+      .catch(e => { console.error('[Pluggy][client] Erro no sync:', e.message); setSyncError(e.message); })
+      .finally(() => setSyncLoading(false));
   }, []);
 
   // Função para converter nome do mês para número
@@ -296,6 +339,155 @@ const Apagar = () => {
       setPagar(pag);
     }
   }, [movimentacao]);
+
+  // ── Pluggy helpers ───────────────────────────────────────────────────────
+  const connectPluggy = async () => {
+    setSyncError('');
+    console.log('[Pluggy][client] Solicitando connect token...');
+    try {
+      const tokenRes = await fetch('/api/pluggy/connect-token');
+      console.log('[Pluggy][client] /api/pluggy/connect-token status:', tokenRes.status);
+      if (!tokenRes.ok) throw new Error('Falha ao obter token de conexão');
+      const { accessToken } = await tokenRes.json();
+      console.log('[Pluggy][client] Token obtido (primeiros 20 chars):', accessToken?.slice(0, 20) + '...');
+
+      // Carrega o widget Pluggy Connect via CDN (somente uma vez)
+      await new Promise((resolve, reject) => {
+        if (window.PluggyConnect) { resolve(); return; }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.pluggy.ai/pluggy-connect/v2.8.2/pluggy-connect.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Não foi possível carregar o widget Pluggy'));
+        document.head.appendChild(script);
+      });
+
+      const widget = new window.PluggyConnect({
+        connectToken: accessToken,
+        onSuccess: ({ item }) => {
+          console.log('[Pluggy][client] Widget onSuccess! item.id:', item.id);
+          localStorage.setItem('pluggy_item_id', item.id);
+          setPluggyItemId(item.id);
+          // Dispara sync automaticamente após conectar
+          console.log('[Pluggy][client] Iniciando sync após conexão...');
+          setSyncLoading(true);
+          setSyncError('');
+          fetch('/api/pluggy/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemId: item.id }),
+          })
+            .then(r => {
+              console.log('[Pluggy][client] /api/pluggy/sync (pós-conexão) status:', r.status);
+              return r.json().then(d => ({ ok: r.ok, d }));
+            })
+            .then(({ ok, d }) => {
+              console.log('[Pluggy][client] Resposta sync (pós-conexão):', d);
+              if (!ok) throw new Error(d.error || 'Erro na sincronização');
+              setConflicts(d.conflicts || []);
+              setNewBankTransactions(d.newTransactions || []);
+            })
+            .catch(e => { console.error('[Pluggy][client] Erro no sync (pós-conexão):', e.message); setSyncError(e.message); })
+            .finally(() => setSyncLoading(false));
+        },
+        onError: (error) => { console.error('[Pluggy][client] Widget onError:', error); setSyncError(`Erro ao conectar: ${error?.message || error}`); },
+        onClose: () => {},
+      });
+      widget.init();
+    } catch (e) {
+      setSyncError(e.message);
+    }
+  };
+
+  const handleSync = async () => {
+    console.log('[Pluggy][client] handleSync clicado — pluggyItemId:', pluggyItemId);
+    if (!pluggyItemId) { await connectPluggy(); return; }
+    setSyncLoading(true);
+    setSyncError('');
+    try {
+      console.log('[Pluggy][client] Chamando /api/pluggy/sync com itemId:', pluggyItemId);
+      const res = await fetch('/api/pluggy/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: pluggyItemId }),
+      });
+      console.log('[Pluggy][client] /api/pluggy/sync status:', res.status);
+      const data = await res.json();
+      console.log('[Pluggy][client] Resposta sync:', data);
+      if (!res.ok) throw new Error(data.error || 'Erro na sincronização');
+      console.log('[Pluggy][client] conflicts:', data.conflicts?.length, '| novas:', data.newTransactions?.length);
+      setConflicts(data.conflicts || []);
+      setNewBankTransactions(data.newTransactions || []);
+    } catch (e) {
+      console.error('[Pluggy][client] Erro no sync manual:', e.message);
+      setSyncError(e.message);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
+  const resolveConflict = async (index, action, conflict) => {
+    setResolveLoadingIdx(index);
+    try {
+      const res = await fetch('/api/pluggy/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          existingMatch: conflict.existingMatch,
+          bankTransaction: conflict.bankTransaction,
+        }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      setConflicts(prev => prev.filter((_, i) => i !== index));
+      if (action !== 'dismiss') await fetchMovimentacoes();
+    } catch (e) {
+      setSyncError(e.message);
+    } finally {
+      setResolveLoadingIdx(null);
+    }
+  };
+
+  const resolveNew = async (index, action, bankTx) => {
+    setResolveLoadingIdx(`new-${index}`);
+    try {
+      // Mescla sugestão da IA com edições do usuário antes de enviar
+      const edit = aiEdits[index] || {};
+      const enrichedTx = {
+        ...bankTx,
+        aiSuggestion: bankTx.aiSuggestion
+          ? {
+              ...bankTx.aiSuggestion,
+              descritivo: edit.descritivo ?? bankTx.aiSuggestion.descritivo,
+              detalhes: edit.detalhes ?? bankTx.aiSuggestion.detalhes,
+            }
+          : undefined,
+      };
+      const res = await fetch('/api/pluggy/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, bankTransaction: enrichedTx }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      setNewBankTransactions(prev => prev.filter((_, i) => i !== index));
+      setAiEdits(prev => { const n = { ...prev }; delete n[index]; return n; });
+      if (action === 'insert') await fetchMovimentacoes();
+    } catch (e) {
+      setSyncError(e.message);
+    } finally {
+      setResolveLoadingIdx(null);
+    }
+  };
+
+  const updateAiEdit = (index, field, value) => {
+    setAiEdits(prev => ({ ...prev, [index]: { ...(prev[index] || {}), [field]: value } }));
+  };
+
+  const confidenceBadge = (c) => {
+    const map = { high: ['bg-green-100 text-green-700', 'Alta'], medium: ['bg-yellow-100 text-yellow-700', 'Média'], low: ['bg-orange-100 text-orange-700', 'Baixa'] };
+    const [cls, label] = map[c] || ['bg-gray-100 text-gray-600', c];
+    return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>Confiança {label}</span>;
+  };
+  // ────────────────────────────────────────────────────────────────────────
 
   // ── multi-select helpers ────────────────────────────────────────────────
   const getKey = (mov, index) => `${mov.tipoConta || 'debito'}-${mov.rowIndex ?? index}`;
@@ -541,6 +733,177 @@ const Apagar = () => {
             </button>
           )} */}
         </div>
+
+        {/* ── Seção de Importação Nubank ─────────────────────────────── */}
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <button
+              onClick={handleSync}
+              disabled={syncLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 transition-colors"
+            >
+              {syncLoading
+                ? <Loading type="spinner" color="white" size="sm" />
+                : pluggyItemId ? <TbRefresh size={18} /> : <TbPlugConnected size={18} />}
+              <span>{syncLoading ? 'Sincronizando...' : pluggyItemId ? 'Sincronizar Nubank' : 'Conectar Nubank'}</span>
+            </button>
+            {pluggyItemId && (
+              <span className="text-xs text-gray-400">conta conectada</span>
+            )}
+            {(conflicts.length > 0 || newBankTransactions.length > 0) && (
+              <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                {conflicts.length + newBankTransactions.length} para revisar
+              </span>
+            )}
+          </div>
+
+          {syncError && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              {syncError}
+            </div>
+          )}
+
+          {/* Conflitos: possíveis duplicatas */}
+          {conflicts.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+                Possíveis duplicatas ({conflicts.length})
+              </h3>
+              <div className="flex flex-col gap-3">
+                {conflicts.map((conflict, idx) => {
+                  const isLoading = resolveLoadingIdx === idx;
+                  const bankVal = `R$ ${Math.abs(conflict.bankTransaction.amount).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+                  const bankDate = (() => { const d = new Date(conflict.bankTransaction.date); return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`; })();
+                  return (
+                    <div key={idx} className="bg-white border border-yellow-200 rounded-xl p-3 shadow-sm">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Conflito #{idx + 1}</span>
+                        {confidenceBadge(conflict.confidence)}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        {/* Seu registro */}
+                        <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                          <p className="text-xs font-bold text-blue-600 mb-1">Seu registro</p>
+                          <p className="text-sm font-semibold text-gray-800 truncate">{conflict.existingMatch.descritivo}</p>
+                          <p className="text-sm text-gray-700">{conflict.existingMatch.valor}</p>
+                          <p className="text-xs text-gray-500">{conflict.existingMatch.data}</p>
+                        </div>
+                        {/* Banco */}
+                        <div className="bg-purple-50 rounded-lg p-2 border border-purple-100">
+                          <p className="text-xs font-bold text-purple-600 mb-1">Nubank</p>
+                          <p className="text-sm font-semibold text-gray-800 truncate">{conflict.bankTransaction.description}</p>
+                          <p className="text-sm text-gray-700">{bankVal}</p>
+                          <p className="text-xs text-gray-500">{bankDate}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          disabled={isLoading}
+                          onClick={() => resolveConflict(idx, 'merge', conflict)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        >
+                          {isLoading ? <Loading type="spinner" color="white" size="xs" /> : <TbCheck size={14} />}
+                          Mesma transação
+                        </button>
+                        <button
+                          disabled={isLoading}
+                          onClick={() => resolveConflict(idx, 'insert', conflict)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                        >
+                          <TbPlus size={14} /> Inserir como nova
+                        </button>
+                        <button
+                          disabled={isLoading}
+                          onClick={() => resolveConflict(idx, 'dismiss', conflict)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                        >
+                          <TbX size={14} /> Ignorar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Novas transações sem correspondência */}
+          {newBankTransactions.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-400 inline-block"></span>
+                Novas do banco ({newBankTransactions.length})
+              </h3>
+              <div className="flex flex-col gap-3">
+                {newBankTransactions.map((bankTx, idx) => {
+                  const isLoading = resolveLoadingIdx === `new-${idx}`;
+                  const bankVal = `R$ ${Math.abs(bankTx.amount).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+                  const bankDate = (() => { const d = new Date(bankTx.date); return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`; })();
+                  const ai = bankTx.aiSuggestion;
+                  const edit = aiEdits[idx] || {};
+                  return (
+                    <div key={idx} className="bg-white border border-purple-100 rounded-xl p-3 shadow-sm">
+                      {/* Cabeçalho: dados brutos do banco */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-400 truncate">{bankTx.description}</p>
+                          <p className="text-sm font-bold text-gray-800">{bankVal} · {bankDate}</p>
+                        </div>
+                        {ai && (
+                          <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full whitespace-nowrap">✦ IA</span>
+                        )}
+                      </div>
+
+                      {/* Sugestão da IA editável */}
+                      {ai ? (
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-0.5">Categoria</label>
+                            <input
+                              className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:border-purple-400"
+                              value={edit.descritivo ?? ai.descritivo}
+                              onChange={e => updateAiEdit(idx, 'descritivo', e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500 block mb-0.5">Detalhes</label>
+                            <input
+                              className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 focus:outline-none focus:border-purple-400"
+                              value={edit.detalhes ?? ai.detalhes}
+                              onChange={e => updateAiEdit(idx, 'detalhes', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic mb-3">Sem sugestão de IA (configure OPENAI_API_KEY)</p>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          disabled={isLoading}
+                          onClick={() => resolveNew(idx, 'insert', bankTx)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                        >
+                          {isLoading ? <Loading type="spinner" color="white" size="xs" /> : <TbPlus size={14} />}
+                          Adicionar
+                        </button>
+                        <button
+                          disabled={isLoading}
+                          onClick={() => resolveNew(idx, 'dismiss', bankTx)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                        >
+                          <TbX size={14} /> Ignorar
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* ─────────────────────────────────────────────────────────────── */}
 
         {/* Lista de Movimentações */}
         <div className="my-3 p-2 grid md:grid-cols-4 sm:grid-cols-3 grid-cols-3 items-center justify-between font-bold">

@@ -3,6 +3,7 @@ import { BiLogoMastercard } from 'react-icons/bi'
 import { MdRestaurantMenu } from 'react-icons/md'
 import { BiSolidBank } from "react-icons/bi";
 import { HiRefresh } from 'react-icons/hi';
+import { TbPlugConnected } from 'react-icons/tb';
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
 import AddIncomeModalCredito from './AddIncomeModalCredito'
@@ -20,6 +21,8 @@ const TopCards = () => {
     const [gastoDiarioVR, setGastoDiarioVR] = useState(null)
     const [proximoRecVR, setProximoRecVR] = useState(null)
     const [refreshing, setRefreshing] = useState(false)
+    const [saldoPluggy, setSaldoPluggy] = useState(null)
+    const [loadingPluggy, setLoadingPluggy] = useState(false)
     const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
 
     useEffect(() => {
@@ -45,6 +48,18 @@ const TopCards = () => {
             }
         }
         fetchSaldos()
+    }, [])
+
+    // Busca saldo real do Nubank via Pluggy se itemId estiver salvo
+    useEffect(() => {
+        const itemId = typeof window !== 'undefined' && localStorage.getItem('pluggy_item_id');
+        if (!itemId) return;
+        setLoadingPluggy(true);
+        fetch(`/api/pluggy/saldo?itemId=${itemId}`)
+            .then(r => r.json())
+            .then(data => { if (data.success) setSaldoPluggy(data.saldoConta); })
+            .catch(() => {})
+            .finally(() => setLoadingPluggy(false));
     }, [])
 
     // Função para atualizar todos os dados
@@ -109,6 +124,17 @@ const TopCards = () => {
                     <p className="text-gray-600 sm:text-md text-xs">
                         Saldo em Conta
                     </p>
+                    {/* Saldo real Nubank via Pluggy */}
+                    {loadingPluggy && (
+                        <p className="text-xs text-purple-400 mt-1 flex items-center gap-1">
+                            <TbPlugConnected size={12} /> buscando saldo real...
+                        </p>
+                    )}
+                    {!loadingPluggy && saldoPluggy && (
+                        <p className="text-xs text-purple-600 font-semibold mt-1 flex items-center gap-1" title="Saldo real no Nubank via Pluggy">
+                            <TbPlugConnected size={12} /> {saldoPluggy} no banco
+                        </p>
+                    )}
                 </div>
                 <div className="flex w-[130px] justify-between">
                     <AddIncomeModalConta />
