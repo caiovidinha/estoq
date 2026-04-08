@@ -16,6 +16,7 @@ import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 const TopCards = () => {
     const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
+    const [gastoDiarioConta, setGastoDiarioConta] = useState(null)
     const [saldoVR, setSaldoVR] = useState('R$ 0,00')
     const [gastoDiarioVR, setGastoDiarioVR] = useState(null)
     const [proximoRecVR, setProximoRecVR] = useState(null)
@@ -30,6 +31,7 @@ const TopCards = () => {
                 const data = await response.json()
                 if (data.success) {
                     setSaldoGeral(data.valor)
+                    setGastoDiarioConta(data.gastoDiario)
                 }
 
                 // Busca saldo VR de API!B2
@@ -56,6 +58,7 @@ const TopCards = () => {
             const data = await response.json()
             if (data.success) {
                 setSaldoGeral(data.valor)
+                setGastoDiarioConta(data.gastoDiario)
             }
 
             const responseVR = await fetch('/api/saldo-vr')
@@ -109,6 +112,11 @@ const TopCards = () => {
                     <p className="text-gray-600 sm:text-md text-xs">
                         Saldo em Conta
                     </p>
+                    {gastoDiarioConta && (
+                        <p className="text-blue-600 text-xs font-semibold mt-1" title="Gasto diário até o fim do mês">
+                            {gastoDiarioConta}/dia
+                        </p>
+                    )}
                 </div>
                 <div className="flex w-[130px] justify-between">
                     <AddIncomeModalConta />
