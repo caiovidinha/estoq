@@ -11,7 +11,14 @@ import {
 import { GiReceiveMoney } from 'react-icons/gi'
 import { AiFillCheckCircle, AiFillExclamationCircle } from 'react-icons/ai'
 import { MdAttachMoney, MdMoneyOffCsred } from 'react-icons/md'
-import { useMeses } from '@/hooks/useFormOptions'
+
+const MESES_VR = [
+    '01 - JANEIRO', '02 - FEVEREIRO', '03 - MARÇO', '04 - ABRIL',
+    '05 - MAIO', '06 - JUNHO', '07 - JULHO', '08 - AGOSTO',
+    '09 - SETEMBRO', '10 - OUTUBRO', '11 - NOVEMBRO', '12 - DEZEMBRO',
+]
+
+const getMesAtual = () => MESES_VR[new Date().getMonth()]
 
 const AddIncomeModalVR = () => {
     const [visible, setVisible] = useState(false)
@@ -21,9 +28,8 @@ const AddIncomeModalVR = () => {
     const [invalid, setInvalid] = useState(false)
     const [error, setError] = useState(null)
 
-    const { meses } = useMeses()
-
     const closeHandler = () => {
+        document.activeElement?.blur()
         setVisible(false)
         setError(null)
         setInvalid(false)
@@ -93,7 +99,7 @@ const AddIncomeModalVR = () => {
                 setTimeout(() => {
                     setCreated(false)
                     setSelectedDescritivo(new Set(['Categoria']))
-                    setSelectedMes(new Set(['Mês']))
+                    setSelectedMes(new Set([getMesAtual()]))
                     document.getElementById('valor-receita-vr').value = ''
                     document.getElementById('data-receita-vr').value = ''
                     document.getElementById('descricao-receita-vr').value = ''
@@ -122,7 +128,7 @@ const AddIncomeModalVR = () => {
     }
 
     const [selectedDescritivo, setSelectedDescritivo] = useState(new Set(['Categoria']))
-    const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
+    const [selectedMes, setSelectedMes] = useState(new Set([getMesAtual()]))
 
     const selectedValueDescritivo = useMemo(
         () => Array.from(selectedDescritivo).join(', ').replaceAll('_', ' '),
@@ -189,6 +195,7 @@ const AddIncomeModalVR = () => {
                         size="lg"
                         id="valor-receita-vr"
                         type="float"
+                        aria-label="Valor"
                         placeholder="Valor"
                         className="mb-2"
                     />
@@ -200,27 +207,23 @@ const AddIncomeModalVR = () => {
                         size="lg"
                         type="date"
                         id="data-receita-vr"
+                        aria-label="Data"
                         placeholder="Data"
                         onFocus={fillDate}
                     />
                     <Dropdown type="listbox">
-                        <Dropdown.Button
-                            bordered
-                            color="success"
-                            css={{ tt: 'capitalize' }}
-                        >
+                        <Dropdown.Button bordered color="success" css={{ tt: 'capitalize' }}>
                             {selectedValueMes}
                         </Dropdown.Button>
                         <Dropdown.Menu
-                            aria-label="Single selection actions"
+                            aria-label="Mês de referência"
                             color="success"
                             selectionMode="single"
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
-                            id="mes"
                             className="h-72"
                         >
-                            {meses.map((mes) => (
+                            {MESES_VR.map((mes) => (
                                 <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
@@ -233,6 +236,7 @@ const AddIncomeModalVR = () => {
                         size="lg"
                         type="text"
                         id="descricao-receita-vr"
+                        aria-label="Descrição"
                         placeholder="Descrição (opcional)"
                     />
                     <div className="w-full flex justify-center space-x-4">

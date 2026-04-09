@@ -227,10 +227,10 @@ const QuickTransaction = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button auto flat color="error" onClick={closeHandler}>
+          <Button auto flat color="error" onPress={closeHandler}>
             Cancelar
           </Button>
-          <Button auto onClick={handleSubmit} disabled={loading}>
+          <Button auto onPress={handleSubmit} disabled={loading}>
             {loading ? <Loading size="sm" /> : 'Adicionar'}
           </Button>
         </Modal.Footer>

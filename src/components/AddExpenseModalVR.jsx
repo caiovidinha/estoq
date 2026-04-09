@@ -11,7 +11,14 @@ import {
 import { GiTakeMyMoney } from 'react-icons/gi'
 import { AiFillCheckCircle, AiFillExclamationCircle, AiFillCloseCircle } from 'react-icons/ai'
 import { MdAttachMoney, MdMoneyOffCsred } from 'react-icons/md'
-import { useMeses } from '@/hooks/useFormOptions'
+
+const MESES_VR = [
+    '01 - JANEIRO', '02 - FEVEREIRO', '03 - MARÇO', '04 - ABRIL',
+    '05 - MAIO', '06 - JUNHO', '07 - JULHO', '08 - AGOSTO',
+    '09 - SETEMBRO', '10 - OUTUBRO', '11 - NOVEMBRO', '12 - DEZEMBRO',
+]
+
+const getMesAtual = () => MESES_VR[new Date().getMonth()]
 
 const AddExpenseModalVR = () => {
     const [visible, setVisible] = useState(false)
@@ -21,9 +28,8 @@ const AddExpenseModalVR = () => {
     const [invalid, setInvalid] = useState(false)
     const [error, setError] = useState(null)
 
-    const { meses } = useMeses()
-
     const closeHandler = () => {
+        document.activeElement?.blur()
         setVisible(false)
         setError(null)
         setInvalid(false)
@@ -94,7 +100,7 @@ const AddExpenseModalVR = () => {
                 setTimeout(() => {
                     setCreated(false)
                     setSelectedDescritivo(new Set(['Categoria']))
-                    setSelectedMes(new Set(['Mês']))
+                    setSelectedMes(new Set([getMesAtual()]))
                     document.getElementById('valor-despesa-vr').value = ''
                     document.getElementById('data-despesa-vr').value = ''
                     document.getElementById('descricao-despesa-vr').value = ''
@@ -124,7 +130,7 @@ const AddExpenseModalVR = () => {
     }
 
     const [selectedDescritivo, setSelectedDescritivo] = useState(new Set(['Categoria']))
-    const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
+    const [selectedMes, setSelectedMes] = useState(new Set([getMesAtual()]))
 
     const selectedValueDescritivo = useMemo(
         () => Array.from(selectedDescritivo).join(', ').replaceAll('_', ' '),
@@ -191,6 +197,7 @@ const AddExpenseModalVR = () => {
                         size="lg"
                         id="valor-despesa-vr"
                         type="float"
+                        aria-label="Valor"
                         placeholder="Valor"
                         className="mb-2"
                     />
@@ -202,6 +209,7 @@ const AddExpenseModalVR = () => {
                         size="lg"
                         type="date"
                         id="data-despesa-vr"
+                        aria-label="Data"
                         placeholder="Data"
                         onFocus={fillDate}
                     />
@@ -210,15 +218,14 @@ const AddExpenseModalVR = () => {
                             {selectedValueMes}
                         </Dropdown.Button>
                         <Dropdown.Menu
-                            aria-label="Single selection actions"
+                            aria-label="Mês de referência"
                             color="error"
                             selectionMode="single"
                             selectedKeys={selectedMes}
                             onSelectionChange={setSelectedMes}
-                            id="mes"
                             className="h-72"
                         >
-                            {meses.map((mes) => (
+                            {MESES_VR.map((mes) => (
                                 <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
@@ -231,6 +238,7 @@ const AddExpenseModalVR = () => {
                         size="lg"
                         type="text"
                         id="descricao-despesa-vr"
+                        aria-label="Descrição"
                         placeholder="Descrição (opcional)"
                     />
                     <div className="w-full flex justify-center space-x-4">
