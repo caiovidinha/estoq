@@ -17,8 +17,10 @@ import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 const TopCards = () => {
     const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
     const [gastoDiarioConta, setGastoDiarioConta] = useState(null)
+    const [gastoSemanalConta, setGastoSemanalConta] = useState(null)
     const [saldoVR, setSaldoVR] = useState('R$ 0,00')
     const [gastoDiarioVR, setGastoDiarioVR] = useState(null)
+    const [gastoSemanalVR, setGastoSemanalVR] = useState(null)
     const [proximoRecVR, setProximoRecVR] = useState(null)
     const [refreshing, setRefreshing] = useState(false)
     const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
@@ -32,6 +34,7 @@ const TopCards = () => {
                 if (data.success) {
                     setSaldoGeral(data.valor)
                     setGastoDiarioConta(data.gastoDiario)
+                    setGastoSemanalConta(data.gastoSemanal)
                 }
 
                 // Busca saldo VR de API!B2
@@ -40,6 +43,7 @@ const TopCards = () => {
                 if (dataVR.success) {
                     setSaldoVR(dataVR.valor)
                     setGastoDiarioVR(dataVR.gastoDiario)
+                    setGastoSemanalVR(dataVR.gastoSemanal)
                     setProximoRecVR(dataVR.proximoRecebimento)
                 }
             } catch (error) {
@@ -59,6 +63,7 @@ const TopCards = () => {
             if (data.success) {
                 setSaldoGeral(data.valor)
                 setGastoDiarioConta(data.gastoDiario)
+                setGastoSemanalConta(data.gastoSemanal)
             }
 
             const responseVR = await fetch('/api/saldo-vr')
@@ -66,6 +71,7 @@ const TopCards = () => {
             if (dataVR.success) {
                 setSaldoVR(dataVR.valor)
                 setGastoDiarioVR(dataVR.gastoDiario)
+                setGastoSemanalVR(dataVR.gastoSemanal)
                 setProximoRecVR(dataVR.proximoRecebimento)
             }
 
@@ -114,7 +120,7 @@ const TopCards = () => {
                     </p>
                     {gastoDiarioConta && (
                         <p className="text-blue-600 text-xs font-semibold mt-1" title="Gasto diário até o fim do mês">
-                            {gastoDiarioConta}/dia
+                            {gastoDiarioConta}/dia{gastoSemanalConta ? ` · ${gastoSemanalConta}/sem` : ''}
                         </p>
                     )}
                 </div>
@@ -152,7 +158,7 @@ const TopCards = () => {
                     </p>
                     {gastoDiarioVR && (
                         <p className="text-green-600 text-xs font-semibold mt-1" title={proximoRecVR ? `Próximo recebimento: ${proximoRecVR}` : ''}>
-                            {gastoDiarioVR}/dia
+                            {gastoDiarioVR}/dia{gastoSemanalVR ? ` · ${gastoSemanalVR}/sem` : ''}
                         </p>
                     )}
                 </div>

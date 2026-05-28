@@ -66,9 +66,10 @@ const QuickTransaction = () => {
       }
 
       // Formatar valor para envio
+      const valorDecimal = valor.replace(',', '.');
       let valorFormatado = tipo === 'DESPESA'
-        ? '-' + valor
-        : valor;
+        ? '-' + valorDecimal
+        : valorDecimal;
 
       // Data de hoje formatada para DD/MM/YYYY
       const hoje = new Date();

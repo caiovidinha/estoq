@@ -63,7 +63,7 @@ const AddIncomeModalVR = () => {
             }
 
             let valorNumerico = valorInput.replace(/[\D]+/g, '')
-            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+            let valorFormatado = (parseFloat(valorNumerico) / 100).toFixed(2)
 
             const [ano, mesNum, dia] = dataInput.split('-')
             const dataFormatada = `${dia}/${mesNum}/${ano}`

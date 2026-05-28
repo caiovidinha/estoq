@@ -55,7 +55,7 @@ const AddExpenseModalBus = () => {
 
             // Formata valor
             let valorNumerico = valorInput.replace(/[\D]+/g, '')
-            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+            let valorFormatado = '-' + (parseFloat(valorNumerico) / 100).toFixed(2)
 
             // Formata data
             const [ano, mesNum, dia] = dataInput.split('-')

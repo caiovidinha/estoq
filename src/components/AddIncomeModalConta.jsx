@@ -68,9 +68,9 @@ const AddIncomeModalConta = () => {
                 return
             }
 
-            // Formatar valor para a API (R$ 150,00)
+            // Formatar valor para a API
             let valorNumerico = valorInput.replace(/[\D]+/g, '')
-            let valorFormatado = 'R$ ' + (parseFloat(valorNumerico) / 100).toFixed(2).replace('.', ',')
+            let valorFormatado = (parseFloat(valorNumerico) / 100).toFixed(2)
 
             // Formatar data para DD/MM/YYYY
             const [ano, mesNum, dia] = dataInput.split('-')

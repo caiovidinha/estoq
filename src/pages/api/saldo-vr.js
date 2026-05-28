@@ -18,6 +18,7 @@ export default async function handler(req, res) {
 
     // Calcula gasto diário até próximo recebimento
     let gastoDiario = null;
+    let gastoSemanal = null;
     let proximoRecebimento = null;
 
     const transacoes = parseSheetData(vrData);
@@ -44,6 +45,12 @@ export default async function handler(req, res) {
         gastoDiario = 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
+      const semanasRestantes = diffDias / 7;
+      if (diffDias >= 7 && !isNaN(saldoNum)) {
+        const valor = (saldoNum / diffDias) * 7;
+        gastoSemanal = 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
       proximoRecebimento = proximaReceita.data;
     }
 
@@ -53,6 +60,7 @@ export default async function handler(req, res) {
       success: true,
       valor: saldo,
       gastoDiario,
+      gastoSemanal,
       proximoRecebimento,
     });
   } catch (error) {

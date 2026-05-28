@@ -54,6 +54,12 @@ export default async function handler(req, res) {
       gastoDiario = 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    let gastoSemanal = null;
+    if (diasRestantes >= 7 && !isNaN(saldoBase) && saldoBase > 0) {
+      const valor = (saldoBase / diasRestantes) * 7;
+      gastoSemanal = 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     // Cache por 30 segundos
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');
     
@@ -61,6 +67,7 @@ export default async function handler(req, res) {
       success: true,
       valor: saldo,
       gastoDiario,
+      gastoSemanal,
     });
 
   } catch (error) {

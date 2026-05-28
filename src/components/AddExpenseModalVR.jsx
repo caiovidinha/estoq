@@ -64,7 +64,7 @@ const AddExpenseModalVR = () => {
 
             let valorNumerico = valorInput.replace(/[\D]+/g, '')
             let valorDecimal = (parseFloat(valorNumerico) / 100).toFixed(2)
-            let valorFormatado = 'R$ -' + valorDecimal.replace('.', ',')
+            let valorFormatado = '-' + valorDecimal
 
             const [ano, mesNum, dia] = dataInput.split('-')
             const dataFormatada = `${dia}/${mesNum}/${ano}`
