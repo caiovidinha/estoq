@@ -31,7 +31,7 @@ function renderMarkdown(text) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const bullet = line.match(/^(\s*)[*+\-]\s+(.*)$/);
+    const bullet = line.match(/^(\s*)[*+-]\s+(.*)$/);
     if (bullet) {
       const indent = bullet[1].length > 0;
       listItems.push(

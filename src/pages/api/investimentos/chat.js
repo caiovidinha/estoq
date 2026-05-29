@@ -1,3 +1,4 @@
+/* global process */
 import OpenAI from 'openai';
 import { getRange } from '@/lib/sheets';
 import { getCotacoes, getCotacoesCripto, getCotacoesDetalhadas } from '@/lib/brapi';
