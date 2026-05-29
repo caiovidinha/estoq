@@ -192,7 +192,7 @@ export async function createTransacaoVR(transacao) {
     const row = [
       transacao.tipo || '',
       transacao.descritivo || '',
-      transacao.valor || '',
+      parseFloat(transacao.valor) || 0,
       transacao.data || '',
       transacao.mes || '',
       transacao.detalhes || '',
@@ -375,7 +375,7 @@ export async function createTransacao(transacao) {
     const row = [
       transacao.tipo || '',
       transacao.descritivo || '',
-      transacao.valor || '',
+      parseFloat(transacao.valor) || 0,
       transacao.data || '',
       transacao.mes || '',
       transacao.detalhes || '',
@@ -413,7 +413,7 @@ export async function createTransacaoCredito(transacao) {
     const row = [
       transacao.tipo || '',
       transacao.descritivo || '',
-      transacao.valor || '',
+      parseFloat(transacao.valor) || 0,
       transacao.data || '',
       transacao.mes || '',
       transacao.detalhes || '',
