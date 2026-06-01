@@ -1,5 +1,5 @@
 import { getRange } from '@/lib/sheets';
-import { getCotacoes, getCotacoesCripto } from '@/lib/brapi';
+import { getCotacoesDetalhadas, getCotacoes, getCotacoesCripto } from '@/lib/brapi';
 import { tipoParaCategoria } from '@/utils/tipoMapping';
 
 function parseCurrency(val) {
@@ -34,6 +34,15 @@ function normalizeTipo(tipo) {
 
 const TIPOS_COM_TICKER = ['ação', 'acao', 'fii', 'etf', 'bdr'];
 const TIPOS_CRIPTO = ['cripto', 'criptomoeda', 'crypto'];
+
+async function fetchCotacoesFull(tickers) {
+  try {
+    return await getCotacoesDetalhadas(tickers);
+  } catch (err) {
+    if (err.message) return getCotacoes(tickers);
+    throw err;
+  }
+}
 
 /**
  * GET /api/investimentos/rebalanceamento
@@ -99,7 +108,7 @@ export default async function handler(req, res) {
 
     const [cotacoes, cotacoesCripto] = await Promise.all([
       comTicker.length > 0
-        ? getCotacoes([...new Set(comTicker.map((a) => a.ticker.toUpperCase()))]).catch(() => ({}))
+        ? fetchCotacoesFull([...new Set(comTicker.map((a) => a.ticker.toUpperCase()))]).catch(() => ({}))
         : Promise.resolve({}),
       cripto.length > 0
         ? getCotacoesCripto([...new Set(cripto.map((a) => a.ticker.toUpperCase()))]).catch(() => ({}))

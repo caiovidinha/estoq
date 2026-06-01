@@ -153,7 +153,7 @@ export default function CarteiraPage() {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto hidden md:block">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left text-gray-500 bg-gray-50 border-b">
@@ -222,6 +222,57 @@ export default function CarteiraPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="md:hidden divide-y">
+                  {ativos.map((a) => (
+                    <div key={a.ticker} className="p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {a.logo ? (
+                            <img
+                              src={a.logo}
+                              alt={a.ticker}
+                              className="w-8 h-8 rounded-full object-contain bg-gray-100 shrink-0"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-bold shrink-0">
+                              {a.ticker?.slice(0, 2)}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-800 text-sm leading-tight">{a.ticker}</p>
+                            <p className="text-xs text-gray-400 truncate">{a.tipo} · {a.pesoCarteira.toFixed(1)}%</p>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-bold text-gray-800 text-sm">
+                            {a.temCotacao ? fmt(a.precoAtual) : <span className="text-gray-400">—</span>}
+                          </p>
+                          {a.temCotacao && (
+                            <span className={`text-xs font-semibold ${a.variacaoDia >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {fmtPct(a.variacaoDia)} hoje
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-end mt-2">
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            {a.quantidade} un · PM {fmt(a.preco_medio)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-gray-800">{fmt(a.valorAtual)}</p>
+                          <p className={`text-xs font-semibold ${a.ganhoPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {a.ganho >= 0 ? '+' : ''}{fmt(a.ganho)} ({a.ganhoPercent >= 0 ? '+' : ''}{fmtPct(Math.abs(a.ganhoPercent))})
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </>
             )}

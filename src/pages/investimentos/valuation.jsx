@@ -275,6 +275,27 @@ const DiagnosticoCard = ({ ativo, onClose }) => {
           <MetaRow label="FCF Yield"            value={ativo.fcfYield      != null ? `${fmtNum(ativo.fcfYield)}%`  : null} />
           <MetaRow label="P/FCF"               value={ativo.pFcf          != null ? `${fmtNum(ativo.pFcf)}x`     : null} />
           <MetaRow label="Beta"                value={ativo.beta          != null ? fmtNum(ativo.beta)          : null} />
+          {(ativo.precoTetoBazin != null || ativo.precoTetoGraham != null) && (
+            <div className="mt-2 pt-2 border-t border-gray-50">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Preço Teto</p>
+              <MetaRow
+                label="Bazin (DY ≥ 6%)"
+                value={ativo.precoTetoBazin != null ? (
+                  <span className={ativo.preco != null && ativo.preco <= ativo.precoTetoBazin ? 'text-green-600' : 'text-red-500'}>
+                    {fmt(ativo.precoTetoBazin)}
+                  </span>
+                ) : null}
+              />
+              <MetaRow
+                label="Graham (√22.5×LPA×VPA)"
+                value={ativo.precoTetoGraham != null ? (
+                  <span className={ativo.preco != null && ativo.preco <= ativo.precoTetoGraham ? 'text-green-600' : 'text-red-500'}>
+                    {fmt(ativo.precoTetoGraham)}
+                  </span>
+                ) : null}
+              />
+            </div>
+          )}
         </div>
 
         {/* Market col */}

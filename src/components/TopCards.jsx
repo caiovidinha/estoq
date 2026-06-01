@@ -119,9 +119,16 @@ const TopCards = () => {
                         Saldo em Conta
                     </p>
                     {gastoDiarioConta && (
-                        <p className="text-blue-600 text-xs font-semibold mt-1" title="Gasto diário até o fim do mês">
-                            {gastoDiarioConta}/dia{gastoSemanalConta ? ` · ${gastoSemanalConta}/sem` : ''}
-                        </p>
+                        <div className="text-blue-600 text-xs font-semibold mt-1" title="Gasto diário até o fim do mês">
+                            <span>{gastoDiarioConta}/dia</span>
+                            {gastoSemanalConta && (
+                                <>
+                                    <span className="hidden sm:inline"> · </span>
+                                    <br className="sm:hidden" />
+                                    <span>{gastoSemanalConta}/sem</span>
+                                </>
+                            )}
+                        </div>
                     )}
                 </div>
                 <div className="flex w-[130px] justify-between">
@@ -157,9 +164,16 @@ const TopCards = () => {
                         Vale Benefícios
                     </p>
                     {gastoDiarioVR && (
-                        <p className="text-green-600 text-xs font-semibold mt-1" title={proximoRecVR ? `Próximo recebimento: ${proximoRecVR}` : ''}>
-                            {gastoDiarioVR}/dia{gastoSemanalVR ? ` · ${gastoSemanalVR}/sem` : ''}
-                        </p>
+                        <div className="text-green-600 text-xs font-semibold mt-1" title={proximoRecVR ? `Próximo recebimento: ${proximoRecVR}` : ''}>
+                            <span>{gastoDiarioVR}/dia</span>
+                            {gastoSemanalVR && (
+                                <>
+                                    <span className="hidden sm:inline"> · </span>
+                                    <br className="sm:hidden" />
+                                    <span>{gastoSemanalVR}/sem</span>
+                                </>
+                            )}
+                        </div>
                     )}
                 </div>
                 <div className="flex w-[130px] justify-between">

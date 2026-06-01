@@ -87,6 +87,21 @@ function buildAtivo(ticker, q, extra = {}) {
   // prefer financialData (TTM) over annual statement if available
   const crescReceitaFinal = norm(fin.revenueGrowth ?? null) ?? crescReceitaIS ?? crescReceita;
 
+  // ── Preço Teto ────────────────────────────────────────────────────────────
+  // Bazin method: precoTeto = proventos_anuais / 6%  →  preco × DY% / 6
+  const precoTetoBazin = dy != null && q.regularMarketPrice != null && dy > 0
+    ? q.regularMarketPrice * dy / 6
+    : null;
+  // Graham formula: sqrt(22.5 × LPA × VPA)
+  const _plRaw  = stats.trailingPE ?? q.priceEarnings ?? null;
+  const _pvpRaw = stats.priceToBook ?? null;
+  const _lpa = q.regularMarketPrice != null && _plRaw != null && _plRaw > 0
+    ? q.regularMarketPrice / _plRaw : null;
+  const _vpa = q.regularMarketPrice != null && _pvpRaw != null && _pvpRaw > 0
+    ? q.regularMarketPrice / _pvpRaw : null;
+  const precoTetoGraham = _lpa != null && _vpa != null && _lpa > 0 && _vpa > 0
+    ? Math.sqrt(22.5 * _lpa * _vpa) : null;
+
   return {
     ticker,
     nome:      q.shortName  || q.longName || ticker,
@@ -140,6 +155,9 @@ function buildAtivo(ticker, q, extra = {}) {
     logo:      q.logourl                    || null,
     // Portfolio context
     custo: extra.custo || 0,
+    // Preço Teto
+    precoTetoBazin,
+    precoTetoGraham,
   };
 }
 

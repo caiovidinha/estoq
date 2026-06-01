@@ -1,8 +1,21 @@
 import { getRange } from '@/lib/sheets';
-import { getCotacoes, getCotacoesCripto } from '@/lib/brapi';
+import { getCotacoesDetalhadas, getCotacoes, getCotacoesCripto } from '@/lib/brapi';
 
 const TIPOS_COM_TICKER = ['ação', 'acao', 'fii', 'etf', 'bdr'];
 const TIPOS_CRIPTO = ['cripto', 'criptomoeda', 'crypto'];
+
+/** Uses the same detailed endpoint as valuation so they share the in-memory cache. */
+async function fetchCotacoesFull(tickers) {
+  try {
+    return await getCotacoesDetalhadas(tickers);
+  } catch (err) {
+    // Fall back to basic quotes on 403 (plan limit) or other recoverable errors
+    if (err.message) {
+      return getCotacoes(tickers);
+    }
+    throw err;
+  }
+}
 
 function normalizeKey(header) {
   return header
@@ -140,7 +153,7 @@ export default async function handler(req, res) {
     // Fetch quotes in parallel — deduplicate tickers before calling Brapi
     const [cotacoes, cotacoesCripto] = await Promise.all([
       comTicker.length > 0
-        ? getCotacoes([...new Set(comTicker.map((a) => a.ticker))]).catch(() => ({}))
+        ? fetchCotacoesFull([...new Set(comTicker.map((a) => a.ticker))]).catch(() => ({}))
         : Promise.resolve({}),
       cripto.length > 0
         ? getCotacoesCripto([...new Set(cripto.map((a) => a.ticker))]).catch(() => ({}))

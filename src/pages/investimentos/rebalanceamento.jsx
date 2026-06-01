@@ -49,21 +49,32 @@ function AporteCalculator({ recomendacoes, patrimonioTotal }) {
 
   const totalFuturo = patrimonioTotal + aporteNum;
 
-  // Distribute the aporte proportionally to close the gap for underweight types
+  // Calculate how much to invest in each category so the total portfolio
+  // reaches the target allocation after the contribution.
   const sugestoes = React.useMemo(() => {
     if (aporteNum <= 0 || recomendacoes.length === 0) return [];
 
-    const underweight = recomendacoes.filter((r) => r.diffPct > 1 && r.alvoPct > 0);
-    if (underweight.length === 0) return [];
+    // How much each category needs to reach its target in the future portfolio
+    const investimentos = recomendacoes
+      .filter((r) => r.alvoPct > 0)
+      .map((r) => ({
+        tipo: r.tipo,
+        needed: Math.max(0, totalFuturo * (r.alvoPct / 100) - r.valorAtual),
+      }))
+      .filter((r) => r.needed > 0);
 
-    const totalDiff = underweight.reduce((s, r) => s + r.diffPct, 0);
+    if (investimentos.length === 0) return [];
 
-    return underweight.map((r) => {
-      const frac = r.diffPct / totalDiff;
-      const valor = aporteNum * frac;
-      return { tipo: r.tipo, valor, pctAporte: frac * 100 };
-    });
-  }, [aporteNum, recomendacoes]);
+    const totalNeeded = investimentos.reduce((s, r) => s + r.needed, 0);
+    // If total needed > aporte, distribute proportionally
+    const scale = totalNeeded > aporteNum ? aporteNum / totalNeeded : 1;
+
+    return investimentos.map((r) => ({
+      tipo: r.tipo,
+      valor: r.needed * scale,
+      pctAporte: ((r.needed * scale) / aporteNum) * 100,
+    }));
+  }, [aporteNum, recomendacoes, patrimonioTotal, totalFuturo]);
 
   return (
     <div className="bg-white rounded-lg border p-4">
