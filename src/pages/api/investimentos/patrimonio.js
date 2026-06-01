@@ -1,7 +1,7 @@
 import { getRange } from '@/lib/sheets';
 import { getCotacoesDetalhadas, getCotacoes, getCotacoesCripto } from '@/lib/brapi';
 
-const TIPOS_COM_TICKER = ['ação', 'acao', 'fii', 'etf', 'bdr'];
+const TIPOS_COM_TICKER = ['ação', 'acao', 'acoes', 'fii', 'fiis', 'etf', 'etfs', 'bdr'];
 const TIPOS_CRIPTO = ['cripto', 'criptomoeda', 'crypto'];
 
 /** Uses the same detailed endpoint as valuation so they share the in-memory cache. */

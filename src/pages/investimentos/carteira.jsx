@@ -14,9 +14,9 @@ const fmtPct = (v) => {
 const FILTER_TABS = ['Todos', 'Ações', 'FIIs', 'ETFs', 'BDRs', 'Renda Fixa', 'Cripto'];
 
 const TIPO_MAP = {
-  Ações: ['ação', 'acao'],
-  FIIs: ['fii'],
-  ETFs: ['etf'],
+  Ações: ['ação', 'acao', 'acoes'],
+  FIIs: ['fii', 'fiis'],
+  ETFs: ['etf', 'etfs'],
   BDRs: ['bdr'],
   'Renda Fixa': ['renda fixa', 'tesouro', 'cdb', 'lci', 'lca', 'cri', 'cra', 'debenture'],
   Cripto: ['cripto', 'criptomoeda', 'crypto'],

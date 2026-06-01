@@ -24,7 +24,7 @@ function normalizeKey(h) {
     .replace(/[^a-z0-9_]/g, '');
 }
 
-const TIPOS_COM_TICKER = ['ação', 'acao', 'fii', 'etf', 'bdr'];
+const TIPOS_COM_TICKER = ['ação', 'acao', 'acoes', 'fii', 'fiis', 'etf', 'etfs', 'bdr'];
 
 /** Extract numeric value from Brapi's {raw, fmt} object or plain number */
 const r = (v) => (v != null && typeof v === 'object' && 'raw' in v ? v.raw : (v ?? null));

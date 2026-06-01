@@ -32,7 +32,7 @@ function normalizeTipo(tipo) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
-const TIPOS_COM_TICKER = ['ação', 'acao', 'fii', 'etf', 'bdr'];
+const TIPOS_COM_TICKER = ['ação', 'acao', 'acoes', 'fii', 'fiis', 'etf', 'etfs', 'bdr'];
 const TIPOS_CRIPTO = ['cripto', 'criptomoeda', 'crypto'];
 
 async function fetchCotacoesFull(tickers) {

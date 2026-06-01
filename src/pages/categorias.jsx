@@ -37,6 +37,29 @@ const Categorias = () => {
   const [categoryCreated, setCategoryCreated] = useState(false);
   const [categoryInvalid, setCategoryInvalid] = useState(false);
 
+  // Estado para setup de validações na planilha
+  const [setupLoading, setSetupLoading] = useState(false);
+  const [setupMsg, setSetupMsg] = useState(null); // { ok: bool, text: string }
+
+  const handleSetupValidacoes = async () => {
+    setSetupLoading(true);
+    setSetupMsg(null);
+    try {
+      const res = await fetch('/api/setup-validacoes', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSetupMsg({ ok: true, text: 'Dropdowns aplicados na planilha!' });
+      } else {
+        setSetupMsg({ ok: false, text: data.error || 'Erro ao aplicar validações' });
+      }
+    } catch {
+      setSetupMsg({ ok: false, text: 'Erro de conexão' });
+    } finally {
+      setSetupLoading(false);
+      setTimeout(() => setSetupMsg(null), 4000);
+    }
+  };
+
   // Converte número do mês para nome
   const monthName = (m) => {
     const names = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -391,7 +414,36 @@ const Categorias = () => {
           >
             <BsPlus size={24} />
           </button>
+
+          {/* Botão para aplicar validações de dropdown na planilha */}
+          <button
+            onClick={handleSetupValidacoes}
+            disabled={setupLoading}
+            className="p-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-60"
+            title="Aplicar dropdowns de Tipo/Categoria na planilha"
+            aria-label="Configurar validações da planilha"
+          >
+            {setupLoading ? (
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Toast de feedback do setup */}
+        {setupMsg && (
+          <div className={`mb-3 px-4 py-2 rounded-lg text-sm font-medium ${
+            setupMsg.ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {setupMsg.text}
+          </div>
+        )}
 
         {/* Visualizações */}
         {loading ? (

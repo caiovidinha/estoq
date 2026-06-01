@@ -19,6 +19,7 @@ const RAW_TO_CATEGORIA = {
 
   // ── Fundos Imobiliários ───────────────────────────────────────────────────
   'fii':                    'Fundos Imobiliários',
+  'fiis':                   'Fundos Imobiliários',
   'fundo imobiliario':      'Fundos Imobiliários',
   'fundo imobiliário':      'Fundos Imobiliários',
   'fundos imobiliarios':    'Fundos Imobiliários',
