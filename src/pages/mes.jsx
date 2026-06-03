@@ -82,21 +82,37 @@ const mes = () => {
                                         </div>
                                     </div>
 
-                                    <div className="text-right">
-                                        <p
-                                            className={
-                                                bal.saldoNumerico >= 1000
-                                                    ? 'text-green-700 font-bold text-lg'
-                                                    : bal.saldoNumerico > 0
-                                                    ? 'text-yellow-600 font-bold text-lg'
-                                                    : 'text-red-700 font-bold text-lg'
-                                            }
-                                        >
-                                            {bal.saldo}
-                                        </p>
-                                        {/* <p className="text-xs text-gray-500">
-                                            {bal.saldoNumerico >= 0 ? 'Superávit' : 'Déficit'}
-                                        </p> */}
+                                    <div className="text-right flex flex-col gap-0.5">
+                                        <div>
+                                            <p className="text-xs text-gray-400 leading-none">Saldo acumulado</p>
+                                            <p
+                                                className={
+                                                    bal.saldoNumerico >= 1000
+                                                        ? 'text-green-700 font-bold text-base'
+                                                        : bal.saldoNumerico > 0
+                                                        ? 'text-yellow-600 font-bold text-base'
+                                                        : 'text-red-700 font-bold text-base'
+                                                }
+                                            >
+                                                {bal.saldo}
+                                            </p>
+                                        </div>
+                                        {bal.saldoLivre && (
+                                            <div>
+                                                <p className="text-xs text-gray-400 leading-none">Sobra do mês</p>
+                                                <p
+                                                    className={
+                                                        bal.saldoLivreNumerico >= 1000
+                                                            ? 'text-green-600 font-semibold text-sm'
+                                                            : bal.saldoLivreNumerico > 0
+                                                            ? 'text-yellow-500 font-semibold text-sm'
+                                                            : 'text-red-600 font-semibold text-sm'
+                                                    }
+                                                >
+                                                    {bal.saldoLivre}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </li>
                             ))}

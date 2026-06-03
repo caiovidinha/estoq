@@ -13,8 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Busca dados da planilha: Mensal!A:C
-    const rawData = await getRange('Mensal!A:C');
+    // Busca dados da planilha: Mensal!A:D
+    const rawData = await getRange('Mensal!A:D');
     
     if (!rawData || rawData.length < 2) {
       return res.status(200).json({
@@ -36,20 +36,19 @@ export default async function handler(req, res) {
         // Extrai o nome do mês (ex: "01 - JANEIRO" -> "JANEIRO")
         const mesNome = row[0].split(' - ')[1] || row[0];
 
+        const parseValue = (val) => val
+          ? parseFloat(val.replace('R$', '').replace(/\./g, '').replace(',', '.').trim())
+          : null;
+
         return {
           mes: mesNumero,
           mesCompleto: row[0],
           mesNome: mesNome,
           ano: row[1],
           saldo: row[2],
-          // Converte o saldo para número para facilitar comparações
-          saldoNumerico: parseFloat(
-            row[2]
-              .replace('R$', '')
-              .replace(/\./g, '')
-              .replace(',', '.')
-              .trim()
-          )
+          saldoNumerico: parseValue(row[2]),
+          saldoLivre: row[3] || null,
+          saldoLivreNumerico: parseValue(row[3])
         };
       });
 
