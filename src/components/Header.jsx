@@ -6,7 +6,7 @@ import { BiSolidDashboard, BiTransferAlt, BiSolidBarChartAlt2 } from 'react-icon
 import { RiBillFill } from 'react-icons/ri';
 import { FaChartPie } from 'react-icons/fa';
 import { AiOutlineLineChart } from 'react-icons/ai';
-import { BsGraphUp } from 'react-icons/bs';
+import { BsGraphUp, BsTable } from 'react-icons/bs';
 import { HiOutlineMenuAlt3, HiX } from 'react-icons/hi';
 
 const Header = ({ children }) => {
@@ -79,6 +79,12 @@ const Header = ({ children }) => {
         <span className="ml-2">Investimentos</span>
       </div>
     </li>
+    <li onClick={() => { setMenuOpen(false); router.push('/saldos'); }}>
+      <div className={router.pathname === "/saldos" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+        <BsTable size={25} />
+        <span className="ml-2">Saldos</span>
+      </div>
+    </li>
     {/* <li onClick={() => { setMenuOpen(false); router.push('/estatisticas'); }}>
       <div className={router.pathname === "/estatisticas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
         <AiOutlineLineChart size={25} />
@@ -90,7 +96,7 @@ const Header = ({ children }) => {
 
 
       {/* Menu fixo para desktop */}
-      <nav className="hidden sm:grid grid-cols-6 gap-8 px-4 pt-4 bg-gray-100">
+      <nav className="hidden sm:grid grid-cols-7 gap-8 px-4 pt-4 bg-gray-100">
         <Link href="/">
           <div className={router.pathname === "/" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BiSolidDashboard size={25} />
@@ -125,6 +131,12 @@ const Header = ({ children }) => {
           <div className={router.pathname.startsWith("/investimentos") ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BsGraphUp size={25} />
             <p className="hidden sm:block font-bold">Investimentos</p>
+          </div>
+        </Link>
+        <Link href="/saldos">
+          <div className={router.pathname === "/saldos" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+            <BsTable size={25} />
+            <p className="hidden sm:block font-bold">Saldos</p>
           </div>
         </Link>
         {/* <Link href="/estatisticas">

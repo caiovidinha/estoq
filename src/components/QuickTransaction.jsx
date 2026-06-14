@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { Modal, Button, Loading, Text } from '@nextui-org/react';
 import { AiFillCheckCircle, AiFillCloseCircle } from 'react-icons/ai';
 import { MdAdd } from 'react-icons/md';
@@ -6,6 +7,7 @@ import CategoryDropdown from '@/components/CategoryDropdown';
 import { useMeses } from '@/hooks/useFormOptions';
 
 const QuickTransaction = () => {
+  const router = useRouter();
   const [visible, setVisible] = useState(false);
   const [tipo, setTipo] = useState('DESPESA');
   const [categoria, setCategoria] = useState('Categoria');
@@ -123,13 +125,15 @@ const QuickTransaction = () => {
   return (
     <>
       {/* Botão Flutuante */}
-      <button
-        onClick={handler}
-        className="fixed bottom-6 right-6 bg-purple-800 hover:bg-purple-900 text-white rounded-full p-4 shadow-lg z-50 transition-all duration-300 hover:scale-110"
-        title="Adicionar transação rápida"
-      >
-        <MdAdd size={32} />
-      </button>
+      {router.pathname !== '/saldos' && (
+        <button
+          onClick={handler}
+          className="fixed bottom-6 right-6 bg-purple-800 hover:bg-purple-900 text-white rounded-full p-4 shadow-lg z-50 transition-all duration-300 hover:scale-110"
+          title="Adicionar transação rápida"
+        >
+          <MdAdd size={32} />
+        </button>
+      )}
 
       {/* Modal */}
       <Modal
