@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import AddExpenseModalConta from '@/components/AddExpenseModalConta';
+import AddIncomeModalConta from '@/components/AddIncomeModalConta';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -322,83 +324,63 @@ const MESES_NOMES_FULL = [
   '09 - SETEMBRO','10 - OUTUBRO','11 - NOVEMBRO','12 - DEZEMBRO',
 ];
 
-function AddDayTransaction({ day, month, year, defaultTipo, onClose, onAdded }) {
-  const [tipo,     setTipo]     = useState(defaultTipo === 'RECEITA' ? 'RECEITA' : 'DESPESA');
-  const [descricao,setDescricao]= useState('');
-  const [valor,    setValor]    = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState(null);
-
-  const dayStr   = String(day).padStart(2, '0');
-  const monthStr = String(month + 1).padStart(2, '0');
-  const dataFmt  = `${dayStr}/${monthStr}/${year}`;
-  const mesNome  = MESES_NOMES_FULL[month];
-
-  const formatarMoeda = (e) => {
-    const v = e.target.value.replace(/[\D]+/g, '');
-    if (!v) { setValor(''); return; }
-    setValor((parseFloat(v) / 100).toFixed(2).replace('.', ','));
-  };
-
-  const handleSubmit = async () => {
-    if (!descricao.trim() || !valor) { setError('Preencha descrição e valor'); return; }
-    const valorDecimal  = valor.replace(',', '.');
-    const valorFormatado = tipo === 'DESPESA' ? '-' + valorDecimal : valorDecimal;
-    const transacao = {
-      tipo,
-      descritivo: tipo === 'RECEITA' ? 'Receita' : 'Diário',
-      valor: valorFormatado,
-      data: dataFmt,
-      mes: mesNome,
-      detalhes: descricao.trim(),
-      situacao: tipo === 'DESPESA' ? 'Pago' : 'Recebido',
-      conta: 'Conta Nubank',
-      fixa: false,
-    };
-    setLoading(true); setError(null);
-    try {
-      const res    = await fetch('/api/transacoes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(transacao) });
-      const result = await res.json();
-      if (result.success) onAdded();
-      else setError(result.error || 'Erro ao criar transação');
-    } catch { setError('Erro de conexão'); }
-    finally { setLoading(false); }
-  };
-
+// Renders a hidden instance of the expense/income modal and auto-opens it
+function HiddenModalTrigger({ type }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const btn = ref.current?.querySelector('button');
+      if (btn) btn.click();
+    }, 40);
+    return () => clearTimeout(t);
+  }, []);
   return (
-    <div className="fixed inset-0 z-[75] flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.45)' }}>
+    <div ref={ref} style={{ position: 'fixed', top: '-9999px', left: '-9999px', pointerEvents: 'none' }}>
+      {type === 'DESPESA' ? <AddExpenseModalConta/> : <AddIncomeModalConta/>}
+    </div>
+  );
+}
+
+// Type picker bottom sheet: choose DESPESA or RECEITA before opening the real modal
+function TypePickerSheet({ onClose, onPick }) {
+  return (
+    <div className="fixed inset-0 z-[76] flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.4)' }}>
       <div className="flex-1" onClick={onClose}/>
-      <div className="bg-white rounded-t-2xl shadow-2xl px-5 pt-5">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-base font-bold text-gray-800">Nova transação</span>
-          <span className="text-sm text-gray-400">{dayStr}/{monthStr}/{year}</span>
+      <div className="bg-white rounded-t-2xl shadow-2xl px-5 pt-5" style={{ animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}>
+        <div className="text-base font-bold text-gray-800 mb-4">Nova transação</div>
+        <div className="flex gap-3 mb-4">
+          <button onClick={() => onPick('DESPESA')} className="flex-1 py-3 rounded-xl bg-red-50 text-red-600 border border-red-200 font-semibold text-sm active:opacity-70">
+            Despesa
+          </button>
+          <button onClick={() => onPick('RECEITA')} className="flex-1 py-3 rounded-xl bg-green-50 text-green-600 border border-green-200 font-semibold text-sm active:opacity-70">
+            Receita
+          </button>
         </div>
-        <div className="flex gap-2 mb-4">
-          <button onClick={() => setTipo('DESPESA')} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${tipo === 'DESPESA' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-gray-100 text-gray-500'}`}>Despesa</button>
-          <button onClick={() => setTipo('RECEITA')} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${tipo === 'RECEITA' ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-gray-100 text-gray-500'}`}>Receita</button>
-        </div>
-        <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-3 outline-none focus:border-purple-400" placeholder="Descrição" value={descricao} onChange={e => setDescricao(e.target.value)}/>
-        <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-3 outline-none focus:border-purple-400" placeholder="Valor (ex: 15,90)" value={valor} onChange={formatarMoeda} inputMode="numeric"/>
-        {error && <div className="text-xs text-red-500 mb-2">{error}</div>}
-        <button onClick={handleSubmit} disabled={loading} className="w-full py-3 rounded-xl bg-purple-700 text-white text-sm font-semibold mb-2 disabled:opacity-60">{loading ? 'Salvando...' : 'Salvar'}</button>
-        <div style={{ height: 'max(env(safe-area-inset-bottom), 12px)' }}/>
+        <div style={{ height: 'max(env(safe-area-inset-bottom), 8px)' }}/>
       </div>
     </div>
   );
 }
 
 // ─── Day Detail Sheet ─────────────────────────────────────────────────────────
-function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefreshMonth }) {
-  const [day,        setDay]        = useState(initialDay);
-  const [tipo,       setTipo]       = useState(initialTipo === 'todas' ? 'diarios' : initialTipo);
-  const [showFilter, setShowFilter] = useState(false);
-  const [showAdd,    setShowAdd]    = useState(false);
-  const [allItems,   setAllItems]   = useState(null);
-  const [loading,    setLoading]    = useState(true);
+function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefreshMonth, diarioAlvo }) {
+  const [day,           setDay]        = useState(initialDay);
+  const [tipo,          setTipo]       = useState(initialTipo === 'todas' ? 'diarios' : initialTipo);
+  const [showFilter,    setShowFilter] = useState(false);
+  const [showTypePicker,setShowTypePicker] = useState(false);
+  const [activeModal,   setActiveModal]= useState(null); // 'DESPESA' | 'RECEITA'
+  const [modalKey,      setModalKey]   = useState(0);
+  const [allItems,      setAllItems]   = useState(null);
+  const [loading,       setLoading]    = useState(true);
 
-  const daysInM = new Date(year, month + 1, 0).getDate();
+  const daysInM     = new Date(year, month + 1, 0).getDate();
   const dayPadded   = String(day).padStart(2, '0');
   const monthPadded = String(month + 1).padStart(2, '0');
+
+  // Is this day in the future?
+  const todayDate = new Date(); todayDate.setHours(0,0,0,0);
+  const thisDate  = new Date(year, month, day);
+  const isFuture  = thisDate > todayDate;
 
   const fetchItems = useCallback(() => {
     setLoading(true); setAllItems(null);
@@ -413,12 +395,13 @@ function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefre
 
   const dayItems = (allItems || []).filter(item => parseInt((item.data || '').split('/')[0]) === day);
   const total    = dayItems.reduce((s, i) => s + i.valor, 0);
+  const isForecast = isFuture && tipo === 'diarios' && dayItems.length === 0;
   const currentFilter = FILTER_OPTS.find(o => o.key === tipo);
 
-  const handleAdded = () => {
-    setShowAdd(false);
-    fetchItems();
-    if (onRefreshMonth) onRefreshMonth();
+  const handlePickType = (type) => {
+    setShowTypePicker(false);
+    setActiveModal(type);
+    setModalKey(k => k + 1);
   };
 
   return (
@@ -431,7 +414,7 @@ function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefre
           <span className="text-xl font-bold text-gray-800 min-w-[76px] text-center">{dayPadded}/{monthPadded}</span>
           <button onClick={() => setDay(d => d < daysInM ? d + 1 : 1)} className="p-1.5 rounded-full text-gray-500 active:bg-gray-100"><ChevronRight size={18}/></button>
         </div>
-        <button onClick={() => setShowAdd(true)} className="p-1.5 text-gray-600 active:bg-gray-100 rounded-lg">
+        <button onClick={() => setShowTypePicker(true)} className="p-1.5 text-gray-600 active:bg-gray-100 rounded-lg">
           <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
             <line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/>
           </svg>
@@ -450,7 +433,24 @@ function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefre
       {/* List */}
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {loading && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>}
-        {!loading && dayItems.length === 0 && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Nenhuma transação neste dia</div>}
+
+        {/* Forecast placeholder for future diário days */}
+        {!loading && isForecast && (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <FixedDailyIcon size={48}/>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-gray-600">Previsão diária</div>
+              {diarioAlvo > 0 && (
+                <div className="text-lg font-bold mt-1" style={{ color: TC.diarios }}>{fmtBRL(diarioAlvo)}</div>
+              )}
+              <div className="text-xs text-gray-400 mt-1">Nenhuma transação registrada</div>
+            </div>
+          </div>
+        )}
+
+        {!loading && !isForecast && dayItems.length === 0 && (
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Nenhuma transação neste dia</div>
+        )}
         {!loading && dayItems.map((item, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3.5 bg-white border-b border-gray-100">
             <TypeIconComp typeKey={tipo} size={36}/>
@@ -478,8 +478,11 @@ function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefre
       {showFilter && (
         <FilterSheet value={tipo} onChange={t => setTipo(t === 'todas' ? 'diarios' : t)} onClose={() => setShowFilter(false)} options={FILTER_OPTS_NO_ALL} zIndex={70}/>
       )}
-      {showAdd && (
-        <AddDayTransaction day={day} month={month} year={year} defaultTipo={tipo === 'receitas' ? 'RECEITA' : 'DESPESA'} onClose={() => setShowAdd(false)} onAdded={handleAdded}/>
+      {showTypePicker && (
+        <TypePickerSheet onClose={() => setShowTypePicker(false)} onPick={handlePickType}/>
+      )}
+      {activeModal && (
+        <HiddenModalTrigger key={modalKey} type={activeModal}/>
       )}
     </div>
   );
@@ -571,7 +574,6 @@ function HorizonteView({ month, year, onClose }) {
 
       setMonthCache(cache);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month, year]);
 
   const getMonthRows = (mo, yr) => monthCache[`${yr}-${mo}`] || [];
@@ -732,9 +734,21 @@ function SaldosTable({ data, filterType, month, year, useSaldo, onCellClick }) {
   const today    = new Date();
   const todayDay = (today.getFullYear() === year && today.getMonth() === month) ? today.getDate() : null;
   const types    = filterType === 'todas' ? TYPE_KEYS : [filterType];
+  const scrollRef = useRef(null);
+  const todayRef  = useRef(null);
+
+  // Scroll to today's row when data or filter changes
+  useEffect(() => {
+    if (todayRef.current && scrollRef.current) {
+      const container = scrollRef.current;
+      const el        = todayRef.current;
+      const offset    = el.offsetTop - container.clientHeight / 2 + el.clientHeight / 2;
+      container.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+    }
+  }, [data, filterType]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto" ref={scrollRef}>
       <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
         <colgroup>
           <col style={{ width: '44px' }}/>
@@ -756,6 +770,7 @@ function SaldosTable({ data, filterType, month, year, useSaldo, onCellClick }) {
               return (
                 <tr
                   key={`${row.day}-${ti}`}
+                  ref={isFirst && isToday ? todayRef : undefined}
                   style={{ borderBottom: isLast ? '1px solid #9ca3af' : '1px solid #d1d5db' }}
                 >
                   {isFirst && (
@@ -810,7 +825,7 @@ function SaldosTable({ data, filterType, month, year, useSaldo, onCellClick }) {
 }
 
 // ─── Saldos Tab ───────────────────────────────────────────────────────────────
-function SaldosTab({ month, year, today, onPrev, onNext, onOpenHorizonte, days, openingBalance, loading, onRefreshMonth }) {
+function SaldosTab({ month, year, today, onPrev, onNext, onOpenHorizonte, days, openingBalance, loading, onRefreshMonth, diarioAlvo }) {
   const [filterType, setFilterType] = useState('todas');
   const [showFilter, setShowFilter] = useState(false);
   const [dayDetail,  setDayDetail]  = useState(null); // { day, tipo }
@@ -864,6 +879,7 @@ function SaldosTab({ month, year, today, onPrev, onNext, onOpenHorizonte, days, 
           initialTipo={dayDetail.tipo}
           onClose={() => setDayDetail(null)}
           onRefreshMonth={onRefreshMonth}
+          diarioAlvo={diarioAlvo}
         />
       )}
     </div>
@@ -1284,7 +1300,7 @@ export default function SaldosPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [month, year, monthKey, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [month, year, monthKey, refreshKey]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -1312,7 +1328,7 @@ export default function SaldosPage() {
       <div className="fixed inset-0 z-40 bg-white flex flex-col" style={{ fontFamily: 'inherit' }}>
         <div className="flex-1 overflow-hidden flex flex-col">
           {activeTab === 'saldos' && (
-            <SaldosTab {...hProps} days={days} openingBalance={openingBalance} loading={loading} onRefreshMonth={refreshMonth}/>
+            <SaldosTab {...hProps} days={days} openingBalance={openingBalance} loading={loading} onRefreshMonth={refreshMonth} diarioAlvo={diarioAlvo}/>
           )}
           {activeTab === 'totais' && (
             <TotaisTab {...hProps} totais={totais} loading={loading}/>

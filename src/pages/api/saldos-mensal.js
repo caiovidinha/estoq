@@ -100,7 +100,8 @@ export default async function handler(req, res) {
 
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === anoNum && today.getMonth() + 1 === mesNum;
-    const todayDay = isCurrentMonth ? today.getDate() : null;
+    const isFutureMonth  = new Date(anoNum, mesNum - 1) > new Date(today.getFullYear(), today.getMonth());
+    const todayDay    = isCurrentMonth ? today.getDate() : null;
     const daysInMonth = new Date(anoNum, mesNum, 0).getDate();
 
     // Build per-day rows
@@ -113,7 +114,8 @@ export default async function handler(req, res) {
         return p && p.day === d;
       });
 
-      const isFuture = todayDay !== null && d > todayDay;
+      // Future: all days of a future month, or days after today in current month
+      const isFuture = isFutureMonth || (isCurrentMonth && d > todayDay);
 
       const receitas = dayMovs
         .filter(m => m.tipoAB === 'RECEITA' && isFixa(m.fixa))
@@ -140,14 +142,15 @@ export default async function handler(req, res) {
         && m.subtipo.toLowerCase() !== 'investimentos'
         && m.subtipo.toLowerCase() !== 'cartão'
       );
+      const diarioForecast = isFuture && diariosMovs.length === 0;
       let diarios;
-      if (isFuture && diariosMovs.length === 0) {
+      if (diarioForecast) {
         diarios = diarioDefault;
       } else {
         diarios = diariosMovs.reduce((s, m) => s + parseBRL(m.valor), 0);
       }
 
-      days.push({ day: d, receitas, despesas, diarios, economias, cartao });
+      days.push({ day: d, receitas, despesas, diarios, economias, cartao, diarioForecast });
 
       totalReceitas += receitas;
       totalDespesas += despesas;
@@ -196,7 +199,7 @@ export default async function handler(req, res) {
         daysElapsed,
       },
       diarioItems,
-      meta: { saldoAtual, diarioDefault, todayDay, daysInMonth, mesNum, anoNum },
+      meta: { saldoAtual, diarioDefault, todayDay, daysInMonth, mesNum, anoNum, isFutureMonth },
     });
   } catch (error) {
     console.error('Erro em /api/saldos-mensal:', error);
