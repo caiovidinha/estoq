@@ -7,6 +7,7 @@ import { RiBillFill } from 'react-icons/ri';
 import { FaChartPie } from 'react-icons/fa';
 import { AiOutlineLineChart } from 'react-icons/ai';
 import { BsGraphUp, BsTable } from 'react-icons/bs';
+import { MdAutorenew } from 'react-icons/md';
 import { HiOutlineMenuAlt3, HiX } from 'react-icons/hi';
 
 const Header = ({ children }) => {
@@ -85,6 +86,12 @@ const Header = ({ children }) => {
         <span className="ml-2">Saldos</span>
       </div>
     </li>
+    <li onClick={() => { setMenuOpen(false); router.push('/assinaturas'); }}>
+      <div className={router.pathname === "/assinaturas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+        <MdAutorenew size={25} />
+        <span className="ml-2">Assinaturas</span>
+      </div>
+    </li>
     {/* <li onClick={() => { setMenuOpen(false); router.push('/estatisticas'); }}>
       <div className={router.pathname === "/estatisticas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
         <AiOutlineLineChart size={25} />
@@ -96,7 +103,7 @@ const Header = ({ children }) => {
 
 
       {/* Menu fixo para desktop */}
-      <nav className="hidden sm:grid grid-cols-7 gap-8 px-4 pt-4 bg-gray-100">
+      <nav className="hidden sm:grid grid-cols-8 gap-8 px-4 pt-4 bg-gray-100">
         <Link href="/">
           <div className={router.pathname === "/" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BiSolidDashboard size={25} />
@@ -137,6 +144,12 @@ const Header = ({ children }) => {
           <div className={router.pathname === "/saldos" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
             <BsTable size={25} />
             <p className="hidden sm:block font-bold">Saldos</p>
+          </div>
+        </Link>
+        <Link href="/assinaturas">
+          <div className={router.pathname === "/assinaturas" ? activeClass + " flex flex-row items-center justify-center gap-3" : inactiveClass + " flex flex-row items-center justify-center gap-3"}>
+            <MdAutorenew size={25} />
+            <p className="hidden sm:block font-bold">Assinaturas</p>
           </div>
         </Link>
         {/* <Link href="/estatisticas">
