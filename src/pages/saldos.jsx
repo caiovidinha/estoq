@@ -8,11 +8,11 @@ const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov
 
 // Sober/muted balance colours (used for Horizonte cells + grid icon)
 const BAL = {
-  darkGreen:  '#1a7a3a',
-  lightGreen: '#5a9e6f',
-  yellow:     '#b8942a',
-  lightRed:   '#b05252',
-  darkRed:    '#c0202f',
+  darkGreen:  '#69a84f',
+  lightGreen: '#a8d08d',
+  yellow:     '#f4e2a0',
+  lightRed:   '#e06c55',
+  darkRed:    '#cc4025',
 };
 
 // Solid type colours
@@ -55,11 +55,7 @@ function balColor(val) {
 }
 
 function balBgColor(val) {
-  if (val > 2000)  return '#bbf7d0';
-  if (val > 1000)  return '#d1fae5';
-  if (val >= 0)    return '#fef3c7';
-  if (val >= -500) return '#fee2e2';
-  return '#fecaca';
+  return balColor(val);
 }
 
 function fmtBRL(val) {
@@ -149,26 +145,25 @@ const TableIcon = () => (
 );
 
 const TotaisIcon = () => (
-  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-    <line x1={4}  y1={6}  x2={11} y2={6}/>
-    <line x1={13} y1={6}  x2={20} y2={6}/>
-    <circle cx={12} cy={6}  r={1.5} fill="currentColor" stroke="none"/>
-    <line x1={4}  y1={12} x2={7}  y2={12}/>
-    <line x1={9}  y1={12} x2={20} y2={12}/>
-    <circle cx={8}  cy={12} r={1.5} fill="currentColor" stroke="none"/>
-    <line x1={4}  y1={18} x2={15} y2={18}/>
-    <line x1={17} y1={18} x2={20} y2={18}/>
-    <circle cx={16} cy={18} r={1.5} fill="currentColor" stroke="none"/>
+  <svg width={22} height={22} viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    {/* top-left: minus */}
+    <line x1={2} y1={5} x2={8} y2={5}/>
+    {/* top-right: multiply */}
+    <line x1={14} y1={2} x2={20} y2={8}/>
+    <line x1={20} y1={2} x2={14} y2={8}/>
+    {/* bottom-left: plus */}
+    <line x1={5} y1={14} x2={5} y2={20}/>
+    <line x1={2} y1={17} x2={8} y2={17}/>
+    {/* bottom-right: equals */}
+    <line x1={14} y1={15.5} x2={20} y2={15.5}/>
+    <line x1={14} y1={19} x2={20} y2={19}/>
   </svg>
 );
 
 const DiarioIcon = () => (
-  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-    <rect x={3} y={3} width={18} height={18} rx={2}/>
-    <line x1={3} y1={9} x2={21} y2={9}/>
-    <line x1={9} y1={9} x2={9} y2={21}/>
-    <line x1={14} y1={14} x2={17} y2={14}/>
-    <line x1={14} y1={17} x2={17} y2={17}/>
+  <svg width={22} height={22} viewBox="0 0 22 22" fill="none">
+    <circle cx={11} cy={11} r={9} stroke="currentColor" strokeWidth={1.8} strokeDasharray="3 2.5" strokeLinecap="round"/>
+    <text x={11} y={11} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="700" fill="currentColor" stroke="none">D</text>
   </svg>
 );
 
@@ -235,20 +230,21 @@ function FixedDailyIcon({ size = 20 }) {
     </div>
   );
 }
-// 3×3 grid of coloured squares (header icon)
-function ColorGridIcon({ size = 26 }) {
-  const colors = [
+// 3×3 grid of coloured squares (header icon) — colors passed dynamically
+function ColorGridIcon({ size = 26, colors }) {
+  const defaultColors = [
     BAL.darkGreen,  BAL.lightGreen, BAL.yellow,
     BAL.lightRed,   BAL.darkRed,    BAL.lightGreen,
     BAL.yellow,     BAL.darkGreen,  BAL.lightRed,
   ];
-  const cell = size / 4;
-  const gap  = size / 14;
+  const c    = colors || defaultColors;
+  const cell = size * 0.26;
+  const gap  = size * 0.09;
   const total = 3 * cell + 2 * gap;
   const off = (size - total) / 2;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {colors.map((c, i) => (
+      {c.map((col, i) => (
         <rect
           key={i}
           x={off + (i % 3) * (cell + gap)}
@@ -256,7 +252,7 @@ function ColorGridIcon({ size = 26 }) {
           width={cell}
           height={cell}
           rx={1.5}
-          fill={c}
+          fill={col}
         />
       ))}
     </svg>
@@ -489,17 +485,17 @@ function DayDetailSheet({ initialDay, month, year, initialTipo, onClose, onRefre
 }
 
 // ─── Horizonte de Saldos ──────────────────────────────────────────────────────
-function HorizonteView({ month, year, onClose }) {
+function HorizonteView({ month, year, onClose, onGridColors }) {
   const [activeQ,    setActiveQ]    = useState(0);
   const [monthCache, setMonthCache] = useState({});
   const scrollRef = useRef(null);
 
-  const qStart = Math.floor(month / 3) * 3;
+  // Build quarters starting from current month so it is always first
   const quarters = Array.from({ length: 3 }, (_, q) =>
     Array.from({ length: 3 }, (_, m) => {
-      const absM = qStart + q * 3 + m;
-      const mo = absM % 12;
-      const yr = year + Math.floor(absM / 12);
+      const absM = q * 3 + m;
+      const mo   = (month + absM) % 12;
+      const yr   = year + Math.floor((month + absM) / 12);
       return { month: mo, year: yr };
     })
   );
@@ -518,7 +514,7 @@ function HorizonteView({ month, year, onClose }) {
       const raw = {};
       results.forEach(({ key, json }) => { raw[key] = json; });
 
-      // Compute openingBalance for each month, anchored on current month
+      // Compute openingBalance anchored on current month
       const openings = {};
       const curKey   = `${year}-${month}`;
       const curJson  = raw[curKey];
@@ -533,10 +529,10 @@ function HorizonteView({ month, year, onClose }) {
         openings[curKey] = saldoAtual - deltaToToday;
       }
 
-      // Chain forward from current month
-      for (let i = allMonths.findIndex(m => m.month === month && m.year === year) + 1; i < allMonths.length; i++) {
-        const prev = allMonths[i - 1];
-        const cur  = allMonths[i];
+      // Chain forward
+      for (let i = 1; i < allMonths.length; i++) {
+        const prev    = allMonths[i - 1];
+        const cur     = allMonths[i];
         const prevKey = `${prev.year}-${prev.month}`;
         const curK    = `${cur.year}-${cur.month}`;
         if (openings[prevKey] !== undefined) {
@@ -546,33 +542,37 @@ function HorizonteView({ month, year, onClose }) {
         }
       }
 
-      // Chain backward from current month
-      const anchorIdx = allMonths.findIndex(m => m.month === month && m.year === year);
-      for (let i = anchorIdx - 1; i >= 0; i--) {
-        const next = allMonths[i + 1];
-        const cur  = allMonths[i];
-        const nextKey = `${next.year}-${next.month}`;
-        const curK    = `${cur.year}-${cur.month}`;
-        if (openings[nextKey] !== undefined) {
-          const curDays  = raw[curK]?.data || [];
-          const curTotal = curDays.reduce((s, r) => s + dailyBalance(r), 0);
-          openings[curK] = openings[nextKey] - curTotal;
-        }
-      }
-
       // Build final cache: per-month array of { day, saldo }
+      const SALDO_CUTOFF = new Date(2026, 5, 15);
       const cache = {};
       allMonths.forEach(({ month: mo, year: yr }) => {
         const k    = `${yr}-${mo}`;
         const days = raw[k]?.data || [];
         const ob   = openings[k] ?? 0;
         cache[k]   = days.map((row, idx) => {
+          const dayDate = new Date(yr, mo, row.day);
+          if (dayDate < SALDO_CUTOFF) return { day: row.day, saldo: 0 };
           const cum = days.slice(0, idx + 1).reduce((s, r) => s + dailyBalance(r), 0);
           return { day: row.day, saldo: ob + cum };
         });
       });
 
       setMonthCache(cache);
+
+      // Notify parent with the 9 colors for the grid icon
+      if (onGridColors) {
+        const colors = [];
+        for (let q = 0; q < 3; q++) {
+          for (let m = 0; m < 3; m++) {
+            const { month: mo, year: yr } = quarters[q][m];
+            const k    = `${yr}-${mo}`;
+            const rows = cache[k] || [];
+            const last = rows[rows.length - 1];
+            colors.push(last ? balColor(last.saldo) : BAL.yellow);
+          }
+        }
+        onGridColors(colors);
+      }
     });
   }, [month, year]);
 
@@ -666,7 +666,7 @@ function HorizonteView({ month, year, onClose }) {
                           <td
                             key={`v${mi}`}
                             className="py-1.5 text-right pr-2 text-xs"
-                            style={{ color: '#111', backgroundColor: color + '50' }}
+                            style={{ color: '#111', backgroundColor: color }}
                           >
                             {fmtHorizonte(row.saldo)}
                           </td>,
@@ -695,7 +695,7 @@ function HorizonteView({ month, year, onClose }) {
 }
 
 // ─── Shared Tab Header ────────────────────────────────────────────────────────
-function TabHeader({ month, year, today, onPrev, onNext, onOpenHorizonte }) {
+function TabHeader({ month, year, today, onPrev, onNext, onOpenHorizonte, gridColors }) {
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-300 flex-shrink-0 gap-2">
       <div className="flex items-center gap-2">
@@ -723,7 +723,7 @@ function TabHeader({ month, year, today, onPrev, onNext, onOpenHorizonte }) {
         </button>
       </div>
       <button onClick={onOpenHorizonte} className="p-1 rounded-lg active:bg-gray-100" aria-label="Horizonte de Saldos">
-        <ColorGridIcon size={28}/>
+        <ColorGridIcon size={28} colors={gridColors}/>
       </button>
     </div>
   );
@@ -793,7 +793,7 @@ function SaldosTable({ data, filterType, month, year, useSaldo, onCellClick }) {
                   >
                     <div
                       className="flex items-center justify-between pr-1"
-                      style={{ opacity: hasValue ? 1 : 0.3 }}
+                      style={{ opacity: 1 }}
                     >
                       <TypeIconComp typeKey={typeKey} size={22}/>
                       <span className="text-sm" style={{ color: hasValue ? TC[typeKey] : '#9ca3af' }}>
@@ -832,7 +832,11 @@ function SaldosTab({ month, year, today, onPrev, onNext, onOpenHorizonte, days, 
   const currentFilter = FILTER_OPTS.find(o => o.key === filterType);
 
   // Running balance: saldo at end of day d = openingBalance + Σ dailyBalance(1..d)
+  // Any day before 2026-06-15 shows 0
+  const SALDO_CUTOFF = new Date(2026, 5, 15);
   const computedDays = (days || []).map((row, idx) => {
+    const dayDate = new Date(year, month, row.day);
+    if (dayDate < SALDO_CUTOFF) return { ...row, saldo: 0 };
     const cumulative = (days || []).slice(0, idx + 1).reduce((s, r) => s + dailyBalance(r), 0);
     return { ...row, saldo: (openingBalance || 0) + cumulative };
   });
@@ -962,6 +966,267 @@ function DetailSheet({ tipo, label, month, year, onClose }) {
   );
 }
 
+// ─── Economizado Sheet ────────────────────────────────────────────────────────
+function EconomizadoBar({ pct }) {
+  const clamped = Math.min(100, Math.max(0, pct));
+  const color   = pct >= 20 ? TC.economias : pct >= 10 ? '#e6a817' : TC.despesas;
+  return (
+    <div className="flex items-center gap-2">
+      <TypeIconComp typeKey="economias" size={20}/>
+      <div className="flex-1 h-2.5 rounded-full bg-gray-200 overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${clamped}%`, background: color }}/>
+      </div>
+      <TypeIconComp typeKey="receitas" size={20}/>
+    </div>
+  );
+}
+
+function EconomizadoSheet({ year: initialYear, onClose }) {
+  const [year, setYear]   = useState(initialYear);
+  const [data, setData]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/economizado?ano=${year}`)
+      .then(r => r.json())
+      .then(json => { if (json.success) setData(json); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [year]);
+
+  const total = data?.total;
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <button onClick={onClose} className="text-gray-600 p-1"><ChevronLeft size={22}/></button>
+        <span className="font-semibold text-gray-800 flex-1">Economizado</span>
+      </div>
+
+      {/* Year nav */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+        <button onClick={() => setYear(y => y - 1)} className="p-2 rounded-full text-gray-500 active:bg-gray-100"><ChevronLeft size={18}/></button>
+        <span className="text-base font-bold text-gray-800">{year}</span>
+        <button onClick={() => setYear(y => y + 1)} className="p-2 rounded-full text-gray-500 active:bg-gray-100"><ChevronRight size={18}/></button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto bg-white">
+        {loading && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>}
+
+        {!loading && data && (
+          <>
+            {/* How it works */}
+            <div className="border-b border-gray-100">
+              <button className="w-full flex items-center justify-between px-5 py-3.5 active:bg-gray-50" onClick={() => setShowInfo(v => !v)}>
+                <span className="text-sm text-gray-500">Como funciona o economizado?</span>
+                <span className="text-gray-400" style={{ transform: showInfo ? 'rotate(180deg)' : 'none', display: 'inline-block', transition: 'transform 0.2s' }}>
+                  <ChevronDown/>
+                </span>
+              </button>
+              {showInfo && (
+                <div className="px-5 pb-4 text-xs text-gray-500 leading-relaxed">
+                  O economizado é a porcentagem da sua renda que foi para investimentos.<br/>
+                  <strong>Ideal: acima de 20%.</strong><br/>
+                  Fórmula: Economias ÷ Entradas × 100
+                </div>
+              )}
+            </div>
+
+            {/* Yearly total */}
+            <div className="px-5 py-5 border-b border-gray-200">
+              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total no ano</div>
+              <div className="text-4xl font-bold text-gray-900 mb-3">{total?.pct ?? 0}%</div>
+              <EconomizadoBar pct={total?.pct ?? 0}/>
+              <div className="flex justify-between mt-2">
+                <div>
+                  <div className="text-xs text-gray-500">Economias</div>
+                  <div className="text-sm font-semibold text-gray-800">{fmtBRL(total?.economias ?? 0)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Entradas</div>
+                  <div className="text-sm font-semibold text-gray-800">{fmtBRL(total?.receitas ?? 0)}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Per month */}
+            <div className="px-5 pt-4 pb-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wide">Total por mês</span>
+            </div>
+            {data.months.map((m, i) => (
+              <div key={i} className="px-5 py-4 border-b border-gray-100">
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-base font-bold text-gray-800">{m.mes}</span>
+                  <span className="text-base font-bold" style={{ color: m.pct >= 20 ? TC.economias : m.pct >= 10 ? '#e6a817' : m.pct === 0 ? '#9ca3af' : TC.despesas }}>{m.pct}%</span>
+                </div>
+                <EconomizadoBar pct={m.pct}/>
+                <div className="flex justify-between mt-1.5">
+                  <div>
+                    <div className="text-xs text-gray-400">Economias</div>
+                    <div className="text-xs font-semibold text-gray-700">{fmtBRL(m.economias)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400">Entradas</div>
+                    <div className="text-xs font-semibold text-gray-700">{fmtBRL(m.receitas)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared Year-View Sheet ───────────────────────────────────────────────────
+function useAnualData(year) {
+  const [data,    setData]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/totais-anuais?ano=${year}`)
+      .then(r => r.json())
+      .then(json => { if (json.success) setData(json); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [year]);
+  return { data, loading };
+}
+
+function YearNav({ year, setYear }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+      <button onClick={() => setYear(y => y - 1)} className="p-2 rounded-full text-gray-500 active:bg-gray-100"><ChevronLeft size={18}/></button>
+      <span className="text-base font-bold text-gray-800">{year}</span>
+      <button onClick={() => setYear(y => y + 1)} className="p-2 rounded-full text-gray-500 active:bg-gray-100"><ChevronRight size={18}/></button>
+    </div>
+  );
+}
+
+function InfoToggle({ label, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-100">
+      <button className="w-full flex items-center justify-between px-5 py-3.5 active:bg-gray-50" onClick={() => setOpen(v => !v)}>
+        <span className="text-sm text-gray-500">{label}</span>
+        <span className="text-gray-400" style={{ display: 'inline-block', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><ChevronDown/></span>
+      </button>
+      {open && <div className="px-5 pb-4 text-xs text-gray-500 leading-relaxed">{children}</div>}
+    </div>
+  );
+}
+
+// ─── Performance Sheet ────────────────────────────────────────────────────────
+function PerformanceSheet({ year: initialYear, onClose }) {
+  const [year, setYear] = useState(initialYear);
+  const { data, loading } = useAnualData(year);
+  const activeMonths = (data?.months || []).filter(m => m.receitas > 0 || m.performance !== 0);
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <button onClick={onClose} className="text-gray-600 p-1"><ChevronLeft size={22}/></button>
+        <span className="font-semibold text-gray-800 flex-1">Performance</span>
+      </div>
+      <YearNav year={year} setYear={setYear}/>
+      <div className="flex-1 overflow-y-auto">
+        {loading && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>}
+        {!loading && data && (
+          <>
+            <InfoToggle label="Como funciona a performance?">
+              Performance = Entradas − Saídas − Diários − Economias − Gastos com cartão.<br/>
+              Mostra o quanto sobrou (ou faltou) no mês após todos os gastos.
+            </InfoToggle>
+            {activeMonths.map((m, i) => (
+              <div key={i} className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <span className="text-base font-bold text-gray-800">{m.mes}</span>
+                <span className="text-base font-semibold" style={{ color: m.performance >= 0 ? TC.economias : TC.despesas }}>
+                  {m.performance >= 0 ? fmtBRL(m.performance) : `-${fmtBRL(Math.abs(m.performance))}`}
+                </span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Custo de Vida Sheet ──────────────────────────────────────────────────────
+function CustoVidaSheet({ year: initialYear, onClose }) {
+  const [year, setYear] = useState(initialYear);
+  const { data, loading } = useAnualData(year);
+  const activeMonths = (data?.months || []).filter(m => m.custoVida > 0);
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <button onClick={onClose} className="text-gray-600 p-1"><ChevronLeft size={22}/></button>
+        <span className="font-semibold text-gray-800 flex-1">Custo de vida</span>
+      </div>
+      <YearNav year={year} setYear={setYear}/>
+      <div className="flex-1 overflow-y-auto">
+        {loading && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>}
+        {!loading && data && (
+          <>
+            <InfoToggle label="Como funciona o custo de vida?">
+              Custo de vida = Saídas + Diários + Gastos com cartão.<br/>
+              Representa o total gasto para manter o padrão de vida no mês.
+            </InfoToggle>
+            {activeMonths.map((m, i) => (
+              <div key={i} className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <span className="text-base font-bold text-gray-800">{m.mes}</span>
+                <span className="text-base font-semibold text-gray-800">{fmtBRL(m.custoVida)}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Diário Médio Sheet ───────────────────────────────────────────────────────
+function DiarioMedioSheet({ year: initialYear, onClose }) {
+  const [year, setYear] = useState(initialYear);
+  const { data, loading } = useAnualData(year);
+  const activeMonths = (data?.months || []).filter(m => m.daysElapsed > 0);
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <button onClick={onClose} className="text-gray-600 p-1"><ChevronLeft size={22}/></button>
+        <span className="font-semibold text-gray-800 flex-1">Diário médio</span>
+      </div>
+      <YearNav year={year} setYear={setYear}/>
+      <div className="flex-1 overflow-y-auto">
+        {loading && <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>}
+        {!loading && data && (
+          <>
+            <InfoToggle label="Como funciona o diário médio?">
+              Diário médio = Total de despesas não-fixas do mês ÷ dias do período.<br/>
+              Para junho 2026, o período começa em 15/06.
+            </InfoToggle>
+            {activeMonths.map((m, i) => (
+              <div key={i} className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <span className="text-base font-bold text-gray-800">{m.mes}</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-base font-semibold text-gray-800">{fmtBRL(m.diarioMedio)}</span>
+                  <span className="text-xs text-gray-400">{fmtBRL(m.diarios)} / {m.daysElapsed}</span>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function performanceStatus(val) {
   if (val > 0)  return { label: 'Sobrou dinheiro',   color: TC.economias };
   if (val === 0) return { label: 'Equilibrado',       color: TC.diarios };
@@ -979,7 +1244,11 @@ function custoVidaStatus(custo, receitas) {
 }
 
 function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais, loading }) {
-  const [detail, setDetail] = useState(null); // { tipo, label }
+  const [detail,          setDetail]          = useState(null);
+  const [showEconomizado, setShowEconomizado] = useState(false);
+  const [showPerformance, setShowPerformance] = useState(false);
+  const [showCustoVida,   setShowCustoVida]   = useState(false);
+  const [showDiarioMedio, setShowDiarioMedio] = useState(false); // { tipo, label }
 
   const d = totais || {};
   const perf = performanceStatus(d.performance || 0);
@@ -1005,10 +1274,13 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
             <SectionLabel label="Cálculos do mês"/>
 
             {/* Performance */}
-            <div className="px-4 py-3.5 border-b border-gray-200 bg-white">
+            <button onClick={() => setShowPerformance(true)} className="w-full px-4 py-3.5 border-b border-gray-200 bg-white text-left active:bg-gray-50">
               <div className="flex items-start justify-between mb-1.5">
                 <span className="text-sm font-semibold text-gray-800">Performance</span>
-                <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.performance || 0)}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.performance || 0)}</span>
+                  <ChevronRight size={14}/>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <FormulaRow items={[
@@ -1018,13 +1290,16 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
                 ]}/>
                 <span className="text-xs ml-2 flex-shrink-0" style={{ color: perf.color }}>{perf.label}</span>
               </div>
-            </div>
+            </button>
 
             {/* Economizado */}
-            <div className="px-4 py-3.5 border-b border-gray-200 bg-white">
+            <button onClick={() => setShowEconomizado(true)} className="w-full px-4 py-3.5 border-b border-gray-200 bg-white text-left active:bg-gray-50">
               <div className="flex items-start justify-between mb-1.5">
                 <span className="text-sm font-semibold text-gray-800">Economizado</span>
-                <span className="text-sm font-semibold text-gray-800">{d.economizadoPct || 0}%</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-gray-800">{d.economizadoPct || 0}%</span>
+                  <ChevronRight size={14}/>
+                </div>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-1.5 flex-1">
@@ -1036,13 +1311,16 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
                 </div>
                 <span className="text-xs flex-shrink-0" style={{ color: econ.color }}>{econ.label}</span>
               </div>
-            </div>
+            </button>
 
             {/* Custo de vida */}
-            <div className="px-4 py-3.5 border-b border-gray-200 bg-white">
+            <button onClick={() => setShowCustoVida(true)} className="w-full px-4 py-3.5 border-b border-gray-200 bg-white text-left active:bg-gray-50">
               <div className="flex items-start justify-between mb-1.5">
                 <span className="text-sm font-semibold text-gray-800">Custo de vida</span>
-                <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.custoVida || 0)}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.custoVida || 0)}</span>
+                  <ChevronRight size={14}/>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <FormulaRow items={[
@@ -1052,13 +1330,16 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
                 ]}/>
                 <span className="text-xs ml-2 flex-shrink-0" style={{ color: cvSt.color }}>{cvSt.label}</span>
               </div>
-            </div>
+            </button>
 
             {/* Diário médio */}
-            <div className="px-4 py-3.5 border-b border-gray-200 bg-white">
+            <button onClick={() => setShowDiarioMedio(true)} className="w-full px-4 py-3.5 border-b border-gray-200 bg-white text-left active:bg-gray-50">
               <div className="flex items-start justify-between mb-1.5">
                 <span className="text-sm font-semibold text-gray-800">Diário médio</span>
-                <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.diarioMedio || 0)}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold text-gray-800">{fmtBRL(d.diarioMedio || 0)}</span>
+                  <ChevronRight size={14}/>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
@@ -1072,7 +1353,7 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
                   </div>
                 )}
               </div>
-            </div>
+            </button>
 
             <SectionLabel label="Movimentações do mês"/>
 
@@ -1105,59 +1386,275 @@ function TotaisTab({ month, year, today, onPrev, onNext, onOpenHorizonte, totais
           onClose={() => setDetail(null)}
         />
       )}
+      {showEconomizado && (
+        <EconomizadoSheet year={year} onClose={() => setShowEconomizado(false)}/>
+      )}
+      {showPerformance && (
+        <PerformanceSheet year={year} onClose={() => setShowPerformance(false)}/>
+      )}
+      {showCustoVida && (
+        <CustoVidaSheet year={year} onClose={() => setShowCustoVida(false)}/>
+      )}
+      {showDiarioMedio && (
+        <DiarioMedioSheet year={year} onClose={() => setShowDiarioMedio(false)}/>
+      )}
+    </div>
+  );
+}
+
+// ─── Edit Diário Item Sheet ───────────────────────────────────────────────────
+function EditDiarioSheet({ item, onClose, onSaved }) {
+  const [valor,   setValor]  = useState(
+    item.valor != null ? item.valor.toFixed(2).replace('.', ',') : ''
+  );
+  const [loading,  setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [error,    setError]   = useState(null);
+
+  const formatarMoeda = (e) => {
+    const v = e.target.value.replace(/[\D]+/g, '');
+    if (!v) { setValor(''); return; }
+    setValor((parseFloat(v) / 100).toFixed(2).replace('.', ','));
+  };
+
+  const handleSave = async () => {
+    if (!valor) { setError('Informe o valor'); return; }
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch('/api/diario-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rowNum: item.rowNum, valor: parseFloat(valor.replace(',', '.')) }),
+      });
+      const result = await res.json();
+      if (result.success) onSaved();
+      else setError(result.error || 'Erro ao salvar');
+    } catch { setError('Erro de conexão'); }
+    finally { setLoading(false); }
+  };
+
+  const handleDelete = async () => {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch('/api/diario-config', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rowNum: item.rowNum, categoria: item.categoria }),
+      });
+      const result = await res.json();
+      if (result.success) onSaved();
+      else setError(result.error || 'Erro ao excluir');
+    } catch { setError('Erro de conexão'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[75] flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.45)' }}>
+      <div className="flex-1" onClick={onClose}/>
+      <div className="bg-white rounded-t-2xl shadow-2xl px-5 pt-5" style={{ animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-base font-bold text-gray-800">{item.categoria}</span>
+          <button onClick={onClose} className="text-gray-400 p-1"><CloseIcon/></button>
+        </div>
+        {item.medio != null && (
+          <span className="text-xs text-gray-400 mb-4 block">Médio real: {fmtBRL(Math.abs(item.medio))}</span>
+        )}
+        <input
+          autoFocus
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm mb-3 outline-none focus:border-purple-400"
+          placeholder="Valor mensal"
+          value={valor}
+          onChange={formatarMoeda}
+          inputMode="numeric"
+        />
+        {error && <div className="text-xs text-red-500 mb-2">{error}</div>}
+        <button onClick={handleSave} disabled={loading} className="w-full py-3 rounded-xl bg-purple-700 text-white text-sm font-semibold mb-2 disabled:opacity-60">
+          {loading ? 'Salvando...' : 'Salvar'}
+        </button>
+        {!confirmDelete ? (
+          <button onClick={() => setConfirmDelete(true)} disabled={loading} className="w-full py-3 rounded-xl bg-red-50 text-red-600 text-sm font-semibold mb-2 border border-red-200 disabled:opacity-60">
+            Excluir
+          </button>
+        ) : (
+          <div className="flex gap-2 mb-2">
+            <button onClick={() => setConfirmDelete(false)} className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold">Cancelar</button>
+            <button onClick={handleDelete} disabled={loading} className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-semibold disabled:opacity-60">
+              {loading ? '...' : 'Confirmar exclusão'}
+            </button>
+          </div>
+        )}
+        <div style={{ height: 'max(env(safe-area-inset-bottom), 12px)' }}/>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Diário Item Modal ────────────────────────────────────────────────────
+function AddDiarioModal({ available, onClose, onAdded }) {
+  const [selected, setSelected] = useState(null); // { categoria, valor }
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState(null);
+
+  const formatarMoeda = (e) => {
+    const v = e.target.value.replace(/[\D]+/g, '');
+    if (!v) { setSelected(s => ({ ...s, valor: '' })); return; }
+    setSelected(s => ({ ...s, valor: (parseFloat(v) / 100).toFixed(2).replace('.', ',') }));
+  };
+
+  const handleToggle = (cat) => {
+    setSelected(prev => prev?.categoria === cat ? null : { categoria: cat, valor: '' });
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!selected?.categoria || !selected?.valor) { setError('Informe o valor mensal'); return; }
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch('/api/diario-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoria: selected.categoria, valor: parseFloat(selected.valor.replace(',', '.')) }),
+      });
+      const result = await res.json();
+      if (result.success) onAdded();
+      else setError(result.error || 'Erro ao salvar');
+    } catch { setError('Erro de conexão'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[75] flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.45)' }}>
+      <div className="flex-1" onClick={onClose}/>
+      <div className="bg-white rounded-t-2xl shadow-2xl px-5 pt-5" style={{ animation: 'slideUp 0.28s cubic-bezier(0.32,0.72,0,1)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-base font-bold text-gray-800">Nova previsão</span>
+          <button onClick={onClose} className="text-gray-400 p-1"><CloseIcon/></button>
+        </div>
+
+        {available.length === 0 ? (
+          <div className="text-sm text-gray-400 text-center py-6">Todas as categorias já estão na previsão</div>
+        ) : (
+          <>
+            <div className="flex flex-col max-h-64 overflow-y-auto mb-3 -mx-5 px-5">
+              {available.map(cat => {
+                const isChecked = selected?.categoria === cat;
+                return (
+                  <div key={cat}>
+                    <button
+                      onClick={() => handleToggle(cat)}
+                      className="w-full flex items-center gap-3 py-3.5 border-b border-gray-100"
+                    >
+                      {/* Checkbox circle */}
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${isChecked ? 'border-purple-600 bg-purple-600' : 'border-gray-300 bg-white'}`}>
+                        {isChecked && (
+                          <svg width={10} height={10} viewBox="0 0 10 10" fill="none">
+                            <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                      <span className={`text-sm flex-1 text-left ${isChecked ? 'font-semibold text-purple-700' : 'text-gray-700'}`}>{cat}</span>
+                    </button>
+                    {isChecked && (
+                      <div className="py-3 border-b border-gray-100">
+                        <input
+                          autoFocus
+                          className="w-full border border-purple-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-500 bg-purple-50"
+                          placeholder="Valor mensal (ex: 500,00)"
+                          value={selected.valor}
+                          onChange={formatarMoeda}
+                          inputMode="numeric"
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {error && <div className="text-xs text-red-500 mb-2">{error}</div>}
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !selected}
+              className="w-full py-3 rounded-xl bg-purple-700 text-white text-sm font-semibold mb-2 disabled:opacity-40"
+            >
+              {loading ? 'Salvando...' : 'Salvar'}
+            </button>
+          </>
+        )}
+        <div style={{ height: 'max(env(safe-area-inset-bottom), 12px)' }}/>
+      </div>
     </div>
   );
 }
 
 // ─── Diário Tab ───────────────────────────────────────────────────────────────
 function DiarioTab({ month, year, today, onPrev, onNext, onOpenHorizonte, diarioAlvo }) {
-  const [items,       setItems]   = useState(null);
-  const [loadingG,    setLoadingG]= useState(true);
-  const [daysElapsed, setDaysEl]  = useState(1);
-  const [divisor,     setDivisor] = useState(1);
+  const [items,     setItems]    = useState(null);
+  const [available, setAvailable]= useState([]);
+  const [loading,   setLoading]  = useState(true);
+  const [showAdd,   setShowAdd]  = useState(false);
+  const [editItem,  setEditItem] = useState(null);
 
-  useEffect(() => {
-    setLoadingG(true);
-    fetch('/api/saldos-diario-global')
+  const fetchConfig = useCallback(() => {
+    setLoading(true);
+    fetch('/api/diario-config')
       .then(r => r.json())
       .then(json => {
         if (json.success) {
-          setItems(json.data);
-          setDaysEl(json.daysElapsed || 1);
-          setDivisor(json.daysElapsed || 1);
-        } else setItems([]);
+          setItems(json.items);
+          setAvailable(json.available || []);
+        } else { setItems([]); }
       })
       .catch(() => setItems([]))
-      .finally(() => setLoadingG(false));
-  }, []); // fetch once — all-time data
+      .finally(() => setLoading(false));
+  }, []);
 
-  const allItems = items || [];
-  const total    = allItems.reduce((s, i) => s + i.valor, 0);
-  const result   = divisor > 0 ? total / divisor : 0;
+  useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
-  const cycleDivisor = () => {
-    setDivisor(d => {
-      if (d === daysElapsed) return 30;
-      if (d === 30)          return 31;
-      return daysElapsed;
-    });
-  };
+  const allItems   = items || [];
+  const totalMeta  = allItems.reduce((s, i) => s + (i.valor || 0), 0);
+  const totalMedio = allItems.reduce((s, i) => s + Math.abs(i.medio || 0), 0);
+
+  const handleAdded = () => { setShowAdd(false); fetchConfig(); };
+  const handleEdited = () => { setEditItem(null); fetchConfig(); };
 
   return (
     <div className="flex flex-col h-full">
-      <TabHeader month={month} year={year} today={today} onPrev={onPrev} onNext={onNext} onOpenHorizonte={onOpenHorizonte}/>
+      {/* Header — reuse same style as TabHeader but with title + add button */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-300 flex-shrink-0 gap-2">
+        <div className="flex items-center gap-2">
+          <Link href="/">
+            <button className="p-1.5 rounded-lg text-gray-500 active:bg-gray-100" aria-label="Início">
+              <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+                <polyline points="9 21 9 12 15 12 15 21"/>
+              </svg>
+            </button>
+          </Link>
+          <span className="text-base font-bold text-gray-800">Previsão de diário</span>
+        </div>
+        <button onClick={() => setShowAdd(true)} className="p-1.5 text-gray-600 active:bg-gray-100 rounded-lg">
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+            <line x1={12} y1={5} x2={12} y2={19}/><line x1={5} y1={12} x2={19} y2={12}/>
+          </svg>
+        </button>
+      </div>
 
       <div className="flex-1 overflow-y-auto bg-gray-50">
-        {loadingG ? (
+        {loading ? (
           <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Carregando...</div>
         ) : allItems.length === 0 ? (
-          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Sem transações diárias</div>
+          <div className="flex items-center justify-center py-20 text-gray-400 text-sm">Nenhuma previsão configurada</div>
         ) : (
           allItems.map((item, i) => (
-            <div key={i} className="flex items-center justify-between px-5 py-4 bg-white border-b border-gray-200">
-              <span className="text-sm font-semibold text-gray-800">{item.label}</span>
-              <span className="text-sm text-gray-800">{fmtBRL(item.valor)}</span>
-            </div>
+            <button key={i} onClick={() => setEditItem(item)} className="w-full flex items-center justify-between px-5 py-4 bg-white border-b border-gray-200 active:bg-gray-50">
+              <span className="text-sm font-semibold text-gray-800">{item.categoria}</span>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="text-sm font-semibold text-gray-800">{fmtBRL(item.valor || 0)}</span>
+                {item.medio != null && (
+                  <span className="text-xs text-gray-400">Médio {fmtBRL(Math.abs(item.medio))}</span>
+                )}
+              </div>
+            </button>
           ))
         )}
         <div className="bg-gray-100 flex-1" style={{ minHeight: 80 }}/>
@@ -1165,26 +1662,29 @@ function DiarioTab({ month, year, today, onPrev, onNext, onOpenHorizonte, diario
 
       <div className="bg-white border-t border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200">
-          <span className="text-sm font-semibold text-gray-700">Total acumulado</span>
-          <span className="text-sm text-gray-800">{fmtBRL(total)}</span>
+          <span className="text-sm font-semibold text-gray-700">Total mensal</span>
+          <span className="text-sm text-gray-800">{fmtBRL(totalMeta)}</span>
         </div>
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200">
           <span className="text-sm font-semibold text-gray-700">Dividido por</span>
-          <button className="flex items-center gap-1.5 text-sm text-gray-800" onClick={cycleDivisor}>
-            {divisor} dias
-            <ChevronDown/>
-          </button>
+          <span className="text-sm text-gray-600">30 dias</span>
         </div>
         <div className="flex items-center justify-between px-5 py-4">
-          {diarioAlvo > 0 && (
-            <div className="flex items-center gap-1.5">
-              <FixedDailyIcon size={16}/>
-              <span className="text-xs text-gray-400">Alvo {fmtBRL(diarioAlvo)}</span>
-            </div>
-          )}
-          <span className="text-xl font-bold text-gray-900 ml-auto">{fmtBRL(result)}</span>
+          <div className="flex flex-col gap-0.5">
+            {totalMedio > 0 && (
+              <span className="text-xs text-gray-400">Médio real {fmtBRL(totalMedio / 30)}/dia</span>
+            )}
+          </div>
+          <span className="text-xl font-bold text-gray-900">{fmtBRL(totalMeta / 30)}</span>
         </div>
       </div>
+
+      {showAdd && (
+        <AddDiarioModal available={available} onClose={() => setShowAdd(false)} onAdded={handleAdded}/>
+      )}
+      {editItem && (
+        <EditDiarioSheet item={editItem} onClose={() => setEditItem(null)} onSaved={handleEdited}/>
+      )}
     </div>
   );
 }
@@ -1237,6 +1737,7 @@ export default function SaldosPage() {
   const [month,         setMonth]         = useState(today.getMonth());
   const [year,          setYear]          = useState(today.getFullYear());
   const [showHorizonte, setShowHorizonte] = useState(false);
+  const [gridColors,    setGridColors]    = useState(null);
 
   // ─── Data cache: key = "YYYY-M" → { ...apiJson, openingBalance } ──────────
   const [dataCache,  setDataCache]  = useState({});
@@ -1314,7 +1815,7 @@ export default function SaldosPage() {
     else setMonth(m => m + 1);
   }
 
-  const hProps = { month, year, today, onPrev: prevMonth, onNext: nextMonth, onOpenHorizonte: () => setShowHorizonte(true) };
+  const hProps = { month, year, today, onPrev: prevMonth, onNext: nextMonth, onOpenHorizonte: () => setShowHorizonte(true), gridColors };
   const entry        = dataCache[monthKey];
   const days         = entry?.data         || [];
   const totais       = entry?.totais       || {};
@@ -1340,7 +1841,7 @@ export default function SaldosPage() {
         <BottomNav active={activeTab} onChange={setActiveTab}/>
       </div>
       {showHorizonte && (
-        <HorizonteView month={month} year={year} onClose={() => setShowHorizonte(false)}/>
+        <HorizonteView month={month} year={year} onClose={() => setShowHorizonte(false)} onGridColors={setGridColors}/>
       )}
     </>
   );

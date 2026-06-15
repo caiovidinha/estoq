@@ -95,7 +95,8 @@ export default async function handler(req, res) {
         break;
       case 'diarios':
         filtered = inMonth.filter(m =>
-          !isFixa(m.fixa)
+          m.tipoAB === 'DESPESA'
+          && !isFixa(m.fixa)
           && m.subtipo.toLowerCase() !== 'investimentos'
           && m.subtipo.toLowerCase() !== 'cartão'
         );

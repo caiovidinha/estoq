@@ -106,7 +106,7 @@ export default async function handler(req, res) {
 
     // Build per-day rows
     const days = [];
-    let totalReceitas = 0, totalDespesas = 0, totalDiarios = 0, totalEconomias = 0, totalCartao = 0;
+    let totalReceitas = 0, totalDespesas = 0, totalDiarios = 0, totalEconomias = 0, totalCartao = 0, totalDiariosReal = 0;
 
     for (let d = 1; d <= daysInMonth; d++) {
       const dayMovs = filtered.filter(mov => {
@@ -136,18 +136,20 @@ export default async function handler(req, res) {
         .filter(m => m.subtipo.toLowerCase() === 'cartão')
         .reduce((s, m) => s + parseBRL(m.valor), 0);
 
-      // Diários: non-fixed transactions (excluding investimentos + cartão which are already counted)
+      // Diários: DESPESA non-fixed (excluding investimentos + cartão)
       const diariosMovs = dayMovs.filter(m =>
-        !isFixa(m.fixa)
+        m.tipoAB === 'DESPESA'
+        && !isFixa(m.fixa)
         && m.subtipo.toLowerCase() !== 'investimentos'
         && m.subtipo.toLowerCase() !== 'cartão'
       );
       const diarioForecast = isFuture && diariosMovs.length === 0;
+      const diariosReal = diariosMovs.reduce((s, m) => s + parseBRL(m.valor), 0);
       let diarios;
       if (diarioForecast) {
         diarios = diarioDefault;
       } else {
-        diarios = diariosMovs.reduce((s, m) => s + parseBRL(m.valor), 0);
+        diarios = diariosReal;
       }
 
       days.push({ day: d, receitas, despesas, diarios, economias, cartao, diarioForecast });
@@ -157,18 +159,23 @@ export default async function handler(req, res) {
       totalDiarios += diarios;
       totalEconomias += economias;
       totalCartao += cartao;
+      if (!diarioForecast) totalDiariosReal += diariosReal;
     }
 
     // ─── Totais calculados ────────────────────────────────────────────────────
     const performance = totalReceitas - totalDespesas - totalDiarios - totalEconomias - totalCartao;
     const economizadoPct = totalReceitas > 0 ? Math.round((totalEconomias / totalReceitas) * 100) : 0;
     const custoVida = totalDespesas + totalDiarios + totalCartao;
-    const daysElapsed = todayDay !== null ? Math.min(todayDay, daysInMonth) : daysInMonth;
-    const diarioMedio = daysElapsed > 0 ? totalDiarios / daysElapsed : 0;
+    // daysElapsed = days since cutoff (for June 2026: only from the 15th onward)
+    const CUTOFF_DAY = (mesNum === 6 && anoNum === 2026) ? 15 : 1;
+    const lastActualDay = todayDay !== null ? todayDay : daysInMonth;
+    const daysElapsed = Math.max(1, lastActualDay - CUTOFF_DAY + 1);
+    const diarioMedio = daysElapsed > 0 ? totalDiariosReal / daysElapsed : 0;
 
-    // ─── Diário breakdown (non-fixed grouped by detalhes) ────────────────────
+    // ─── Diário breakdown (DESPESA non-fixed grouped by detalhes) ────────────
     const diariosAll = filtered.filter(m =>
-      !isFixa(m.fixa)
+      m.tipoAB === 'DESPESA'
+      && !isFixa(m.fixa)
       && m.subtipo.toLowerCase() !== 'investimentos'
       && m.subtipo.toLowerCase() !== 'cartão'
     );
@@ -188,7 +195,7 @@ export default async function handler(req, res) {
       totais: {
         receitas: totalReceitas,
         despesas: totalDespesas,
-        diarios: totalDiarios,
+        diarios: totalDiariosReal,
         economias: totalEconomias,
         cartao: totalCartao,
         performance,

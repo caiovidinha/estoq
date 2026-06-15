@@ -61,6 +61,7 @@ export default async function handler(req, res) {
 
     const diarios = movs.filter(m =>
       isAfterCutoff(m.data)
+      && m.tipoAB === 'DESPESA'
       && !isFixa(m.fixa)
       && m.subtipo.toLowerCase() !== 'investimentos'
       && m.subtipo.toLowerCase() !== 'cartão'
