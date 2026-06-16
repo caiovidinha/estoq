@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { getRange, updateCell } from '@/lib/sheets';
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID;
