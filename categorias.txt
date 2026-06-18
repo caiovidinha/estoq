@@ -1,0 +1,27 @@
+DESPESA
+
+Alimentação BiRestaurant
+Locomoção BiCar
+Academia GiWeightLiftingUp
+Celular BiPhone
+Vestuário BiSolidTShirt
+Cartão BiCreditCardAlt
+Dívida BiBomb
+Lazer BiSmile
+Saúde BiHealth
+Bet SiBetfair
+Presente BiGift
+Serviços AiOutlineTool
+Investimento RiFundsBoxLine
+Fatura RiBillLine
+Outros BsThreeDots
+
+------------------------------------------------------------------------------------------
+
+RECEITA
+
+Salário - V4 BiMoneyWithdraw
+Freelance SiFreelancer
+Investimento RiFundsBoxLine
+Limite Cartão BiCreditCardAlt
+Outros BsThreeDots

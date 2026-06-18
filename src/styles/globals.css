@@ -3,25 +3,67 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
+/* Forçar tema claro sempre, sem modo escuro */
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+    color: rgb(0, 0, 0);
+    background: #f3f4f6;
 }
+
+/* Garantir que todos os textos sejam escuros por padrão */
+* {
+    color: inherit;
+}
+
+/* Classes de utilidade para garantir contraste */
+.text-default {
+    color: rgb(0, 0, 0);
+}
+
+.bg-default {
+    background-color: #f3f4f6;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1;   }
+}
+
+/* Prevenir zoom em inputs no iOS (font-size < 16px causa zoom) */
+input, textarea {
+    font-size: 16px !important;
+}
+
+/* Melhorar responsividade de todos os selects/dropdowns */
+select {
+    /* Aumentar área de toque no mobile */
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    /* Melhorar performance de clique */
+    touch-action: manipulation;
+    /* Garantir que o select seja totalmente clicável */
+    cursor: pointer;
+    /* Fonte mínima de 16px previne zoom no iOS */
+    font-size: 16px;
+}
+
+/* Estados hover e focus melhorados */
+select:hover {
+    opacity: 0.9;
+}
+
+select:focus {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+}
+
+/* Melhorar as options dentro do select */
+select option {
+    padding: 10px;
+    font-size: 16px;
+}
+

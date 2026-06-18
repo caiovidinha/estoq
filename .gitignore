@@ -4,16 +4,23 @@
 /node_modules
 /.pnp
 .pnp.js
-
 # testing
 /coverage
-
+.env
 # next.js
 /.next/
 /out/
 
 # production
 /build
+
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
 
 # misc
 .DS_Store
@@ -26,6 +33,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+refreshing-well-450717-i3-df6ef5e83fd5.json
 
 # vercel
 .vercel
@@ -33,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# anotações
+categorias.txt

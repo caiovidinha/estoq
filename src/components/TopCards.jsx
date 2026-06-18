@@ -1,134 +1,188 @@
-import { React,useEffect,useState,useRef } from 'react'
+import { React, useEffect, useState, useRef } from 'react'
 import { BiLogoMastercard } from 'react-icons/bi'
-import { BsBusFrontFill, } from 'react-icons/bs'
-import { SiNubank } from 'react-icons/si'
+import { MdRestaurantMenu } from 'react-icons/md'
+import { BiSolidBank } from "react-icons/bi";
+import { HiRefresh } from 'react-icons/hi';
 import AddIncomeModalConta from './AddIncomeModalConta'
 import AddExpenseModalConta from './AddExpenseModalConta'
 import AddIncomeModalCredito from './AddIncomeModalCredito'
 import AddExpenseModalCredito from './AddExpenseModalCredito'
-import AddIncomeModalBus from './AddIncomeModalBus'
-import AddExpenseModalBus from './AddExpenseModalBus'
-import AddInvestimento from './AddInvestimento'
-import AddFatura from './AddFatura'
+import AddIncomeModalVR from './AddIncomeModalVR'
+import AddExpenseModalVR from './AddExpenseModalVR'
 import SeeCreditCards from './SeeCreditCards'
+import SeeAccounts from './SeeAccounts';
+import AddInvestimento from './AddInvestimento';
+import { useFormOptionsContext } from '@/contexts/FormOptionsContext';
 
 const TopCards = () => {
-        let cartoes = 0
-        const tipoRef = useRef()
-		const categoriaRef = useRef()
-		const valorRef = useRef()
-		const dataRef = useRef()
-		const descricaoRef = useRef()
-		const statusRef = useRef()
-		const categoraRef = useRef()
-		const contaRef = useRef()
+    const [saldoGeral, setSaldoGeral] = useState('R$ 0,00')
+    const [gastoDiarioConta, setGastoDiarioConta] = useState(null)
+    const [gastoSemanalConta, setGastoSemanalConta] = useState(null)
+    const [saldoVR, setSaldoVR] = useState('R$ 0,00')
+    const [gastoDiarioVR, setGastoDiarioVR] = useState(null)
+    const [gastoSemanalVR, setGastoSemanalVR] = useState(null)
+    const [proximoRecVR, setProximoRecVR] = useState(null)
+    const [refreshing, setRefreshing] = useState(false)
+    const { refetchCategorias, refetchContas, refetchCartoes, refetchCategoryIcons } = useFormOptionsContext();
 
-		const [saldo,setSaldo] = useState([])
+    useEffect(() => {
+        const fetchSaldos = async () => {
+            try {
+                // Busca saldo geral de API!A2
+                const response = await fetch('/api/saldo')
+                const data = await response.json()
+                if (data.success) {
+                    setSaldoGeral(data.valor)
+                    setGastoDiarioConta(data.gastoDiario)
+                    setGastoSemanalConta(data.gastoSemanal)
+                }
 
-		const [updated,setUpdated] = useState(false)
-		const [created,setCreated] = useState(false)
-		const [deleted,setDeleted] = useState(false)
+                // Busca saldo VR de API!B2
+                const responseVR = await fetch('/api/saldo-vr')
+                const dataVR = await responseVR.json()
+                if (dataVR.success) {
+                    setSaldoVR(dataVR.valor)
+                    setGastoDiarioVR(dataVR.gastoDiario)
+                    setGastoSemanalVR(dataVR.gastoSemanal)
+                    setProximoRecVR(dataVR.proximoRecebimento)
+                }
+            } catch (error) {
+                console.error('Erro ao carregar saldos:', error)
+            }
+        }
+        fetchSaldos()
+    }, [])
 
-		const [updatedError,setUpdatedError] = useState(false)
-		const [deletedError,setDeletedError] = useState(false)
+    // Função para atualizar todos os dados
+    const handleRefresh = async () => {
+        setRefreshing(true)
+        try {
+            // Recarrega saldos
+            const response = await fetch('/api/saldo')
+            const data = await response.json()
+            if (data.success) {
+                setSaldoGeral(data.valor)
+                setGastoDiarioConta(data.gastoDiario)
+                setGastoSemanalConta(data.gastoSemanal)
+            }
 
-		async function addMov() {}
+            const responseVR = await fetch('/api/saldo-vr')
+            const dataVR = await responseVR.json()
+            if (dataVR.success) {
+                setSaldoVR(dataVR.valor)
+                setGastoDiarioVR(dataVR.gastoDiario)
+                setGastoSemanalVR(dataVR.gastoSemanal)
+                setProximoRecVR(dataVR.proximoRecebimento)
+            }
 
-		async function getSaldo() {
-			const postData = {
-				method: "GET",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}
-			const res = await fetch('https://cashflow-git-master-caiovidinha.vercel.app/api/saldo', 
-			postData
-			)
-			const response = await res.json()
-            setSaldo(response.saldo)
-            
-		}
+            // Recarrega dados do Context (categorias, contas, etc)
+            await Promise.all([
+                refetchCategorias?.(),
+                refetchContas?.(),
+                refetchCartoes?.(),
+                refetchCategoryIcons?.()
+            ])
 
-		async function updateMov() {}
+            // Força reload da página para atualizar RecentOrders
+            window.location.reload()
+        } catch (error) {
+            console.error('Erro ao atualizar dados:', error)
+        } finally {
+            setRefreshing(false)
+        }
+    }
 
-		async function deleteMov() {}
-
-		useEffect(() => {
-			getSaldo()
-            
-		})
-  return (
-    <div className='grid lg:grid-cols-6 gap-4 p-4'>
-        <div className='lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg'>
-            <div className='bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center'>
-                <SiNubank size={30}/>
-            </div>
-            <div className='flex flex-col w-full pb-4 mt-2'>
-                <p className='sm:text-2xl text-sm font-bold'>
-                    {saldo.map((conta,index) => {
-                        return(
-                            conta.id === 1 ? "R$ " + conta.valor.toFixed(2) : ''
-                        )
-                    })}
-                </p>
-                <p className='text-gray-600 sm:text-md text-xs'>Conta Nubank</p>
-                <AddInvestimento />
-            </div>
-        <div className='flex w-[130px] justify-between'>
-            <AddIncomeModalConta />
-            <AddExpenseModalConta />
-        </div>
-        </div>
-        
-        
-        <div className='lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg'>
-            <div className='bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center'>
-                <BiLogoMastercard size={30}/>
-            </div>
-            <div className='flex flex-col w-full pb-4 mt-2'>
-                <p className='sm:text-2xl text-sm font-bold'>
-                    {saldo.map((conta,index) => {
-                        
-                        cartoes += conta.valor
-
-                        return(
-                            conta.id === 3 ? "R$ " + parseFloat(cartoes).toFixed(2) : ''
-                        )
-                    })}
+    return (
+        <div className="grid lg:grid-cols-6 gap-4 p-4">
+            <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
+                <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
+                    <BiSolidBank size={30} />
+                </div>
+                <div className="flex flex-col w-full pb-4 mt-2">
+                    <div className="flex items-center gap-2">
+                        <p className="sm:text-2xl text-sm font-bold">
+                            {saldoGeral}
+                        </p>
+                        <button
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                            className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Atualizar dados"
+                        >
+                            <HiRefresh 
+                                size={18} 
+                                className={refreshing ? 'animate-spin' : ''}
+                            />
+                        </button>
+                    </div>
+                    <p className="text-gray-600 sm:text-md text-xs">
+                        Saldo em Conta
                     </p>
-                <p className='text-gray-600 sm:text-md text-xs'>Cartão de Crédito</p>
-                <AddFatura />
+                    {gastoDiarioConta && (
+                        <div className="text-blue-600 text-xs font-semibold mt-1" title="Gasto diário até o fim do mês">
+                            <span>{gastoDiarioConta}/dia</span>
+                            {gastoSemanalConta && (
+                                <>
+                                    <span className="hidden sm:inline"> · </span>
+                                    <br className="sm:hidden" />
+                                    <span>{gastoSemanalConta}/sem</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className="flex w-[130px] justify-between">
+                    <AddIncomeModalConta />
+                    <AddExpenseModalConta />
+                    <SeeAccounts />
+                </div>
             </div>
-            <div className='flex w-[130px] justify-between'>
-            <AddIncomeModalCredito />
-            <AddExpenseModalCredito />
-            <SeeCreditCards />
-        </div>
-        </div>
-        
-        <div className='lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg'>
-            <div className='bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center'>
-                <BsBusFrontFill size={30}/>
-            </div>
-            <div className='flex flex-col w-full pb-4 mt-2'>
-                <p className='sm:text-2xl text-sm font-bold'>
-                {saldo.map((conta,index) => {
-                        return(
-                            conta.id === 5 ? "R$ " + parseFloat(conta.valor).toFixed(2) : ''
-                        )
-                    })}
-                </p>
-                <p className='text-gray-600 sm:text-md text-xs'>Bilhete Único</p>
-            </div>
-            <div className='flex w-[130px] justify-between'>
-            <AddIncomeModalBus />
-            <AddExpenseModalBus />
-        </div>
-        </div>
 
+            <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
+                <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
+                    <BiLogoMastercard size={30} />
+                </div>
+                <div className="flex flex-col w-full pb-4 mt-2 justify-center">
+                    <p className="text-gray-600 sm:text-lg text-sm font-semibold">Cartões</p>
+                </div>
+                <div className="flex w-[130px] justify-between">
+                    <AddIncomeModalCredito />
+                    <AddExpenseModalCredito />
+                    <SeeCreditCards />
+                </div>
+            </div>
 
-    </div>
-  )
+            <div className="lg:col-span-2 col-span-1 bg-white flex justify-between w-full border p-4 rounded-lg">
+                <div className="bg-gray-200 text-gray-400 h-12 p-2 mt-1 mr-4 rounded-lg flex items-center justify-center">
+                    <MdRestaurantMenu size={30} />
+                </div>
+                <div className="flex flex-col w-full pb-4 mt-2">
+                    <p className="sm:text-2xl text-sm font-bold">
+                        {saldoVR}
+                    </p>
+                    <p className="text-gray-600 sm:text-md text-xs">
+                        Vale Benefícios
+                    </p>
+                    {gastoDiarioVR && (
+                        <div className="text-green-600 text-xs font-semibold mt-1" title={proximoRecVR ? `Próximo recebimento: ${proximoRecVR}` : ''}>
+                            <span>{gastoDiarioVR}/dia</span>
+                            {gastoSemanalVR && (
+                                <>
+                                    <span className="hidden sm:inline"> · </span>
+                                    <br className="sm:hidden" />
+                                    <span>{gastoSemanalVR}/sem</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <div className="flex w-[130px] justify-between">
+                    <AddIncomeModalVR />
+                    <AddExpenseModalVR />
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default TopCards

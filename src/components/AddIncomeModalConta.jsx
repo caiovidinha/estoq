@@ -1,178 +1,332 @@
-	import { React,useState,useMemo,useEffect,useRef } from 'react'
-	import { Modal, Button, Text, Input, Dropdown,Switch } from "@nextui-org/react";
-	import { GiReceiveMoney } from 'react-icons/gi'
-	import { MdMoneyOffCsred,MdAttachMoney } from 'react-icons/md'
+import { React, useState, useMemo } from 'react'
+import {
+    Modal,
+    Button,
+    Text,
+    Input,
+    Dropdown,
+    Switch,
+    Loading,
+} from '@nextui-org/react'
+import CategoryDropdown from '@/components/CategoryDropdown';
+import { GiReceiveMoney } from 'react-icons/gi'
+import {
+    AiFillCheckCircle,
+    AiFillExclamationCircle,
+    AiFillCloseCircle,
+} from 'react-icons/ai'
+import { MdMoneyOffCsred, MdAttachMoney } from 'react-icons/md'
+import { useMeses, useContas } from '@/hooks/useFormOptions'
+// REMOVIDO: import { createTransacao } from '@/services/api'
 
-	const AddIncomeModalConta = () => {
+const AddIncomeModalConta = () => {
+    const [selectedValue, setSelectedValue] = useState('Categoria');
+    const [invalid, setInvalid] = useState(false)
+    const [created, setCreated] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
-	//API logic (start)
-	//API logic (end)
+    // Hooks para buscar dados da API
+    const { meses } = useMeses()
+    const { contas } = useContas()
 
-	const [visible, setVisible] = useState(false)
-	const handler = () => setVisible(true)
+    const [visible, setVisible] = useState(false)
+    const handler = () => setVisible(true)
+    const closeHandler = () => {
+        setVisible(false)
+        setError(null)
+        setInvalid(false)
+    }
 
-	const closeHandler = () => {
-		setVisible(false)
-	}
+    const formatarMoeda = () => {
+        var elemento = document.getElementById('valor')
+        var valor = elemento.value
 
-	const formatarMoeda = () => {
-		var elemento = document.getElementById('valor')
-		var valor = elemento.value
-		
+        valor = valor + ''
+        valor = parseFloat(valor.replace(/[\D]+/g, ''))
+        valor = valor + ''
+        valor = valor.replace(/([0-9]{2})$/g, '.$1')
 
-		valor = valor + ''
-		valor = parseInt(valor.replace(/[\D]+/g, ''))
-		valor = valor + ''
-		valor = valor.replace(/([0-9]{2})$/g, ",$1")
+        elemento.value = valor
+        if (valor === 'NaN') elemento.value = ''
+    }
 
-		if (valor.length > 6) {
-			valor = valor.replace(/([0-9]{3}),([0-9]{2}$)/g, ".$1,$2")
-		}
+    const getForm = async () => {
+        try {
+            // Validação
+            const categoria = selectedValue
+            const mes = selectedValueMes
+            const valorInput = document.getElementById('valor').value
+            const dataInput = document.getElementById('data').value
+            const descricao = document.getElementById('descricao').value
+            const conta = selectedValueAccount
 
-		elemento.value = valor;
-		if(valor == 'NaN') elemento.value = ''
-		
-	}
+            if (!categoria || categoria === 'Categoria' || !mes || mes === 'Mês' || 
+                !valorInput || !dataInput || !descricao || !conta || conta === 'Conta') {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+                return
+            }
 
-	const getForm =() => {
-		let categoria = selectedValue
-		let valor = document.getElementById('valor')
-		let data = document.getElementById('data')
-		let descricao = document.getElementById('descricao')
-		let status = document.getElementById('status').getAttribute("data-state") === "checked" ? "Recebido" : "A receber"
+            // Formatar valor para a API
+            let valorNumerico = valorInput.replace(/[\D]+/g, '')
+            let valorFormatado = (parseFloat(valorNumerico) / 100).toFixed(2)
 
-		const form = new FormData()
-		form.append("tipo","Receita")
-		form.append("categoria",categoria)
-		form.append("valor",valor.value)
-		form.append("data",data.value)
-		form.append("descricao",descricao.value)
-		form.append("status",status)
-		form.append("conta","Conta Nubank")
+            // Formatar data para DD/MM/YYYY
+            const [ano, mesNum, dia] = dataInput.split('-')
+            const dataFormatada = `${dia}/${mesNum}/${ano}`
 
-		for(let i of form.entries()){
-		console.log(i)
-		}
-	}
+            // Status baseado no switch
+            const status = document.getElementById('status').getAttribute('data-state') === 'checked'
+                ? 'Recebido'
+                : 'A receber'
 
-	const fillDate = () => {
-		const dataInput = document.querySelector('#data')
-		var data = new Date()
-		var dia = String(data.getDate()).padStart(2, '0')
-		var mes = String(data.getMonth() + 1).padStart(2, '0')
-		var ano = data.getFullYear()
-		const dataAtual = ano + '-' + mes + '-' + dia
-		if(!dataInput.value) dataInput.value = dataAtual
-	}
+            const fixa = document.getElementById('fixa-receita-conta')?.getAttribute('data-state') === 'checked'
 
-	const [selected, setSelected] = useState(new Set(["Categoria"]));
+            const transacao = {
+                tipo: 'RECEITA',
+                descritivo: categoria,
+                valor: valorFormatado,
+                data: dataFormatada,
+                mes: mes,
+                detalhes: descricao,
+                situacao: status,
+                conta: conta,
+                fixa: fixa,
+            }
 
-	const selectedValue = useMemo(
-		() => Array.from(selected).join(", ").replaceAll("_", " "),
-		[selected]
-	)
+            setLoading(true)
+            setError(null)
 
+            // Chamar API para criar transação
+            const response = await fetch('/api/transacoes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transacao),
+            })
 
+            const result = await response.json()
 
-	return (
-	<div className='sm:-ml-2 sm:mr-4 ml-3 mr-2'>
+            if (result.success) {
+                setCreated(true)
+                setTimeout(() => {
+                    setCreated(false)
+                    setVisible(false)
+                    // Recarregar página ou atualizar lista
+                    window.location.reload()
+                }, 2000)
+            } else {
+                setInvalid(true)
+                setTimeout(() => setInvalid(false), 3000)
+            }
 
-		<Button  className='bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10' auto rounded shadow color='green' onPress={handler} icon={<GiReceiveMoney className='text-green-800' size={20}/>}>
-		
-		</Button>
-		<Modal
-		closeButton
-		aria-labelledby="modal-title"
-		open={visible}
-		onClose={closeHandler}
-		>
-		<Modal.Header>
-			<Text id="modal-title" size={18}>
-			Adicionar receita&nbsp;
-			<Text b size={18}>
-				na conta Nubank
-			</Text>
-			</Text>
-		</Modal.Header>
-		<Modal.Body>
-		<Dropdown>
-		<Dropdown.Button flat color="success" css={{ tt: "capitalize" }}>
-		{selectedValue}
-		</Dropdown.Button>
-		<Dropdown.Menu
-		aria-label="Single selection actions"
-		color="success"
-		selectionMode="single"
-		selectedKeys={selected}
-		onSelectionChange={setSelected}
-		id="categoria"
-		>
-		<Dropdown.Item key="Salário - V4">Salário - V4</Dropdown.Item>
-		<Dropdown.Item key="Freelance">Freelance</Dropdown.Item>
-		<Dropdown.Item key="Investimento">Investimento</Dropdown.Item>
-		<Dropdown.Item key="Limite Cartão">Limite Cartão</Dropdown.Item>
-		<Dropdown.Item key="outros">Outros</Dropdown.Item>
-		</Dropdown.Menu>
-	</Dropdown>
-			<Input
-			bordered
-			maxLength={9}
-			onKeyUp={formatarMoeda}
-			labelLeft='R$'
-			fullWidth
-			color="primary"
-			size="lg"
-			id="valor"
-			type="float"
-			placeholder="Valor"
-			className="mb-2"
-			/>
-			<Input
-			bordered
-			fullWidth
-			color="primary"
-			size="lg"
-			type="date"
-			id="data"
-			placeholder="Data"
-			onFocus={fillDate}
-			/>
-			<Input
-			bordered
-			fullWidth
-			color="primary"
-			size="lg"
-			type="text"
-			id="descricao"
-			placeholder="Descrição"
-			/>
-			<div className='w-full flex justify-center'>
-			<div className='bg-gray-300 rounded-full w-48 h- flex items-center justify-left'>
-			<Switch 
-			checked={true}
-			size="xl"
-			color="success"
-			iconOn={<MdAttachMoney className='ml-0.5'/>}
-			iconOff={<MdMoneyOffCsred />} 
-			className='mb-1 ml-0.5'
-			id="status"
-			/> 
-			<p className='ml-6 text-gray-500 font-bold'>Recebido</p>
-			</div>
-			</div>
-		</Modal.Body>
-		<Modal.Footer>
-			<Button auto flat color="error" onPress={closeHandler}>
-			Fechar
-			</Button>
-			<Button auto color="success" onPress={getForm}>
-			Enviar
-			</Button>
-			
-		</Modal.Footer>
-		</Modal>
-	</div>
-	)
-	}
+            setLoading(false)
+            setCreated(true)
 
-	export default AddIncomeModalConta
+            // Limpar formulário após 1.3s
+            setTimeout(() => {
+                setCreated(false)
+                setSelectedMes(new Set(['Mês']))
+                setSelectedAccount(new Set(['Conta']))
+                setSelectedValue('Categoria')
+                document.getElementById('valor').value = ''
+                document.getElementById('data').value = ''
+                document.getElementById('descricao').value = ''
+            }, 1300)
+
+        } catch (err) {
+            console.error('Erro ao criar receita:', err)
+            setLoading(false)
+            setError(err.message || 'Erro ao criar receita')
+            setTimeout(() => setError(null), 5000)
+        }
+    }
+
+    const fillDate = () => {
+        const dataInput = document.querySelector('#data')
+        var data = new Date()
+        var dia = String(data.getDate()).padStart(2, '0')
+        var mes = String(data.getMonth() + 1).padStart(2, '0')
+        var ano = data.getFullYear()
+        const dataAtual = ano + '-' + mes + '-' + dia
+        if (!dataInput.value) dataInput.value = dataAtual
+    }
+
+    const [selectedMes, setSelectedMes] = useState(new Set(['Mês']))
+    const [selectedAccount, setSelectedAccount] = useState(new Set(['Conta']))
+
+    const selectedValueMes = useMemo(
+        () => Array.from(selectedMes).join(', ').replaceAll('_', ' '),
+        [selectedMes]
+    )
+    const selectedValueAccount = useMemo(
+        () => Array.from(selectedAccount).join(', ').replaceAll('_', ' '),
+        [selectedAccount]
+    )
+
+    return (
+        <div className="sm:-ml-2 sm:mr-4 ml-3 mr-2">
+            <Button
+                className="bg-green-200 flex justify-center items-center mt-2 rounded-full h-10 w-10 sm:-ml-3 -ml-5 z-10"
+                auto
+                rounded
+                shadow
+                color="green"
+                onPress={handler}
+                icon={<GiReceiveMoney className="text-green-800" size={20} />}
+            ></Button>
+            <Modal
+                closeButton
+                aria-labelledby="modal-title"
+                open={visible}
+                onClose={closeHandler}
+            >
+                <Modal.Header>
+                    <Text id="modal-title" size={18}>
+                        Adicionar receita&nbsp;
+                        <Text b size={18}>
+                            na conta
+                        </Text>
+                    </Text>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <CategoryDropdown
+                    selectedValue={selectedValue}
+                    onSelect={(cat) => setSelectedValue(cat)}
+                    categoryType={"RECEITA"}
+                    />
+
+                    <Input
+                        disabled={loading || created || invalid ? true : false}
+                        bordered
+                        maxLength={9}
+                        onKeyUp={formatarMoeda}
+                        labelLeft="R$"
+                        fullWidth
+                        color="primary"
+                        size="lg"
+                        id="valor"
+                        type="float"
+                        placeholder="Valor"
+                        className="mb-2"
+                    />
+                    <Input
+                        disabled={loading || created || invalid ? true : false}
+                        bordered
+                        fullWidth
+                        color="primary"
+                        size="lg"
+                        type="date"
+                        id="data"
+                        placeholder="Data"
+                        onFocus={fillDate}
+                    />
+                    <Dropdown type="listbox">
+                        <Dropdown.Button bordered color="success" css={{ tt: 'capitalize' }}>
+                            {selectedValueMes}
+                        </Dropdown.Button>
+                        <Dropdown.Menu
+                            aria-label="Single selection actions"
+                            color="success"
+                            selectionMode="single"
+                            selectedKeys={selectedMes}
+                            onSelectionChange={setSelectedMes}
+                            id="mes"
+                            className="h-72"
+                        >
+                            {meses.map((mes) => (
+                                <Dropdown.Item key={mes}>{mes}</Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    <Input
+                        disabled={loading || created || invalid ? true : false}
+                        bordered
+                        fullWidth
+                        color="primary"
+                        size="lg"
+                        type="text"
+                        id="descricao"
+                        placeholder="Descrição"
+                    />
+                    <Dropdown>
+                        <Dropdown.Button flat css={{ tt: 'capitalize' }}>
+                            {selectedValueAccount}
+                        </Dropdown.Button>
+                        <Dropdown.Menu
+                            aria-label="Single selection actions"
+                            selectionMode="single"
+                            selectedKeys={selectedAccount}
+                            onSelectionChange={setSelectedAccount}
+                            id="conta"
+                        >
+                            {contas.map((conta) => (
+                                <Dropdown.Item key={conta}>{conta}</Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    <div className="w-full flex justify-center space-x-4">
+                        <div className="bg-gray-300 rounded-full w-48 flex items-center justify-left">
+                            <Switch
+                                checked={true}
+                                size="xl"
+                                color="success"
+                                iconOn={<MdAttachMoney className="ml-0.5" />}
+                                iconOff={<MdMoneyOffCsred />}
+                                className="mb-1 ml-0.5"
+                                id="status"
+                            />
+                            <p className="ml-6 text-gray-500 font-bold">
+                                Recebido
+                            </p>
+                        </div>
+                        
+                        <div className="bg-gray-300 rounded-full w-32 flex items-center justify-left">
+                            <Switch
+                                checked={false}
+                                size="lg"
+                                color="primary"
+                                className="mb-1 ml-0.5"
+                                id="fixa-receita-conta"
+                            />
+                            <p className="ml-2 text-gray-500 font-bold">Fixa</p>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button auto flat color="error" onPress={closeHandler}>
+                        Fechar
+                    </Button>
+                    <Button auto color={invalid ? 'warning' : 'success'} onPress={getForm}>
+                        {created ? (
+                            <AiFillCheckCircle size={20} />
+                        ) : loading ? (
+                            <Loading type="spinner" color="white" size="sm" />
+                        ) : invalid ? (
+                            <AiFillExclamationCircle size={20} />
+                        ) : (
+                            'Enviar'
+                        )}
+                    </Button>
+                    {invalid && (
+                        <p className='flex text-red-800 items-center'>
+                            <AiFillCloseCircle className="mr-1" />
+                            Preencha todos os campos corretamente
+                        </p>
+                    )}
+                    {error && (
+                        <p className='flex text-red-800 items-center'>
+                            <AiFillCloseCircle className="mr-1" />
+                            {error}
+                        </p>
+                    )}
+                </Modal.Footer>
+            </Modal>
+        </div>
+    )
+}
+
+export default AddIncomeModalConta
